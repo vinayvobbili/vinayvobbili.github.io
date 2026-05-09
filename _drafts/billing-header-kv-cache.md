@@ -4,6 +4,10 @@ description: A debugging story about a rotating billing header that quietly bust
 date: 2026-05-09 09:00:00 -0400
 categories: [LLM, Performance]
 tags: [vllm, mlx, claude-code, kv-cache, prefix-cache, prompt-cache, debugging]
+mermaid: true
+image:
+  path: /assets/img/posts/kv-cache-hero.png
+  alt: 108-second turns to 7-second turns — fixing the prefix cache for self-hosted Claude Code
 ---
 
 > Draft — has the full technical content. Outstanding work for me before publishing
@@ -33,7 +37,30 @@ Two findings, **both required** to get the speedup:
 Together: **108-second turns → 7-8 second follow-ups. A 13-15× speedup**, on the
 same hardware, with the same model.
 
+<table>
+<tr>
+<td align="center" width="33%"><h2>108s → 7-8s</h2><sub>warm-turn wall-clock, before vs after</sub></td>
+<td align="center" width="33%"><h2>13-15×</h2><sub>follow-up speedup, same hardware + model</sub></td>
+<td align="center" width="33%"><h2>81 bytes</h2><sub>of rotating header text that was costing 100+s/turn</sub></td>
+</tr>
+</table>
+
 ## The setup
+
+```mermaid
+flowchart LR
+    CC[Claude Code CLI] -->|/v1/messages<br/>system + tools + msgs<br/>+ rotating cch=...| CCR[claude-code-router]
+    CCR --> Shim["Shim<br/><b>(1) strips x-anthropic-billing-header</b><br/>(2) buffers tool-call streams"]
+    Shim -->|byte-stable<br/>system prefix| VLLM[vllm-mlx server]
+    VLLM --> SE["SimpleEngine<br/><b>(3) system-prefix KV cache</b><br/>HIT: skip prefill<br/>MISS: prefill + snapshot"]
+    SE -->|stream tokens| CC
+    style Shim fill:#1e40af,color:#fff
+    style SE fill:#7c2d12,color:#fff
+```
+
+The three numbered points are where the speedup comes from. Strip (1) and (3)
+and you're back to 100+ second turns.
+
 
 - Backend: vllm-mlx serving `Qwen2.5-Coder-32B-Instruct-8bit` on a Mac Studio (96 GB).
 - Front door: a small FastAPI shim that exposes Anthropic's `/v1/messages` API and proxies to vllm-mlx.
@@ -120,6 +147,7 @@ def _strip_billing_header(payload: dict) -> None:
 > buffering on the Coder alias — vllm-mlx's Hermes parser streams tool JSON as
 > content deltas, which doesn't round-trip cleanly to clients), so I had to
 > strip the header myself.
+{: .prompt-info }
 
 After this fix, warm turns dropped from ~100 s to ~70 s. A real win, but the
 prefix cache *should* have been saving 95+ seconds, not 30. So either the cache
