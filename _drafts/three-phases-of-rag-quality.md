@@ -4,6 +4,10 @@ description: How we mined 24K analyst-curated training pairs from XSOAR close-no
 date: 2026-05-09 09:00:00 -0400
 categories: [LLM, RAG]
 tags: [rag, reranker, fine-tuning, bge, sentence-transformers, security, xsoar]
+mermaid: true
+image:
+  path: /assets/img/posts/reranker-hero.png
+  alt: From 0.598 to 0.846 — fine-tuning a cross-encoder reranker on security-ticket pairs
 ---
 
 > Draft — has the full technical content. Outstanding work for me before publishing is
@@ -27,11 +31,32 @@ We fine-tuned the reranker on our own data. Held-out test set, time-based split:
 **+41% uplift.** No model architecture change, no embedding model swap. Just
 domain-specific fine-tuning of the same base reranker.
 
+<table>
+<tr>
+<td align="center" width="33%"><h2>+41%</h2><sub>MRR@10 uplift on held-out time-split test set</sub></td>
+<td align="center" width="33%"><h2>24,213 + 10,848</h2><sub>positive pairs + clean hard negatives, mined from close-notes</sub></td>
+<td align="center" width="33%"><h2>0</h2><sub>explicit relevance labels collected — all signal mined from existing analyst text</sub></td>
+</tr>
+</table>
+
 The interesting part isn't the result — it's where the training data came from. We
 never logged a single explicit relevance judgement. The 24K positive pairs were
 hiding in plain sight inside analyst close-notes that nobody asked anyone to write.
 
 ## The setup: embedder + reranker, the standard two-stage RAG
+
+```mermaid
+flowchart LR
+    Q[User query] --> E[Embedder<br/>Qwen3-Embedding-8B<br/>4-bit DWQ]
+    E --> Top50[Top-50 by<br/>cosine similarity]
+    Top50 --> R[Reranker<br/>bge-reranker-v2-m3<br/><b>fine-tuned</b>]
+    R --> Top5[Top-5 ranked<br/>by joint scoring]
+    Top5 --> LLM[LLM grounds<br/>answer]
+    style R fill:#1e40af,color:#fff
+    style E fill:#0e7490,color:#fff
+    style LLM fill:#065f46,color:#fff
+```
+
 
 Our retrieval pipeline is the standard cascade:
 
@@ -71,6 +96,7 @@ had to extract them.
 > **Generalizable lesson.** Before paying for labels, look at what your users are
 > already typing. Free-form text in close-notes, comments, JIRA descriptions —
 > they're full of implicit relevance judgements that nobody asked anyone to record.
+{: .prompt-tip }
 
 ### Filtering the noise: not all `#N` references are equal
 
@@ -112,6 +138,7 @@ sampling worked.
 > **Generalizable lesson.** Any time you derive new training examples by
 > transitivity (or any structural inference), watch for polynomial blow-up in dense
 > clusters. Stratified sampling is usually the right counter-move.
+{: .prompt-tip }
 
 ## The part most beginners get wrong: hard negative mining
 
