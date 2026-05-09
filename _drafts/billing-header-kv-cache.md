@@ -214,10 +214,23 @@ instead of glacial.
 
 ## What I'd do differently
 
-> *[Need to fill in. Honest reflection in your voice. Probable angle: I should
-> have diffed two consecutive request bodies at the byte level on day 1.
-> That would have caught the billing header in 5 minutes. I spent way longer
-> staring at engine internals before checking the input.]*
+**Diff the inputs before profiling the engine.** The billing header would have
+fallen out of a 30-second `diff` of two consecutive request bodies. I didn't run
+that diff for far too long — I was looking at vllm-mlx internals, profiling
+prefill, reading mlx-lm cache code, anything *but* the actual bytes going over
+the wire. Once I finally did the diff, the rotating `cch=` value was on the
+screen in five minutes.
+
+That has become a personal rule for any latency mystery on a black-box stack:
+**capture two consecutive requests, diff them, look at what's *not* stable
+before assuming the engine is misbehaving.** It would have saved me an evening
+on this one and I suspect it'll save me more.
+
+The second thing I'd change: the SimpleEngine cache patch should have come
+*after* I'd quantified what the billing-header strip alone bought me. I lumped
+both fixes in the same session, which made it harder to attribute the speedup
+cleanly. The numbers in this post are reconstructed from a follow-up
+measurement; if I'd been disciplined the first time, I'd have had them ready.
 
 ## When you'd hit this
 

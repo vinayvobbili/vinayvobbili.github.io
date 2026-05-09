@@ -264,15 +264,36 @@ remove the service from launchd, not just kill it. Lost an evening to this once.
 
 ## What surprised me
 
-> *[Need to fill in. Two or three of these from your own experience:
-> what you expected vs what actually moved the needle, anything that didn't
-> work, anything that worked better than you'd dared hope.]*
+A few things, in order of how much they surprised me:
+
+**The hard-negative filter mattered more than the positive-pair mining.** The
++41% lift would have collapsed to "modestly better than baseline" if I'd kept
+those 33% same-rule near-duplicates in the negatives pool. The model would have
+spent its capacity learning to push apart things that are actually related and
+gotten worse at the real job. The data-quality work was disproportionately
+high-leverage; the training loop itself was almost incidental.
+
+**The held-out test MRR (0.846) was *higher* than the validation MRR (0.811).**
+That's backwards from the usual story where test is the hardest split. My read:
+detection rules in late 2025 / early 2026 are slightly clearer-cut than the
+mid-2025 rules in the val window, so the test queries were genuinely easier.
+Worth a deeper look, but it's also a useful sanity check — the model is
+generalizing forward in time, not memorizing.
+
+**bge-reranker-v2-m3 at 0.598 baseline is surprisingly OK** for a model that has
+never seen a security ticket. Off-the-shelf rerankers are stronger out-of-domain
+than I expected. That's both reassuring (you can ship a reasonable RAG without
+fine-tuning) and a trap (you can ship a *reasonable* RAG without fine-tuning,
+and it'll feel "good enough" until you measure properly).
 
 ## What I'd do differently
 
-> *[Need to fill in. Honest reflection — e.g. "I should have set up the eval
-> harness on day 1 instead of measuring vibes for two weeks" or "I almost used
-> random negatives — would have wasted a training run."]*
+**Build the eval harness on day 1.** I spent too long tuning chunking and top-k
+by vibes before I had a number to optimize against. Once the MRR@10 harness
+existed, every change was a one-command before/after — and most of the
+"improvements" I'd been making earlier turned out to be wash trades. The harness
+took an afternoon to build. I would have saved a couple of weeks by starting
+there.
 
 ---
 
