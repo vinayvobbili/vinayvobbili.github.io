@@ -1,115 +1,283 @@
 ---
-title: "Three Phases of RAG Quality: Embeddings → Reranking → Fine-Tuned Reranking"
-description: How retrieval quality evolved on a 32K+ ticket corpus — from plain dense search, to a stock cross-encoder reranker, to fine-tuning the reranker on our own labeled pairs (+41% MRR@10).
+title: "Teaching a Reranker the Language of Security Tickets (+41% MRR@10)"
+description: How we mined 24K analyst-curated training pairs from XSOAR close-notes, dodged a polynomial blow-up, filtered out same-rule near-duplicates, and lifted held-out MRR@10 from 0.598 to 0.846 — a 41% uplift over off-the-shelf bge-reranker-v2-m3.
 date: 2026-05-09 09:00:00 -0400
 categories: [LLM, RAG]
-tags: [rag, embeddings, reranker, fine-tuning, bge, vector-search]
+tags: [rag, reranker, fine-tuning, bge, sentence-transformers, security, xsoar]
 ---
 
-> Draft — not yet published. Outline below; replace bracketed sections with the real numbers and code from the production system.
+> Draft — has the full technical content. Outstanding work for me before publishing is
+> listed at the bottom. Most of it is light editing for voice + a couple of
+> reflection paragraphs only I can write.
 
 ## TL;DR
 
-Building RAG over 32K+ historical tickets, retrieval quality didn't get to "good enough"
-in one step. It evolved through three phases, each unlocked by the last:
+Our SOC's RAG pipeline retrieves over 142,000 closed XSOAR security tickets to ground
+investigation answers. After exhausting the easy wins — chunking, top-k, reranker
+choice — we still saw the right historical ticket land at rank 5-10 too often, and
+the LLM grounding its answer in a near-miss neighbor.
 
-1. **Phase 1 — Embeddings only.** Dense vector search worked, but the top-5 was noisy enough
-   that the LLM regularly grounded its answer in a near-miss neighbor instead of the actually
-   relevant ticket.
-2. **Phase 2 — Stock cross-encoder reranker.** Adding `bge-reranker-v2-m3` on top of the
-   top-50 candidates fixed a lot of the noise. Most teams stop here.
-3. **Phase 3 — Fine-tuned reranker on our own pairs.** Mining implicit relevance signals from
-   ticket history (which tickets analysts linked together) and training the reranker on those
-   pairs gave us **+41% MRR@10** over the stock model.
+We fine-tuned the reranker on our own data. Held-out test set, time-based split:
 
-Phase 3 was the highest-ROI change in the entire stack — and it's the phase most teams skip
-because they assume reranker fine-tuning is exotic. It isn't.
+|                              | MRR@10  |
+| ---------------------------- | ------- |
+| `BAAI/bge-reranker-v2-m3` (off-the-shelf) | 0.598   |
+| Fine-tuned on 24K XSOAR pairs              | **0.846** |
 
-## The setup
+**+41% uplift.** No model architecture change, no embedding model swap. Just
+domain-specific fine-tuning of the same base reranker.
 
-- Corpus: ~32,000 historical XSOAR security tickets (rich text, structured metadata, analyst notes).
-- Embedding model: [name]
-- Vector store: ChromaDB, persistent on disk.
-- Consumer: a SOC investigation agent that answers questions like *"Have we seen this IOC
-  pattern before? What did we conclude?"*
+The interesting part isn't the result — it's where the training data came from. We
+never logged a single explicit relevance judgement. The 24K positive pairs were
+hiding in plain sight inside analyst close-notes that nobody asked anyone to write.
 
-The retrieval quality target was simple: when an analyst asks about a current incident,
-the agent should ground its answer in *the actual prior ticket* that's most relevant — not
-a vector neighbor that happens to share keywords.
+## The setup: embedder + reranker, the standard two-stage RAG
 
-## Phase 1: Embeddings only
+Our retrieval pipeline is the standard cascade:
 
-[Describe the initial setup. Embedding model. Chunking strategy. Top-k retrieval.
-What worked, what didn't. Concrete failure mode example: a query about [X] returned [Y]
-in the top results because vectors are similar, but a human reading both knew the answer
-was buried at rank 12.]
+- **Stage 1 — Embedder (bi-encoder).** `Qwen3-Embedding-8B-4bit-DWQ` served via
+  vllm-mlx. Encodes the query independently, pulls top-50 candidates from ChromaDB
+  by cosine similarity. Fast, but it scores query and document in isolation.
+- **Stage 2 — Reranker (cross-encoder).** `BAAI/bge-reranker-v2-m3` running on
+  Apple Silicon (MPS). Jointly attends over `(query, document)` and re-scores the
+  top-50 down to top-5 to feed the LLM. Slower per item, but dramatically more
+  accurate than embedder-only ranking.
 
-**Why it wasn't enough:** dense retrieval ranks by *semantic similarity*, not *relevance to
-the query intent*. For ticket retrieval those overlap a lot, but the long tail of "almost
-right" results is where the LLM grounded answers go wrong.
+Mental model: the embedder is a fast librarian who pulls 50 books off the shelf
+based on title similarity. The reranker is a careful reader who actually opens each
+one and re-orders by relevance to your specific question.
 
-## Phase 2: Add a stock cross-encoder reranker
+Off-the-shelf rerankers like `bge-reranker-v2-m3` are trained on general English
+passage retrieval (MS MARCO and friends). They've never seen an XSOAR ticket. They
+don't know that *"INBLRPRDDKNF01: ML via Cloud-based ML"* matters in a way that
+generic English semantic similarity cannot capture. Fine-tuning is how you teach
+them.
 
-[Describe the reranker integration. bge-reranker-v2-m3, top-50 candidates from vectors,
-rerank to top-5, hand to LLM. Where it ran (mac-m3 → studio1, MPS, ~568M params). Latency cost.]
+## Where the training data came from
 
-**The lift:** [describe the qualitative improvement, ideally with a before/after example.
-Mention any quantitative measurement if you ran one — even informal.]
+Cross-encoder training needs `(query, positive, negative)` triples. We had no
+explicit relevance labels — no clicks, no thumbs-up/down, nothing. So we mined
+implicit ones from analyst close-notes.
 
-This is where most RAG pipelines I see in production stop. It's a real win and it requires
-near-zero custom work — just add the model, sort by score, take the top-k.
+Buried in 142,000 closed tickets are sentences analysts type all the time:
 
-## Phase 3: Fine-tune the reranker on our own pairs
+- *"With reference to XSOAR #289008, regional team confirmed..."*
+- *"Refer master ticket #158126."*
+- *"Per XSOAR #463428, user confirmed..."*
 
-[The interesting phase. Walk through:
-- The hypothesis: the stock reranker is trained on generic web data; our domain has its own
-  relevance signal that the model has never seen.
-- The labels: how we mined positive/negative pairs from ticket history. Specifically,
-  [explain which ticket-to-ticket relationships you used as positive signal — explicitly
-  linked tickets, manual analyst references, etc. — and how you sampled negatives.]
-- The training setup: framework (sentence-transformers? FlagEmbedding?), loss function
-  (MarginRankingLoss / contrastive?), training set size, eval set size, hardware, time-to-train.
-- The eval: MRR@10, recall@k, NDCG. The +41% number lands here.]
+Each one is a human-curated link between two tickets. Free relevance label. We just
+had to extract them.
+
+> **Generalizable lesson.** Before paying for labels, look at what your users are
+> already typing. Free-form text in close-notes, comments, JIRA descriptions —
+> they're full of implicit relevance judgements that nobody asked anyone to record.
+
+### Filtering the noise: not all `#N` references are equal
+
+A regex over close-notes pulled 61,500 `#N` references. Most were useless:
+
+| Pool | Lead-in phrase            | Count   | Signal quality                                                  |
+| ---- | ------------------------- | ------- | --------------------------------------------------------------- |
+| A    | *"Duplicate to #N"*       | 52,782  | Strong but trivial — same alert, different host. Embedder already gets these. |
+| B    | *"XSOAR #N · Per XSOAR…"* | ~3,000  | **Gold** — analyst-curated cross-references between distinct tickets.            |
+| —    | *"QRadar offense #N"*     | ~1,400  | Useless — references other systems, not XSOAR.                  |
+
+Pool A is mostly the embedder's home turf already; the reranker doesn't need help
+with near-duplicates. Pool B is the interesting signal: *"these two tickets are
+related but not identical"* — exactly the case where a reranker earns its keep.
+After regex-filtering and verifying both endpoints existed in our DB, we had **4,260
+unique direct `(src → tgt)` pairs.**
+
+## Free positives via transitive siblings (and the polynomial-blow-up trap)
+
+When five tickets all cite the same master ticket, those five are also related to
+each other. That's a free `O(n²)` inflation of training pairs — *if* you cap the
+explosion.
+
+We capped each master at 20 children before generating siblings. One particularly
+prolific master had 553 children; ungapped, it would have generated **~150,000
+trivial sibling pairs** and dominated the training distribution. Stratified sampling
+across distinct rules pushed cross-rule pairs to the front so the model learned
+*generalizable* relations, not within-rule sameness.
+
+| Source                                      | Count  |
+| ------------------------------------------- | ------ |
+| Direct `#N` references                      | 4,260  |
+| Transitive siblings (capped, stratified)    | 19,953 |
+| **Total positives (training-ready)**         | **24,213** |
+
+72% of the transitive pairs were cross-rule — a strong signal that our cap +
+sampling worked.
+
+> **Generalizable lesson.** Any time you derive new training examples by
+> transitivity (or any structural inference), watch for polynomial blow-up in dense
+> clusters. Stratified sampling is usually the right counter-move.
+
+## The part most beginners get wrong: hard negative mining
+
+Negatives matter as much as positives. The model learns from contrast, and *random*
+negatives teach almost nothing — they're already obviously different. The interesting
+negatives are the ones that *look* similar to the embedder but aren't actually
+related. Those are the cases the embedder gets wrong, and they're exactly what the
+reranker needs to learn to push apart.
+
+The recipe: for each source ticket, query the existing embedding index for the
+top-50 nearest neighbors. Drop anything that's a known positive (direct, transitive,
+or shares a master). What's left is what the embedder thinks matches but the analyst
+never linked — *hard negatives*.
+
+We caught a subtle trap on the first run: **same-rule near-duplicates are not hard
+negatives.** Two tickets both fired by `INBLRPRDDKNF01: ML via Cloud-based ML` with
+0.997 cosine similarity are sibling alerts of the same automated detection rule —
+they're related, just not via an analyst's `#N` reference. Training on them as
+negatives would teach the model to push apart things that are actually related.
+Filtering by rule before adding to the negatives pool dropped 33% of candidates.
+
+| Stage                                          | Count   |
+| ---------------------------------------------- | ------- |
+| Raw top-50 candidates from embedder            | 16,137  |
+| Same-rule contamination (filtered out)         | 5,289 (33%) |
+| **Clean cross-rule hard negatives**            | **10,848** |
+
+Median cosine similarity of the kept negatives: 0.955 — i.e. the embedder
+*strongly* believed these were relevant. They weren't. That's exactly the gap a
+reranker should close.
+
+## Data discipline: split by time, never by random
+
+Random train/val/test splits leak future signal into training and lie to you about
+held-out quality. Any time your data has a time dimension — fraud, security, sales
+forecasting, almost everything in production ML — split by time. In production the
+model can never look at the future, so neither should your evaluation.
+
+| Split | Date range              | Rows   | Pos / Neg     |
+| ----- | ----------------------- | ------ | ------------- |
+| Train | before 2025-09-01       | 27,604 | 18,745 / 8,859 |
+| Val   | 2025-09 to 2025-11      | 3,122  | 2,378 / 744   |
+| Test  | 2025-12 onward          | 4,335  | 3,090 / 1,245 |
+
+## The part that's almost a one-liner: the training loop
+
+After all the data work, the actual fit is short:
 
 ```python
-# Sketch of the training loop — fill in with the actual code path.
-# from sentence_transformers import CrossEncoder, InputExample, losses
-# ...
+from sentence_transformers import CrossEncoder, InputExample
+from torch.utils.data import DataLoader
+
+model = CrossEncoder(
+    "BAAI/bge-reranker-v2-m3",
+    num_labels=1,
+    max_length=512,
+    device="mps",
+)
+
+examples = [
+    InputExample(texts=[r["query"], r["passage"]], label=float(r["label"]))
+    for r in load_jsonl("train.jsonl")
+]
+loader = DataLoader(examples, shuffle=True, batch_size=8)
+
+model.fit(
+    train_dataloader=loader,
+    evaluator=evaluator,
+    epochs=2,
+    warmup_steps=int(len(loader) * 2 * 0.1),
+    optimizer_params={"lr": 2e-5},
+    output_path="checkpoint",
+)
 ```
 
-**The headline result: +41% MRR@10 over the stock bge-reranker-v2-m3.**
+A few details that mattered:
 
-[Include eval methodology — held-out queries, how relevance was scored, what the baseline was.]
+- **BCE-with-logits loss** on `(query, passage, label ∈ {0, 1})`. Single-score output, binary cross-entropy.
+- **AdamW at `lr=2e-5`** — the standard learning rate for BERT-family fine-tunes. Don't overthink it.
+- **Linear warmup for the first 10%** of steps (LR ramps 0 → 2e-5), then linear decay back to 0. Prevents unstable updates early when the model is still learning the new label distribution.
+- **Periodic val evaluation** every ~862 steps. We tracked Average Precision to know when to stop.
+
+## The payoff
+
+|                       | Baseline MRR@10 | Fine-tuned MRR@10 | Δ      |
+| --------------------- | --------------- | ----------------- | ------ |
+| Validation            | 0.626           | 0.811             | **+30%** |
+| **Test (held-out time)** | **0.598**       | **0.846**         | **+41%** |
+
+MRR@10 is the standard ranking metric: for each query, find the rank of the first
+relevant result; if it's at rank *k*, score is *1/k*; average across queries. Our
+baseline 0.598 means the first relevant ticket lands at rank ~1.7 on average. Our
+fine-tuned 0.846 means it lands at rank ~1.18 — almost always at the top.
+
+Translation: the LLM grounds its answer on the right historical ticket *almost every
+time* now. It's not a marginal improvement — it changes whether the agent's
+suggestion is *useful* or *plausible-but-wrong*.
+
+## Battle scars (the gotchas nobody documents)
+
+A few things I had to fix while getting this to actually run:
+
+**Corp SSL.** The Mac running training had the corporate CA trusted at the system
+level (so `curl` and the OS Keychain were happy), but Python's `requests` /
+`urllib3` use `certifi`'s CA bundle, *not* the system store. So `pip install` and
+HuggingFace model downloads failed with `CERTIFICATE_VERIFY_FAILED`. The fix is to
+build a combined CA bundle and point both env vars at it (different libraries read
+different ones):
+
+```bash
+export REQUESTS_CA_BUNDLE=~/corp-ca-bundle.pem
+export SSL_CERT_FILE=~/corp-ca-bundle.pem
+```
+
+**Embedding model name enforcement.** vllm-mlx serves on a fixed model ID and
+422s any request with the wrong name. The default `text-embedding-ada-002` fallback
+in some libraries doesn't match. Set `EMBEDDING_MODEL` explicitly *before* the
+embedding function is imported — production systemd loads it via `EnvironmentFile`,
+ad-hoc scripts have to source `.env` themselves.
+
+**MPS memory accounting.** PyTorch's MPS allocator counts macOS file cache and
+inactive pages as *"other allocations"* — even though those pages are reclaimable.
+With another 32B model already loaded, training OOMed at 19GB MPS allocation
+despite 88GB physically free. The fix is unsafe-by-default but usually correct:
+
+```bash
+export PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0
+```
+
+This disables the watermark check. Safe *if* you've actually verified there's free
+memory (`vm_stat` first). On a system where physical RAM is genuinely exhausted,
+this will crash macOS.
+
+**`launchctl` quirks.** macOS service management is a footgun farm: `launchctl
+unload` is deprecated; `bootout` sometimes returns I/O error from `gui/UID` but
+works from `user/UID`; `KeepAlive=true` respawns killed processes — you must
+remove the service from launchd, not just kill it. Lost an evening to this once.
+
+## When you'd consider doing this
+
+- You have a domain corpus where "relevant" means something specific (legal,
+  medical, security tickets, internal company docs) — generic English passage
+  retrieval doesn't capture your relevance signal.
+- You have an implicit relevance signal somewhere — clicks, links, analyst
+  references, ticket relationships, support-case "see also" — that you can mine.
+- A stock reranker is already in your pipeline and you've tuned chunking + top-k
+  and you're out of obvious wins.
+- You have a few thousand to a few tens-of-thousands of pairs — you don't need
+  millions.
 
 ## What surprised me
 
-[Pick 2-3 surprising findings from the fine-tune phase. E.g.: the smaller training set than
-expected was enough, hard-negative mining mattered more than dataset size, the fine-tuned
-model generalized to query phrasings outside the training distribution, etc.]
+> *[Need to fill in. Two or three of these from your own experience:
+> what you expected vs what actually moved the needle, anything that didn't
+> work, anything that worked better than you'd dared hope.]*
 
 ## What I'd do differently
 
-[Honest reflection. E.g.: I should have tried this earlier instead of tweaking embedding
-chunking for months. Or: the eval harness should have come first. Or: fine-tuning the
-embedding model would have been a more controversial bet.]
-
-## When you should consider doing this
-
-- You have a domain corpus where "relevant" means something specific (legal, medical,
-  security tickets, internal company docs).
-- You have an implicit relevance signal somewhere in your data (clicks, links, analyst
-  references, ticket relationships) that you can mine.
-- A stock reranker is already in your pipeline and you've tuned chunking + top-k and are
-  out of obvious wins.
-- You have a few hundred to a few thousand labeled pairs; you don't need millions.
-
-## Reproducing this
-
-[Link to the public repo if/when the training code is open-sourced. Otherwise describe the
-recipe in enough detail that a reader could build their own version.]
+> *[Need to fill in. Honest reflection — e.g. "I should have set up the eval
+> harness on day 1 instead of measuring vibes for two weeks" or "I almost used
+> random negatives — would have wasted a training run."]*
 
 ---
 
-*If you found this useful or you've tried fine-tuning your own reranker, I'd love to hear
-how it went — reach me on [LinkedIn](https://www.linkedin.com/in/vinay-vobbilichetty) or by
+*Reproducing this is doable in a couple of days if you have a domain corpus with
+implicit relevance signal. If you've tried this on your own data, or hit a snag I
+didn't, I'd love to hear how it went — reach me on
+[LinkedIn](https://www.linkedin.com/in/vinay-vobbilichetty) or by
 [email](mailto:vinayvobbilichetty11@gmail.com).*
