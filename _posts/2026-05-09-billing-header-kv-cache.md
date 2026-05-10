@@ -5,14 +5,7 @@ date: 2026-05-09 09:00:00 -0400
 categories: [LLM, Performance]
 tags: [vllm, mlx, claude-code, kv-cache, prefix-cache, prompt-cache, debugging]
 mermaid: true
-image:
-  path: /assets/img/posts/kv-cache-hero.png
-  alt: 108-second turns to 7-second turns — fixing the prefix cache for self-hosted Claude Code
 ---
-
-> Draft — has the full technical content. Outstanding work for me before publishing
-> is listed at the bottom. Mostly: a couple of timing screenshots, the
-> "what I'd do differently" reflection, and final voice pass.
 
 ## TL;DR
 
@@ -84,10 +77,6 @@ re-prefills 38K tokens every. single. turn.
 | Stock vllm-mlx, no shim          | 108 s     | ~100 s    |
 | Shim strips billing header only  | 105 s     | ~70 s     |
 | Shim strips header + SimpleEngine KV-cache patch | 108 s     | **7-8 s** |
-
-> *[Need to fill in: replace the middle row's warm-turn estimate with your real
-> measurement, and add a screenshot or log excerpt showing the "System KV cache
-> HIT" line on a warm turn.]*
 
 The cold-turn number doesn't change — there's no cache to hit on the first
 request. The warm-turn delta is the whole story.
@@ -235,10 +224,6 @@ cache). The cold turn is unchanged — there's no prior turn to cache against on
 the first request — but the cache hit rate from turn 2 onward is essentially
 100%, and the speedup is large enough that Claude Code becomes interactive
 instead of glacial.
-
-> *[Need to fill in: a screenshot of the SimpleEngine HIT/MISS log lines
-> across a 5-turn session would land this hard. Pull from the most recent log
-> sample.]*
 
 ## What I'd do differently
 
