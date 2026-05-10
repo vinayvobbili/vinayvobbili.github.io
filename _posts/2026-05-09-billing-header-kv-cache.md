@@ -67,11 +67,15 @@ End-to-end the architecture worked. Tool calling worked. Streaming worked. Outpu
 quality was fine. It was just *slow* — and slow in a way that didn't match how any
 of this is supposed to behave.
 
-For context: Claude Code's prompts are large. The system block alone is around
-38,000 tokens once you account for tool definitions and instructions. With a
-working prefix cache, only the new user message and the conversation tail need to
-be processed each turn — typically a few hundred tokens. Without one, the engine
-re-prefills 38K tokens every. single. turn.
+For context: Claude Code's prompts are large. Measured across captured requests
+on this setup, the cacheable prefix — Claude Code's system instructions plus the
+tool-definitions block — runs around **23,000 tokens** (≈5.6K system + ≈17.6K
+tools, for a 23-tool toolset). With a working prefix cache, only the new user
+message and the conversation tail need to be processed each turn — typically a
+few hundred tokens. Without one, the engine re-prefills ~23K tokens every.
+single. turn. On a 32K-context model, that leaves about 9K headroom for the
+conversation and output, which is fine — but only if you're not throwing away the
+prefix work each turn.
 
 ## What I expected vs what I observed
 
@@ -114,9 +118,9 @@ def _strip_billing_header(payload: dict) -> None:
     whose `cch` value rotates every turn. Anthropic's cloud uses it for billing
     tracking; local upstreams just see it as 81 bytes of system text. With our
     SimpleEngine prefix-KV cache, that rotating field changes the system-prefix
-    hash each turn → every turn is a cache miss → 200s prefill on a 38K-token
-    system block. Removing this block makes the system prefix byte-stable
-    turn-over-turn so the cache actually hits.
+    hash each turn → every turn is a cache miss → 100s+ prefill on the
+    ~23K-token system+tools prefix. Removing this block makes the system
+    prefix byte-stable turn-over-turn so the cache actually hits.
     """
     system = payload.get("system")
     if not isinstance(system, list):
