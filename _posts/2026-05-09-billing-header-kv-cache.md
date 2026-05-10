@@ -13,7 +13,7 @@ image:
 ## TL;DR
 
 I run [Claude Code](https://docs.anthropic.com/claude/docs/claude-code) against a
-self-hosted [vllm-mlx](https://github.com/willccbb/vllm-mlx) backend on a Mac
+self-hosted [vllm-mlx](https://github.com/waybarrios/vllm-mlx) backend on a Mac
 Studio. Cold turns took ~108 seconds. Follow-ups took *almost the same*, even
 though the system prompt was byte-stable and any LLM engine worth its salt should
 be caching the prefix.
@@ -280,7 +280,7 @@ All in the [security-ops-platform repo](https://github.com/vinayvobbili/security
 
 ## Credits
 
-[vllm-mlx PR #277](https://github.com/willccbb/vllm-mlx/pull/277) found the
+[vllm-mlx PR #277](https://github.com/waybarrios/vllm-mlx/pull/277) found the
 billing-header issue independently for the `/v1/messages` endpoint. If you're
 using vllm-mlx's native Anthropic adapter rather than your own shim, that's the
 right upstream fix. The SimpleEngine prefix-cache patch is mine; happy to upstream
