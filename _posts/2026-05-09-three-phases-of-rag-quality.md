@@ -5,14 +5,7 @@ date: 2026-05-09 09:00:00 -0400
 categories: [LLM, RAG]
 tags: [rag, reranker, fine-tuning, bge, sentence-transformers, security, xsoar]
 mermaid: true
-image:
-  path: /assets/img/posts/reranker-hero.png
-  alt: From 0.598 to 0.846 — fine-tuning a cross-encoder reranker on security-ticket pairs
 ---
-
-> Draft — has the full technical content. Outstanding work for me before publishing is
-> listed at the bottom. Most of it is light editing for voice + a couple of
-> reflection paragraphs only I can write.
 
 ## TL;DR
 
