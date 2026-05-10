@@ -5,6 +5,9 @@ date: 2026-05-09 09:00:00 -0400
 categories: [LLM, Performance]
 tags: [vllm, mlx, claude-code, kv-cache, prefix-cache, prompt-cache, debugging]
 mermaid: true
+image:
+  path: /assets/img/posts/kv-cache-hero.png
+  alt: "108-second turns to 7-second turns — fixing the prefix cache for self-hosted Claude Code"
 ---
 
 ## TL;DR

@@ -5,6 +5,9 @@ date: 2026-05-09 09:00:00 -0400
 categories: [LLM, RAG]
 tags: [rag, reranker, fine-tuning, bge, sentence-transformers, security, xsoar]
 mermaid: true
+image:
+  path: /assets/img/posts/reranker-hero.png
+  alt: "+41% MRR@10 uplift — fine-tuning a cross-encoder reranker on security-ticket pairs"
 ---
 
 ## TL;DR
