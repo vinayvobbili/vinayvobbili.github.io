@@ -50,6 +50,7 @@ A Hugging Face chat template is a Jinja2 file that takes a list of messages and 
 
 Several Llama 3+ derivatives use a pattern like:
 
+{% raw %}
 ```jinja
 {% set last_query_index = messages | length - 1 %}
 {% for message in messages %}
@@ -60,6 +61,7 @@ Several Llama 3+ derivatives use a pattern like:
     {% endif %}
 {% endfor %}
 ```
+{% endraw %}
 
 The intent is reasonable: emit a special marker on the most recent user message so the model knows where to start answering. The problem: when a new turn arrives, `last_query_index` moves forward. The message that *was* the last query is now rendered without the marker, and the message that's newly last gets the marker added.
 
@@ -69,6 +71,7 @@ Net effect: the byte at position N where the old marker used to be is now plain 
 
 Even templates that don't use an explicit `last_query_index` can have the same problem more subtly. Watch for:
 
+{% raw %}
 ```jinja
 {% for message in messages %}
     {{ "<|im_start|>" + message.role + "\n" + message.content }}
@@ -81,6 +84,7 @@ Even templates that don't use an explicit `last_query_index` can have the same p
     <|im_start|>assistant
 {% endif %}
 ```
+{% endraw %}
 
 On turn N, the last message's `<|im_end|>` is gated by `add_generation_prompt`. On turn N+1, that message is no longer the last — `loop.last` is now false for it, so `<|im_end|>` is emitted in the loop body instead of by the trailing block.
 
@@ -92,11 +96,13 @@ The honest answer is: not every `loop.last` use is a problem. Some converge. The
 
 Thinking-mode models (Qwen3 with `enable_thinking`, DeepSeek-R1, GLM-4.7-Flash variants) inject or strip `<think>...</think>` blocks on assistant turns. The injection often happens on the *current* generation only:
 
+{% raw %}
 ```jinja
 {% if enable_thinking and message.role == "assistant" and loop.last %}
     {{ "<think>\n" }}
 {% endif %}
 ```
+{% endraw %}
 
 When turn N+1 arrives, the previous assistant message is no longer `loop.last`, so its `<think>` opener disappears from the render. Or worse: a template that strips `<think>` blocks from prior turns to save context budget rewrites the assistant's completed text retroactively.
 
