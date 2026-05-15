@@ -10,6 +10,14 @@ image:
   alt: "108-second turns to 7-second turns — fixing the prefix cache for self-hosted Claude Code"
 ---
 
+> **Update (2026-05-14).** The SimpleEngine prefix-cache patch described in
+> Finding #2 is now upstream as
+> [vllm-mlx PR #523](https://github.com/waybarrios/vllm-mlx/pull/523), merged.
+> If you're on a recent vllm-mlx build, the fix is already there — no local
+> patching required. The walk-through below is still useful for understanding
+> what the patch does and why it was needed.
+{: .prompt-info }
+
 ## TL;DR
 
 I run [Claude Code](https://docs.anthropic.com/claude/docs/claude-code) against a
@@ -217,11 +225,13 @@ A few design choices that mattered:
   reason, log a warning and fall back to the original `stream_generate`. Don't
   let a perf optimization take down generation.
 
-The full patch is ~170 lines and lives at
-`deployment/vllm_mlx_patches/system_kv_cache_for_simple_engine.patch` in the
-[security-ops-platform repo](https://github.com/vinayvobbili/security-ops-platform),
-along with an idempotent `apply.sh` that re-applies the patch after a vllm-mlx
-upgrade.
+The full patch is upstream as
+[vllm-mlx PR #523](https://github.com/waybarrios/vllm-mlx/pull/523). Review
+hardened the original cut: closure-local capture at the gate to close a
+TOCTOU race against the snapshot pointer, and an init-time probe that disables
+the cache for sliding-window models whose `RotatingKVCache` aliases buffers the
+engine mutates in place. The merged code is the right reference to read if
+you're curious about the cache mechanics.
 
 ## The numbers
 
@@ -269,26 +279,30 @@ handles the billing header and prefix caching transparently.
 
 ## Reproducing this
 
-The patches are short and worth reading even if you don't use them as-is:
+The two pieces that make the speedup happen:
 
-- `deployment/claude_router_shim.py` — the FastAPI shim. The
-  `_strip_billing_header` function is the relevant ~15 lines; the rest is
-  routing, auth, and tool-call buffering for the Coder alias.
-- `deployment/vllm_mlx_patches/apply.sh` — idempotent patch installer (re-run
-  after every vllm-mlx upgrade).
-- `deployment/vllm_mlx_patches/system_kv_cache_for_simple_engine.patch` — the
-  ~170-line SimpleEngine patch. Adds the cache state to `__init__`, the cache-aware
-  generation path, and the safe fallback.
-
-All in the [security-ops-platform repo](https://github.com/vinayvobbili/security-ops-platform).
+- **Billing-header strip** — about 15 lines of FastAPI shim code that filter the
+  rotating `x-anthropic-billing-header` block out of the system list before the
+  payload reaches vllm-mlx. Identical logic to what
+  [vllm-mlx PR #277](https://github.com/waybarrios/vllm-mlx/pull/277) does
+  natively on the `/v1/messages` adapter; you only need a shim if you're not on
+  that path.
+- **SimpleEngine prefix-cache** — now upstream as
+  [vllm-mlx PR #523](https://github.com/waybarrios/vllm-mlx/pull/523). Read the
+  merged code if you want the cache mechanics; the load-bearing logic is the
+  hash check, the snapshot capture on miss, and the safe fallback when the
+  detection fails.
 
 ## Credits
 
 [vllm-mlx PR #277](https://github.com/waybarrios/vllm-mlx/pull/277) found the
 billing-header issue independently for the `/v1/messages` endpoint. If you're
 using vllm-mlx's native Anthropic adapter rather than your own shim, that's the
-right upstream fix. The SimpleEngine prefix-cache patch is mine; happy to upstream
-if there's interest.
+right upstream fix. The SimpleEngine prefix-cache patch landed in
+[vllm-mlx PR #523](https://github.com/waybarrios/vllm-mlx/pull/523) — thanks to
+the maintainers for the review, which improved the patch in two specific ways
+(closure-local capture against a TOCTOU on the snapshot pointer, and a
+sliding-window guard for `RotatingKVCache`).
 
 ---
 
