@@ -159,16 +159,25 @@ wasn't engaging at all, or it was engaging only partially. Onward.
 
 ## Finding #2: SimpleEngine wasn't actually caching the prefix
 
-vllm-mlx has two server paths: the full vLLM core and a lightweight `SimpleEngine`.
-SimpleEngine is the one I was using. Profiling showed prefill running across the
-full system + tool prefix on every turn, even after the billing header was gone.
-The cache hit rate was effectively zero.
+vllm-mlx ships two engines — both MLX-native, neither is upstream vLLM's
+PagedAttention/CUDA core (which doesn't run on Apple Silicon at all).
+`engine/simple.py` is *"Simple engine for maximum single-user throughput.
+Wraps mlx-lm directly with zero overhead for optimal performance when serving
+a single user at a time."* `engine/batched.py` is *"Batched engine for
+continuous batching with multiple concurrent users."* For a single-user
+Claude Code session, SimpleEngine is the right pick — no scheduler, no
+batching wait, direct access to mlx-lm's prompt cache. BatchedEngine wins
+when multiple users hit the same backend concurrently.
+
+SimpleEngine was what I was using. Profiling showed prefill running across the
+full system + tool prefix on every turn, even after the billing header was
+gone. The cache hit rate was effectively zero.
 
 The reason: SimpleEngine's request handler doesn't carry KV state from the
 previous request to the next. Each request gets a fresh prompt cache via
-`make_prompt_cache(model)` and prefills the whole prompt from scratch. The
-"prefix cache" you might be picturing — the kind that lives across requests —
-isn't wired into SimpleEngine the same way it's wired into vLLM's core.
+`make_prompt_cache(model)` and prefills the whole prompt from scratch. There's
+no across-requests cache to hit — the prefix cache lives only inside a single
+request.
 
 The fix was a small patch: add a **single-slot, hash-keyed system-prefix KV
 cache** to SimpleEngine. Detect the system prefix using the ChatML markers that
