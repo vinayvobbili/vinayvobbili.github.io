@@ -5,6 +5,9 @@ date: 2026-05-14 09:00:00 -0400
 categories: [LLM, Performance]
 tags: [llm, prompt-cache, prefix-cache, kv-cache, jinja2, chat-template, vllm, mlx, qwen]
 mermaid: true
+image:
+  path: /assets/img/posts/template-check-hero.png
+  alt: "3 patterns — Jinja2 chat-template traps that silently kill your prefix-KV cache"
 ---
 
 ## TL;DR
