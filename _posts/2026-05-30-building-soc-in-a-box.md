@@ -1,7 +1,7 @@
 ---
 title: "SOC-in-a-Box: One LLM, Eight Hats, A Production-Bar AI SOC on a Single GPU"
 description: An AVP-sponsored multi-agent SOC where one local LLM plays Sentinel, Tier 2, IR Lead, Threat Intel, SOC Manager, Detection Engineer, and Threat Hunter — coordinated over a Redis Streams bus with a human-in-the-loop approval gate before any real-system action. The framework choices, the architectural trade-offs, and the backtest harness that lets us put real numbers on agent quality before going live.
-date: 2026-05-24 09:00:00 -0400
+date: 2026-05-30 09:00:00 -0400
 categories: [Security, LLM]
 tags: [soc, ai-agents, langgraph, redis-streams, multi-agent, hitl, crewai, autogen, security-automation, vllm, mlx]
 mermaid: true
@@ -196,7 +196,7 @@ TN  human closed     AND  Tier 2 closed
 
 Precision and recall on TP/FP/FN give us the numbers leadership wants — *"how often does the AI escalate when humans actually would, and how often does it cry wolf?"* The summary lands in a JSON file that the dashboard panel reads, so the question gets a number, not a vibe.
 
-The harness also has a `--dry-run` mode that swaps the LLM for a canned-JSON stub, so we can validate the plumbing end-to-end in under 2 seconds without burning a single token. That mode is what shipped in commit `e597e163`; the real-LLM run is scheduled for next week before the demo.
+The harness also has a `--dry-run` mode that swaps the LLM for a canned-JSON stub, so we can validate the plumbing end-to-end in under 2 seconds without burning a single token — and that same harness drives the real-LLM run against a full stratified sample when we want actual agreement numbers rather than a smoke test.
 
 ## What surprised us
 
