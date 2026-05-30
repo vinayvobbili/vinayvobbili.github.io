@@ -108,7 +108,10 @@ The split is the point: **LangGraph is the agent runtime, the bus is the org cha
 
 ## One LLM, many hats
 
-We run **one** local LLM — GLM-4.7-Flash 8-bit on a Mac M1 (64 GB) via [vllm-mlx](https://github.com/waybarrios/vllm-mlx) — and every role calls it with a different system prompt and a different tool whitelist. There's a `FailoverChatModel` (described in an [earlier post](/posts/billing-header-kv-cache/)) that falls back to a Qwen3 backup on a studio1 box if the m1 dies.
+We run **one** local LLM — GLM-4.7-Flash 8-bit on a Mac M1 (64 GB) via [vllm-mlx](https://github.com/waybarrios/vllm-mlx) — and every role calls it with a different system prompt and a different tool whitelist. The resilience comes from a `FailoverChatModel` (first described in an [earlier post](/posts/billing-header-kv-cache/)) that transparently falls back to a Qwen3 backup on a studio1 box if the m1 dies, and flips back the moment the primary recovers.
+
+> **📦 New — we open-sourced it.** That `FailoverChatModel` is now a standalone, dependency-light package on PyPI: [`langchain-failover`](https://pypi.org/project/langchain-failover/). `pip install langchain-failover`, point it at two chat models, and you get the same primary/secondary failover that keeps this SOC's brain online when a GPU box drops off — connection-aware (it walks the exception's cause chain), recovery-aware (logs the flip back), and mid-stream-safe. The non-obvious part it gets right: **tool-calling survives the failover** — it binds your tools on *both* legs, so an agent mid-investigation doesn't lose its tools the instant it fails over. That's exactly what a SOC role needs at 3 AM. Source, tests, and docs: [github.com/vinayvobbili/langchain-failover](https://github.com/vinayvobbili/langchain-failover). 🚀
+{: .prompt-tip }
 
 Why not multiple model providers per role?
 
