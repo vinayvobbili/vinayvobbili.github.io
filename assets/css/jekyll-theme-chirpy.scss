@@ -49,6 +49,8 @@ code, pre, kbd, samp,
 /* Mirrors Chirpy's _sass/base/_base.scss scoping so these win the cascade.  */
 
 @mixin brand-light {
+  --main-bg: #f4f6f9; /* soft off-white instead of stark white */
+  --main-border-color: #e7ebf1;
   --link-color: #{$brand-blue};
   --link-underline-color: #{rgba($brand-blue, 0.35)};
   --heading-color: #10203b;
