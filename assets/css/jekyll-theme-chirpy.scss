@@ -1,0 +1,446 @@
+---
+---
+
+/* prettier-ignore */
+@use 'main
+{%- if jekyll.environment == 'production' -%}
+  .bundle
+{%- endif -%}
+';
+
+/* ==========================================================================
+   Custom brand theme — bold blue→green gradient identity
+   Brand anchors: blue #0046AD · green #00A651 · 135° blue→green workhorse
+   ========================================================================== */
+
+$brand-blue: #0046ad;
+$brand-mid: #0077c8;
+$brand-green: #00a651;
+$brand-grad: linear-gradient(135deg, #0046ad 0%, #0077c8 48%, #00a651 100%);
+$brand-grad-soft: linear-gradient(135deg, #0046ad22 0%, #00a65122 100%);
+
+/* ---- Fonts -------------------------------------------------------------- */
+:root {
+  --font-heading: 'Space Grotesk', 'Lato', 'Microsoft Yahei', sans-serif;
+  --font-body: 'Inter', 'Source Sans Pro', 'Microsoft Yahei', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', menlo, consolas, monospace;
+}
+
+body {
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, h5, h6,
+.card-title,
+#site-title,
+.post-title,
+.home-hero__title {
+  font-family: var(--font-heading);
+  letter-spacing: -0.015em;
+}
+
+code, pre, kbd, samp,
+.highlight,
+.highlighter-rouge {
+  font-family: var(--font-mono);
+}
+
+/* ---- Brand color-scheme overrides -------------------------------------- */
+/* Mirrors Chirpy's _sass/base/_base.scss scoping so these win the cascade.  */
+
+@mixin brand-light {
+  --link-color: #{$brand-blue};
+  --link-underline-color: #{rgba($brand-blue, 0.35)};
+  --heading-color: #10203b;
+  --text-color: #2c3440;
+  --card-hover-bg: #{rgba($brand-blue, 0.05)};
+  --card-shadow: #{rgba($brand-blue, 0.08)} 0 4px 16px 0,
+    #{rgba($brand-green, 0.07)} 0 0 0 1px;
+  --tag-hover: #{rgba($brand-blue, 0.12)};
+  --toc-highlight: #{$brand-blue};
+  --btn-share-hover-color: #{$brand-blue};
+  --checkbox-checked-color: #{$brand-green};
+  --prompt-tip-icon-color: #{$brand-green};
+  --prompt-info-icon-color: #{$brand-blue};
+
+  /* sidebar sits on the brand gradient → light-on-dark */
+  --site-title-color: #ffffff;
+  --site-subtitle-color: #{rgba(#fff, 0.88)};
+  --sidebar-muted-color: #{rgba(#fff, 0.82)};
+  --sidebar-active-color: #ffffff;
+  --sidebar-hover-bg: #{rgba(#fff, 0.16)};
+  --sidebar-btn-bg: #{rgba(#fff, 0.18)};
+  --sidebar-btn-color: #ffffff;
+  --avatar-border-color: #{rgba(#fff, 0.7)};
+}
+
+@mixin brand-dark {
+  --main-bg: #0d1117;
+  --main-border-color: #1c2330;
+  --text-color: #c4ccd6;
+  --heading-color: #eaf1fb;
+  --card-bg: #161b22;
+  --card-hover-bg: #{rgba($brand-mid, 0.14)};
+  --card-shadow: rgb(0 0 0 / 35%) 0 6px 18px 0,
+    #{rgba($brand-mid, 0.18)} 0 0 0 1px;
+  --link-color: #5aa2ff;
+  --link-underline-color: #{rgba(#5aa2ff, 0.4)};
+  --tag-hover: #{rgba($brand-mid, 0.28)};
+  --toc-highlight: #5aa2ff;
+  --checkbox-checked-color: #{$brand-green};
+  --prompt-tip-icon-color: #{$brand-green};
+  --prompt-info-icon-color: #5aa2ff;
+
+  /* sidebar sits on the brand gradient → light-on-dark */
+  --site-title-color: #ffffff;
+  --site-subtitle-color: #{rgba(#fff, 0.85)};
+  --sidebar-muted-color: #{rgba(#fff, 0.78)};
+  --sidebar-active-color: #ffffff;
+  --sidebar-hover-bg: #{rgba(#fff, 0.14)};
+  --sidebar-btn-bg: #{rgba(#fff, 0.16)};
+  --sidebar-btn-color: #ffffff;
+  --avatar-border-color: #{rgba(#fff, 0.55)};
+}
+
+html {
+  @media (prefers-color-scheme: light) {
+    &:not([data-mode]),
+    &[data-mode='light'] {
+      @include brand-light;
+    }
+
+    &[data-mode='dark'] {
+      @include brand-dark;
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    &:not([data-mode]),
+    &[data-mode='dark'] {
+      @include brand-dark;
+    }
+
+    &[data-mode='light'] {
+      @include brand-light;
+    }
+  }
+}
+
+/* ---- Thick multi-stop brand scrollbar ---------------------------------- */
+html {
+  scrollbar-width: auto;
+  scrollbar-color: #{$brand-mid} var(--main-bg);
+
+  &::-webkit-scrollbar {
+    width: 16px;
+    height: 16px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--main-bg);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #0046ad, #0077c8 50%, #00a651);
+    border: 4px solid var(--main-bg);
+    border-radius: 999px;
+    background-clip: padding-box;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #003a8f, #0066ad 50%, #008f45);
+    border: 4px solid var(--main-bg);
+    background-clip: padding-box;
+  }
+}
+
+/* ---- Sidebar: brand gradient ------------------------------------------- */
+#sidebar {
+  background: $brand-grad !important;
+  border-right: 0;
+
+  .site-title a {
+    color: #fff;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.18);
+  }
+
+  .site-subtitle {
+    color: rgba(#fff, 0.85);
+  }
+
+  .nav-link {
+    color: rgba(#fff, 0.82);
+    border-radius: 9px;
+    transition: background 0.18s ease, color 0.18s ease;
+
+    &:hover {
+      background: rgba(#fff, 0.16);
+      color: #fff;
+    }
+  }
+
+  .nav-item.active .nav-link,
+  li.active .nav-link {
+    color: #fff;
+    background: rgba(#fff, 0.22);
+    font-weight: 600;
+    box-shadow: inset 0 0 0 1px rgba(#fff, 0.25);
+  }
+
+  #avatar {
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+  }
+
+  .sidebar-bottom {
+    a,
+    .mode-toggle,
+    .icon-border {
+      color: rgba(#fff, 0.92) !important;
+    }
+
+    a:hover,
+    .mode-toggle:hover {
+      color: #fff !important;
+    }
+  }
+}
+
+/* ---- Mobile topbar: brand gradient ------------------------------------- */
+#topbar-wrapper {
+  background: $brand-grad !important;
+  box-shadow: 0 2px 14px rgba(0, 70, 173, 0.25);
+
+  #breadcrumb,
+  #breadcrumb a,
+  .topbar-title,
+  #sidebar-trigger,
+  #search-trigger {
+    color: #fff !important;
+  }
+}
+
+/* ---- Home hero --------------------------------------------------------- */
+.home-hero {
+  position: relative;
+  margin-bottom: 2.25rem;
+  padding: clamp(1.75rem, 4vw, 3.25rem);
+  border-radius: 20px;
+  color: #fff;
+  background: $brand-grad;
+  box-shadow: 0 20px 55px rgba(0, 70, 173, 0.28);
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 85% 15%, rgba(#fff, 0.28), transparent 42%),
+      radial-gradient(circle at 10% 95%, rgba(#00ffb3, 0.22), transparent 45%);
+    pointer-events: none;
+  }
+
+  &__inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  &__eyebrow {
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    color: rgba(#fff, 0.92);
+  }
+
+  &__title {
+    margin: 0 0 0.85rem;
+    font-size: clamp(1.9rem, 4.6vw, 3.1rem);
+    font-weight: 700;
+    line-height: 1.08;
+    color: #fff;
+
+    span {
+      background: linear-gradient(90deg, #ffffff 0%, #c8ffe6 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
+  }
+
+  &__subtitle {
+    max-width: 46rem;
+    margin: 0;
+    font-size: clamp(1rem, 1.6vw, 1.18rem);
+    line-height: 1.55;
+    color: rgba(#fff, 0.95);
+  }
+
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1.35rem 0 1.5rem;
+  }
+
+  &__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+}
+
+.chip {
+  padding: 0.36rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #fff;
+  background: rgba(#fff, 0.15);
+  border: 1px solid rgba(#fff, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+.btn-brand,
+.btn-ghost {
+  display: inline-block;
+  padding: 0.58rem 1.25rem;
+  border-radius: 11px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none !important;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+
+.btn-brand {
+  color: #0046ad !important;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+  }
+}
+
+.btn-ghost {
+  color: #fff !important;
+  background: rgba(#fff, 0.12);
+  border: 1px solid rgba(#fff, 0.4);
+
+  &:hover {
+    transform: translateY(-2px);
+    background: rgba(#fff, 0.22);
+  }
+}
+
+/* ---- Post-list cards --------------------------------------------------- */
+#post-list {
+  margin-top: 0;
+
+  .card-wrapper {
+    margin-bottom: 1.3rem;
+  }
+
+  .post-preview {
+    position: relative;
+    border-radius: 15px !important;
+    overflow: hidden;
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+
+    /* brand accent rail */
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 5px;
+      background: $brand-grad;
+      z-index: 2;
+    }
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 36px rgba(0, 70, 173, 0.18);
+    }
+  }
+
+  .card-title {
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .categories {
+    font-weight: 600;
+    color: var(--link-color);
+  }
+}
+
+/* ---- Reading experience (post / page) ---------------------------------- */
+.post .post-title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.content {
+  h2,
+  h3 {
+    position: relative;
+    padding-left: 0.85rem;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.18em;
+      bottom: 0.18em;
+      width: 5px;
+      border-radius: 3px;
+      background: $brand-grad;
+    }
+  }
+
+  h3::before {
+    width: 4px;
+    opacity: 0.7;
+  }
+
+  blockquote {
+    border-left-color: $brand-green;
+  }
+
+  a {
+    text-underline-offset: 3px;
+  }
+
+  /* inline code with a subtle brand tint */
+  code:not([class*='language-']) {
+    color: $brand-blue;
+  }
+}
+
+html[data-mode='dark'] .content code:not([class*='language-']) {
+  color: #7ab8ff;
+}
+
+/* ---- Tags / share / misc accents --------------------------------------- */
+.post-tag {
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+#tags .tag.scale,
+.tag a {
+  &:hover {
+    color: #fff;
+  }
+}
+
+/* gradient accent under the page/section H1 on archives, categories, tags */
+%brand-underline {
+  border-bottom: 3px solid transparent;
+  border-image: $brand-grad 1;
+}
