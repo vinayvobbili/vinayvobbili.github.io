@@ -10,6 +10,9 @@ tags: [detection-engineering, sigma, cortex-xql, siem, detection-as-code, securi
 mermaid: true
 ---
 
+> **Update (v0.2):** detflow now goes the *other* direction too — paste a threat report and get back ATT&CK mappings, generated Sigma/YARA/Suricata, and STIX/Navigator/brief exports. See [detflow Goes Both Ways: From a Threat Report to a Detection Package](/posts/detflow-threat-report-to-detection-package/).
+{: .prompt-tip }
+
 ## TL;DR 🚀
 
 I shipped [**detflow**](https://pypi.org/project/detflow/) to PyPI — an open-source, **vendor-neutral detection-engineering copilot**. It does the four things I found myself re-implementing inside every detection-as-code workflow: **draft** a detection from plain English (as **Sigma** or **Cortex XSIAM XQL**), **lint** it offline, **find overlaps** against the rules you already run, and **review** it like a senior detection engineer. 🛡️
