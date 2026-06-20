@@ -213,6 +213,8 @@ Three things, in order of how much they changed the design:
 
 The full module lives at [`src/components/soc_in_box/`](https://github.com/vinayvobbili/security-ops-platform) — agents, schemas, bus wrapper, verdict store, HITL store, web routes, systemd units, README.
 
+> **📦 New — we open-sourced the kernel.** The reusable heart of this — the event contract, the bus, case memory, and the role-agent framework — is now a standalone, vendor-neutral package on PyPI: [`aisoc`](https://pypi.org/project/aisoc/). `pip install "aisoc[agent]"`, bring your own LLM, alert source, and tools, and you get the same event-sourced multi-agent SOC this post describes: a stdlib-only in-memory bus (or Redis Streams for the durable path), a role team that works a case over the shared log, memory as a read model, human-in-the-loop gating, and a replayable audit you can backtest against. The non-obvious part it gets right: three **injection seams** — chat model, alert source, tools — mean nothing in the kernel knows about any one vendor. The SOC-in-a-Box you just read about is literally *this package* with my environment plugged into those seams. Source, tests, and runnable examples ship in the package. 🚀
+
 What's not in v1 and what we'll work on next:
 
 - **HITL v2 executor.** Real write path — consume `action.decision[approved]` events, call CrowdStrike RTR / Tanium / Zscaler via MCP, log the result back on the bus. The hard parts (audit, approval, identity) are done; only the executor itself is missing.
