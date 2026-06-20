@@ -1,7 +1,7 @@
 ---
 title: "Giving an AI SOC a Memory: Precedent, Proof, and the Campaigns No Analyst Sees"
 image:
-  path: /assets/img/posts/soc-in-a-box-hero.png
+  path: /assets/img/posts/soc-in-a-box-memory-hero.png
   alt: "An event-sourced case memory that lets a multi-agent SOC recall prior cases, score its own accuracy, and cluster cross-incident campaigns"
 description: The first version of our AI SOC had eight roles and zero memory — every alert started from scratch. This post adds the layer that makes a SOC senior instead of just fast: an event-sourced case memory. Agents recall similar prior cases as precedent, every verdict is scored against ground truth so we can prove whether the agents are actually right, any past decision can be interrogated from the recorded trace instead of a hallucinated rationale, and cross-incident campaigns surface that no single analyst working one ticket would ever see. Plus the honest part — we flag-gated precedent so we can A/B whether memory actually helps.
 date: 2026-06-20 09:00:00 -0400
