@@ -49,15 +49,15 @@ So the memory layer is small and boring on purpose: an indexer that folds the au
 ```mermaid
 flowchart LR
     subgraph Log["Event log (already existed in v1)"]
-        V[verdicts.sqlite<br/>role · reason · evidence · confidence]
-        H[hitl.sqlite<br/>who approved · why]
-        A[soc.audit stream<br/>every event, replayable]
+        V["verdicts.sqlite<br/>role, reason, evidence, confidence"]
+        H["hitl.sqlite<br/>who approved, why"]
+        A["soc.audit stream<br/>every event, replayable"]
     end
-    Log --> IDX[Case index<br/>case_memory.sqlite]
-    IDX --> R1[recall_similar<br/>precedent for an agent]
-    IDX --> R2[compute_trends<br/>accuracy + cost rollup]
-    IDX --> R3[get_case_reasoning<br/>one case's full trace]
-    IDX --> R4[find_campaign_clusters<br/>cross-incident infra]
+    Log --> IDX["Case index<br/>case_memory.sqlite"]
+    IDX --> R1["recall_similar<br/>precedent for an agent"]
+    IDX --> R2["compute_trends<br/>accuracy and cost rollup"]
+    IDX --> R3["get_case_reasoning<br/>full trace for one case"]
+    IDX --> R4["find_campaign_clusters<br/>cross-incident infra"]
     style Log fill:#1e3a8a,color:#fff
     style IDX fill:#7c2d12,color:#fff
 ```
@@ -96,15 +96,15 @@ So Case Interrogation is built on a hard split:
 
 ```mermaid
 sequenceDiagram
-    participant User as "Why did IR Lead<br/>contain host X on 41872?"
-    participant Mem as Case memory (deterministic)
-    participant LLM as Narrator LLM (grounded)
+    participant User as Leadership question<br/>(why contain host X on 41872?)
+    participant Mem as Case memory<br/>(deterministic)
+    participant LLM as Narrator LLM<br/>(grounded)
     User->>Mem: get_case_reasoning(41872)
-    Mem-->>User: Recorded trace — verdicts,<br/>evidence, HITL decision, timeline
-    Note over Mem: Web panel stops here:<br/>pure render, no model
-    User->>LLM: trace + "answer ONLY from this record"
-    LLM-->>User: "The IR Lead proposed containment<br/>because [recorded reason]; approved by<br/>[recorded approver] at [recorded time]"
-    Note over LLM: Cannot invent a reason<br/>that isn't in the trace
+    Mem-->>User: Recorded trace, verdicts,<br/>evidence, HITL decision, timeline
+    Note over Mem: Web panel stops here,<br/>pure render, no model
+    User->>LLM: trace plus rule, answer ONLY from this record
+    LLM-->>User: Containment reason cited from the trace,<br/>with approver and time
+    Note over LLM: Cannot invent a reason<br/>that is not in the trace
 ```
 
 The principle generalizes well beyond a SOC: **an agent explaining its own past behavior must never be allowed to sound smarter than it actually was.** Separate the retrieval of what happened (must be exact) from the explanation of it (may be fluent, must be grounded). Conflate them and your "explainability" feature is a confabulation engine.
