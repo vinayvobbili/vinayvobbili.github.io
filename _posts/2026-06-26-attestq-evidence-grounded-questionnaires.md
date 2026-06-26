@@ -45,11 +45,11 @@ attestq retrieves first, scores the best-matching evidence, and **if that score 
 flowchart LR
     Q([question]) --> EMB[embed question]
     EMB --> RET[retrieve top-k<br/>from evidence store]
-    RET --> GATE{best score ≥<br/>min_confidence?}
-    GATE -->|no| INS[["insufficient evidence"<br/>NO LLM call · valid result"]]
-    GATE -->|yes| RR[rerank → wide window]
-    RR --> LLM[LLM drafts a cited answer]
-    LLM --> ANS([Answer:<br/>determination · citations · confidence])
+    RET --> GATE{best score above<br/>min_confidence?}
+    GATE -->|no| INS[insufficient evidence<br/>NO LLM call]
+    GATE -->|yes| RR[rerank<br/>wide window]
+    RR --> LLM[LLM drafts a<br/>cited answer]
+    LLM --> ANS([determination +<br/>citations + confidence])
 ```
 
 The gate keys on the **retrieval** score — the raw cosine similarity from your embedder, before reranking — so the threshold stays calibrated to a stable scale no matter what reranker you bolt on. (A cross-encoder reorders relevance; it doesn't produce a comparable absolute confidence. Gating on the retrieval score keeps your one tuned number, `min_confidence`, meaningful.)
