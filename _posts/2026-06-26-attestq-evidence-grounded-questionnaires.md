@@ -16,9 +16,9 @@ I shipped [**attestq**](https://pypi.org/project/attestq/) to PyPI — a small, 
 
 <table>
 <tr>
-<td align="center" width="33%"><h2>0 deps</h2><sub>the core is pure-stdlib — bring your own model, embedder, and store as plain callables; adapters are opt-in <code>pip</code> extras</sub></td>
-<td align="center" width="33%"><h2>1 gate</h2><sub>when the best evidence scores below threshold, the answer is <em>"insufficient evidence"</em> — <strong>with no LLM call at all</strong></sub></td>
-<td align="center" width="33%"><h2>2 tools</h2><sub>already extracted from two production systems — a vendor due-diligence assistant and a customer-assurance drafter — now both run on the same public kernel</sub></td>
+<td align="center" width="33%"><h2>0 deps</h2><sub>pure-stdlib core — bring your own model, embedder, store</sub></td>
+<td align="center" width="33%"><h2>1 gate</h2><sub>weak evidence &rarr; <em>insufficient evidence</em>, no LLM call</sub></td>
+<td align="center" width="33%"><h2>2 tools</h2><sub>extracted from two production systems, now one kernel</sub></td>
 </tr>
 </table>
 
