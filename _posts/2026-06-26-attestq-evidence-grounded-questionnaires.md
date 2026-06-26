@@ -22,6 +22,9 @@ I shipped [**attestq**](https://pypi.org/project/attestq/) to PyPI — a small, 
 </tr>
 </table>
 
+> ▶ **[Open the interactive version →](/attestq/)** — a full-bleed page where you can drag the retrieval score across the confidence threshold and watch the kernel flip between a cited answer and "insufficient evidence."
+{: .prompt-tip }
+
 This is the GRC sibling of my earlier OSS work — [iocflow](/posts/iocflow-agentic-ioc-lifecycle/) for the IOC lifecycle and [detflow](/posts/detflow-detection-engineering-copilot/) for detection engineering. Same instinct: a pattern kept getting hand-rolled inside production tools, so I pulled the durable part out, made it boring and testable, and put it on PyPI. 🧰
 
 ## The failure mode nobody talks about

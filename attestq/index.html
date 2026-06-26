@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>document.documentElement.classList.add('js')</script>
+<title>attestq — answer security questionnaires from your own evidence</title>
+<meta name="description" content="A model-agnostic RAG kernel that drafts cited answers to security questionnaires from your own evidence — and refuses to guess when the evidence isn't there.">
+<meta property="og:title" content="attestq — evidence-grounded questionnaire answering">
+<meta property="og:description" content="When the best evidence scores below threshold, the answer is 'insufficient evidence' — with no LLM call at all.">
+<meta property="og:image" content="https://vinayvobbili.github.io/assets/img/posts/attestq-hero.png">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#0046ad; --blue-l:#0077c8; --green:#00a651; --green-l:#19c46a;
+  --amber:#ffd66e;
+  --bg:#070b16; --bg2:#0b1120; --surface:#0f1626; --surface2:#141d31;
+  --line:#1f2a44; --line2:#2a3856;
+  --ink:#eaf0fa; --muted:#9aa9c4; --muted2:#6b7a96;
+  --grad:linear-gradient(135deg,#0046ad 0%,#0077c8 48%,#00a651 100%);
+  --grad-soft:linear-gradient(135deg,#0046ad22 0%,#00a65122 100%);
+  --display:'Space Grotesk',system-ui,sans-serif;
+  --body:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --r:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--body);
+  line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+.mono{font-family:var(--mono)}
+.grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* progress + nav */
+#bar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--grad);z-index:60;transition:width .1s linear}
+nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(12px);
+  background:rgba(7,11,22,.6);border-bottom:1px solid transparent;transition:border-color .3s,background .3s}
+nav.scrolled{border-bottom:1px solid var(--line);background:rgba(7,11,22,.82)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
+nav .logo{font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.02em}
+nav .links{display:flex;gap:22px;align-items:center;font-size:14px;font-weight:500}
+nav .links a{color:var(--muted);transition:color .2s}
+nav .links a:hover{color:var(--ink)}
+nav .links .cta{padding:7px 16px;border-radius:999px;background:var(--grad);color:#fff;font-weight:600}
+@media(max-width:640px){nav .links a.hide-sm{display:none}}
+
+/* hero */
+header.hero{position:relative;min-height:100vh;display:flex;align-items:center;
+  overflow:hidden;border-bottom:1px solid var(--line)}
+.mesh{position:absolute;inset:0;z-index:0}
+.blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55;will-change:transform}
+.blob.b1{width:560px;height:560px;background:var(--blue);top:-140px;left:-120px;animation:float1 18s ease-in-out infinite}
+.blob.b2{width:520px;height:520px;background:var(--green);bottom:-160px;right:-100px;animation:float2 22s ease-in-out infinite}
+.blob.b3{width:420px;height:420px;background:var(--blue-l);top:30%;right:18%;opacity:.32;animation:float1 26s ease-in-out infinite reverse}
+@keyframes float1{0%,100%{transform:translate(0,0)}50%{transform:translate(60px,40px)}}
+@keyframes float2{0%,100%{transform:translate(0,0)}50%{transform:translate(-50px,-50px)}}
+.grid-ov{position:absolute;inset:0;z-index:1;opacity:.4;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:54px 54px;mask-image:radial-gradient(ellipse 80% 70% at 50% 40%,#000 30%,transparent 75%)}
+.hero .wrap{position:relative;z-index:2;padding-top:80px;padding-bottom:60px}
+.tag{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:600;
+  color:var(--muted);border:1px solid var(--line2);background:var(--surface);
+  padding:7px 15px;border-radius:999px;margin-bottom:26px}
+.tag .dot{width:7px;height:7px;border-radius:50%;background:var(--green-l);box-shadow:0 0 10px var(--green-l)}
+h1.title{font-family:var(--display);font-weight:700;font-size:clamp(56px,11vw,124px);
+  line-height:.95;letter-spacing:-.04em;margin-bottom:18px}
+.lede{font-size:clamp(19px,2.4vw,26px);color:var(--ink);max-width:680px;font-weight:500;margin-bottom:14px}
+.lede b{color:transparent;background:var(--grad);-webkit-background-clip:text;background-clip:text}
+.sub{font-size:17px;color:var(--muted);max-width:600px;margin-bottom:34px}
+.hero-cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.pill{font-family:var(--mono);font-size:15px;background:var(--surface);border:1px solid var(--line2);
+  padding:13px 18px;border-radius:12px;cursor:pointer;display:inline-flex;gap:12px;align-items:center;transition:border-color .2s}
+.pill:hover{border-color:var(--blue-l)}
+.pill .pfx{color:var(--green-l)}
+.pill .cp{font-family:var(--body);font-size:12px;color:var(--muted2);border-left:1px solid var(--line2);padding-left:12px}
+.btn{padding:13px 24px;border-radius:12px;font-weight:600;font-size:15px;transition:transform .15s,box-shadow .2s;display:inline-flex;align-items:center;gap:9px}
+.btn.primary{background:var(--grad);color:#fff;box-shadow:0 8px 30px -8px var(--blue)}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 14px 40px -10px var(--blue)}
+.btn.ghost{border:1px solid var(--line2);color:var(--ink)}
+.btn.ghost:hover{border-color:var(--muted);transform:translateY(-2px)}
+.scrollcue{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:2;color:var(--muted2);font-size:12px;
+  display:flex;flex-direction:column;align-items:center;gap:7px;animation:bob 2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
+
+/* sections */
+section{padding:108px 0;position:relative}
+.eyebrow{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--green-l);letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}
+h2{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,52px);line-height:1.05;letter-spacing:-.03em;margin-bottom:20px}
+.section-lede{font-size:19px;color:var(--muted);max-width:680px}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--line2),transparent)}
+
+/* reveal — progressive enhancement: visible by default, hidden only when JS is on */
+.rv{opacity:1;transform:none}
+.js .rv{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.js .rv.in{opacity:1;transform:none}
+.rv.d1{transition-delay:.08s}.rv.d2{transition-delay:.16s}.rv.d3{transition-delay:.24s}
+
+/* stat band */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:30px 26px;position:relative;overflow:hidden}
+.stat::before{content:"";position:absolute;inset:0;background:var(--grad-soft);opacity:0;transition:opacity .3s}
+.stat:hover::before{opacity:1}
+.stat .num{font-family:var(--display);font-weight:700;font-size:64px;line-height:1;letter-spacing:-.03em;margin-bottom:10px}
+.stat .k{font-weight:600;color:var(--ink);margin-bottom:6px}
+.stat .v{font-size:14.5px;color:var(--muted);position:relative}
+@media(max-width:760px){.stats{grid-template-columns:1fr}}
+
+/* bad answer card */
+.chat{max-width:720px;margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.chat .q,.chat .a{padding:20px 24px}
+.chat .role{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:7px}
+.chat .q{border-bottom:1px solid var(--line)}
+.chat .a{background:linear-gradient(180deg,#2a0f1a55,transparent);position:relative}
+.chat .a .role{color:#ff6b81}
+.chat .a .txt{color:var(--ink)}
+.chat .a .flag{margin-top:14px;font-size:13.5px;color:#ff8fa0;display:flex;gap:9px;align-items:flex-start}
+.warn-note{margin-top:24px;font-size:17px;color:var(--muted);max-width:680px}
+.warn-note b{color:var(--ink)}
+
+/* gate demo */
+.gate{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:34px;margin-top:14px}
+.gate-top{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:10px;margin-bottom:6px}
+.gate-top .lbl{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.score-readout{font-family:var(--display);font-weight:700;font-size:40px;letter-spacing:-.02em}
+.track-wrap{position:relative;margin:30px 0 8px}
+.threshold{position:absolute;top:-8px;bottom:-8px;left:45%;width:2px;background:var(--amber);z-index:3}
+.threshold::after{content:"min_confidence 0.45";position:absolute;top:-26px;left:50%;transform:translateX(-50%);
+  white-space:nowrap;font-family:var(--mono);font-size:11px;color:var(--amber)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:12px;border-radius:999px;
+  background:linear-gradient(90deg,#3a2230,#243a55);outline:none;position:relative;z-index:2}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;
+  background:#fff;border:4px solid var(--blue-l);cursor:grab;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;background:#fff;border:4px solid var(--blue-l);cursor:grab}
+.track-scale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;color:var(--muted2);margin-top:6px}
+.verdict{margin-top:26px;border-radius:16px;padding:24px;border:1px solid var(--line2);transition:all .4s}
+.verdict.met{background:linear-gradient(135deg,#00a65122,#19c46a14);border-color:#1c8f57}
+.verdict.insuff{background:linear-gradient(135deg,#0046ad22,#0077c814);border-color:#2a5aa8}
+.verdict .vhead{display:flex;align-items:center;gap:12px;font-family:var(--display);font-weight:700;font-size:22px;margin-bottom:10px}
+.verdict .vicon{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:18px;flex:none}
+.verdict.met .vicon{background:var(--green);color:#fff}
+.verdict.insuff .vicon{background:var(--blue-l);color:#fff}
+.verdict .vbody{color:var(--muted);font-size:15.5px}
+.verdict .vbody b{color:var(--ink)}
+.llm-flag{display:inline-flex;align-items:center;gap:8px;margin-top:14px;font-family:var(--mono);font-size:13px;
+  padding:6px 12px;border-radius:8px}
+.verdict.met .llm-flag{background:#00a65126;color:var(--green-l)}
+.verdict.insuff .llm-flag{background:#ffd66e1f;color:var(--amber)}
+.cites{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.cite{font-family:var(--mono);font-size:12.5px;color:var(--muted);background:#0a1322;border:1px solid var(--line);border-radius:8px;padding:9px 12px}
+.cite b{color:var(--green-l)}
+
+/* feature cards */
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:14px}
+.feat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:32px;transition:transform .2s,border-color .2s}
+.feat:hover{transform:translateY(-4px);border-color:var(--line2)}
+.feat .ic{width:48px;height:48px;border-radius:13px;background:var(--grad);display:grid;place-items:center;font-size:22px;margin-bottom:18px}
+.feat h3{font-family:var(--display);font-weight:600;font-size:23px;margin-bottom:12px;letter-spacing:-.01em}
+.feat p{color:var(--muted);font-size:15.5px}
+@media(max-width:760px){.feat-grid{grid-template-columns:1fr}}
+
+/* code */
+.code{background:#080d18;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:14px}
+.code .cbar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--bg2)}
+.code .cbar .d{width:11px;height:11px;border-radius:50%}
+.code .cbar .fn{margin-left:10px;font-family:var(--mono);font-size:12.5px;color:var(--muted2)}
+.code pre{padding:22px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.75}
+.code .c{color:#5f7299}.code .k{color:#7aa2ff}.code .s{color:#7fd98c}.code .f{color:#ffd66e}.code .n{color:#e58ad8}
+.extras{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.chip{font-family:var(--mono);font-size:13px;background:var(--surface);border:1px solid var(--line2);border-radius:999px;padding:8px 15px;color:var(--muted)}
+.chip b{color:var(--ink)}
+
+/* two-col origin */
+.origin{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:14px}
+.src{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:28px;position:relative}
+.src .pin{font-family:var(--mono);font-size:12px;color:var(--green-l);margin-bottom:12px}
+.src h4{font-family:var(--display);font-size:19px;font-weight:600;margin-bottom:8px}
+.src p{color:var(--muted);font-size:15px}
+.dogfood{margin-top:26px;font-size:17px;color:var(--muted);max-width:720px}
+.dogfood b{color:var(--ink)}
+@media(max-width:760px){.origin{grid-template-columns:1fr}}
+
+/* final cta */
+.final{text-align:center;border-top:1px solid var(--line);background:
+  radial-gradient(ellipse 60% 100% at 50% 0%,#0046ad22,transparent 70%)}
+.final h2{margin-bottom:18px}
+.final .pill{margin:8px auto 28px;justify-content:center}
+.final-links{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+footer{border-top:1px solid var(--line);padding:34px 0;color:var(--muted2);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+footer a{color:var(--muted)}footer a:hover{color:var(--ink)}
+
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--grad);color:#fff;font-weight:600;font-size:14px;padding:11px 22px;border-radius:999px;
+  z-index:80;opacity:0;transition:transform .35s,opacity .35s;box-shadow:0 10px 30px -8px var(--blue)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;scroll-behavior:auto!important}
+  .js .rv{opacity:1;transform:none;transition:none}
+}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<nav id="nav"><div class="wrap">
+  <a class="logo" href="#top">attestq</a>
+  <div class="links">
+    <a class="hide-sm" href="https://vinayvobbili.github.io/posts/attestq-evidence-grounded-questionnaires/">Read the post</a>
+    <a class="hide-sm" href="https://github.com/vinayvobbili/attestq">GitHub</a>
+    <a class="cta" href="https://pypi.org/project/attestq/">PyPI ↗</a>
+  </div>
+</div></nav>
+
+<header class="hero" id="top">
+  <div class="mesh"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span></div>
+  <div class="grid-ov"></div>
+  <div class="wrap">
+    <span class="tag"><span class="dot"></span>open source · pip install attestq</span>
+    <h1 class="title">attestq</h1>
+    <p class="lede">Answer security questionnaires from your own evidence — and <b>refuse to guess</b> when the evidence isn't there.</p>
+    <p class="sub">A small, model-, embedder-, and store-agnostic RAG kernel for vendor security reviews, SIG/CAIQ responses, audit-evidence requests, and due-diligence forms. It drafts grounded, <em>cited</em> answers — and tells you plainly when it can't.</p>
+    <div class="hero-cta">
+      <span class="pill" data-copy="pip install attestq"><span class="pfx">$</span><span>pip install attestq</span><span class="cp">click to copy</span></span>
+      <a class="btn primary" href="#gate">See the confidence gate ↓</a>
+      <a class="btn ghost" href="https://github.com/vinayvobbili/attestq">View source</a>
+    </div>
+  </div>
+  <a class="scrollcue" href="#stats"><span>scroll</span><span>↓</span></a>
+</header>
+
+<section id="stats" style="padding-top:90px;padding-bottom:90px">
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat rv"><div class="num grad-text" data-count="0">0</div><div class="k">dependencies</div><div class="v">pure-stdlib core — bring your own model, embedder, and store as plain callables. Adapters are opt-in extras.</div></div>
+      <div class="stat rv d1"><div class="num grad-text" data-count="1">0</div><div class="k">confidence gate</div><div class="v">below threshold, the answer is "insufficient evidence" — with no LLM call at all.</div></div>
+      <div class="stat rv d2"><div class="num grad-text" data-count="2">0</div><div class="k">production tools</div><div class="v">extracted from a vendor due-diligence assistant and a customer-assurance drafter — now both run on this kernel.</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="problem">
+  <div class="wrap">
+    <div class="eyebrow rv">the failure mode nobody talks about</div>
+    <h2 class="rv">A confident wrong answer is worse than no answer.</h2>
+    <p class="section-lede rv">The naive recipe — chunk the docs, embed, retrieve, prompt, paste — demos beautifully. Then it fills a compliance form with details your evidence never contained.</p>
+    <div class="chat rv d1">
+      <div class="q"><div class="role">Question</div><div>Do you encrypt customer data at rest with a customer-managed key?</div></div>
+      <div class="a"><div class="role">LLM, ungated</div>
+        <div class="txt">Yes. Customer data at rest is encrypted using AES-256 with customer-managed keys rotated every 90 days.</div>
+        <div class="flag">⚠ None of the evidence says "customer-managed" or "90 days." The corpus had encryption-at-rest; the model pattern-matched the shape of a good answer and invented the rest.</div>
+      </div>
+    </div>
+    <p class="warn-note rv d2">The fix isn't a better prompt. It's accepting that <b>absence of evidence is a valid, first-class result</b> — and building the pipeline so the model never gets the chance to paper over it.</p>
+  </div>
+</section>
+
+<section id="gate" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="eyebrow rv">the centerpiece · interactive</div>
+    <h2 class="rv">The confidence gate runs <span class="grad-text">before</span> the LLM.</h2>
+    <p class="section-lede rv">attestq retrieves first and scores the best-matching evidence. Drag the retrieval score across the threshold and watch what the kernel does.</p>
+    <div class="gate rv d1">
+      <div class="gate-top">
+        <span class="lbl">best retrieved evidence score</span>
+        <span class="score-readout grad-text" id="score">0.62</span>
+      </div>
+      <div class="track-wrap">
+        <div class="threshold"></div>
+        <input type="range" id="slider" min="0" max="100" value="62">
+      </div>
+      <div class="track-scale"><span>0.00 · no match</span><span>1.00 · exact match</span></div>
+      <div class="verdict met" id="verdict">
+        <div class="vhead"><span class="vicon" id="vicon">✓</span><span id="vtitle">Determination: Met</span></div>
+        <div class="vbody" id="vbody">The evidence clears the bar, so the LLM drafts a grounded answer — strictly from the retrieved chunks — and returns it with citations and a confidence score.</div>
+        <div class="cites" id="cites">
+          <div class="cite"><b>DataProtection.pdf</b> → "All customer data at rest is encrypted with AES-256…"</div>
+          <div class="cite"><b>AccessControl.docx</b> → "MFA is enforced for all privileged access…"</div>
+        </div>
+        <span class="llm-flag" id="llmflag">LLM called → drafts cited answer</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="fixes">
+  <div class="wrap">
+    <div class="eyebrow rv">the two hard-won fixes</div>
+    <h2 class="rv">Two defaults you can't forget to apply.</h2>
+    <div class="feat-grid">
+      <div class="feat rv d1">
+        <div class="ic">🚦</div>
+        <h3>A gate that fires before the model</h3>
+        <p>If the best evidence scores below <span class="mono">min_confidence</span>, attestq returns an "insufficient evidence" answer with <b>no prompt, no token spend, no chance to hallucinate</b>. The gate keys on the raw retrieval score — before reranking — so your one tuned threshold stays calibrated whatever reranker you bolt on.</p>
+      </div>
+      <div class="feat rv d2">
+        <div class="ic">🪟</div>
+        <h3>A wide rerank window</h3>
+        <p>The subtle bug: you retrieve a few chunks, rerank, keep the top 3 — and on a small or lopsided corpus the single focused document that actually answered the question gets shoved out by vaguely-related ones. attestq keeps a deliberately generous post-rerank window so a lone relevant chunk survives. It was a real production bug; now it's a default.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="byo" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="eyebrow rv">bring your own everything</div>
+    <h2 class="rv">attestq owns the orchestration. Nothing else.</h2>
+    <p class="section-lede rv">Inject any chat model and any embedder as plain callables. The core has zero third-party dependencies; heavy adapters ride on opt-in extras, lazily imported.</p>
+    <div class="code rv d1">
+      <div class="cbar"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="fn">quickstart.py</span></div>
+<pre><span class="k">from</span> attestq <span class="k">import</span> Engine, Question
+
+<span class="c"># bring your own model + embedder — one-liners around any provider</span>
+<span class="k">def</span> <span class="f">my_chat</span>(prompt): ...      <span class="c"># OpenAI, Anthropic, a local model, a corp gateway</span>
+<span class="k">def</span> <span class="f">my_embed</span>(texts): ...      <span class="c"># return one vector per text</span>
+
+engine = <span class="f">Engine</span>(chat=my_chat, embed=my_embed)   <span class="c"># in-memory store by default</span>
+engine.<span class="f">ingest</span>(evidence_chunks, namespace=<span class="s">"helios"</span>)  <span class="c"># per-vendor isolation</span>
+
+ans = engine.<span class="f">evaluate</span>(
+    <span class="f">Question</span>(id=<span class="s">"ENC-1"</span>, prompt=<span class="s">"Is data encrypted at rest?"</span>,
+             choices=[<span class="s">"Met"</span>, <span class="s">"Not Met"</span>, <span class="s">"Not Applicable"</span>]),
+    namespace=<span class="s">"helios"</span>,
+)
+<span class="f">print</span>(ans.determination, ans.confidence, ans.insufficient_evidence)
+<span class="k">for</span> c <span class="k">in</span> ans.citations: <span class="f">print</span>(c.source, c.snippet)</pre>
+    </div>
+    <div class="extras rv d2">
+      <span class="chip">pip install <b>attestq</b></span>
+      <span class="chip"><b>[chroma]</b> persistent store</span>
+      <span class="chip"><b>[openai]</b> chat + embed</span>
+      <span class="chip"><b>[ollama]</b> local, nothing leaves the host</span>
+      <span class="chip"><b>[rerank]</b> cross-encoder</span>
+      <span class="chip"><b>[loaders]</b> pdf · docx · xlsx</span>
+      <span class="chip"><b>[all]</b> everything</span>
+    </div>
+  </div>
+</section>
+
+<section id="try">
+  <div class="wrap">
+    <div class="eyebrow rv">try it in ten seconds</div>
+    <h2 class="rv">No model required to watch it work.</h2>
+    <p class="section-lede rv">A built-in hash embedder needs no service, so the retrieval pipeline and the gate run the moment you install — then swap in a real provider when you're ready.</p>
+    <div class="code rv d1">
+      <div class="cbar"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="fn">terminal</span></div>
+<pre><span class="c"># run the bundled fictional sample end-to-end</span>
+<span class="n">$</span> pip install attestq
+<span class="n">$</span> attestq demo -o report.md
+
+<span class="c"># evaluate your own questionnaire against a folder of evidence</span>
+<span class="n">$</span> attestq run -q questionnaire.yaml -e ./vendor-evidence -n acme -o report.docx
+
+<span class="c"># local, no key, nothing leaves the host</span>
+<span class="n">$</span> attestq demo --provider ollama</pre>
+    </div>
+  </div>
+</section>
+
+<section id="origin" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="eyebrow rv">where it came from</div>
+    <h2 class="rv">Extracted from production, not a greenfield toy.</h2>
+    <p class="section-lede rv">Two internal tools were independently solving the same retrieve → rerank → gate → cited-draft problem, and quietly drifting apart.</p>
+    <div class="origin">
+      <div class="src rv d1"><div class="pin">● source #1</div><h4>Vendor due-diligence assistant</h4><p>Drafts a due-diligence form from a vendor's uploaded evidence — per-vendor, with strict evidence isolation.</p></div>
+      <div class="src rv d2"><div class="pin">● source #2</div><h4>Customer-assurance drafter</h4><p>Answers inbound customer security questionnaires from an internal policy corpus.</p></div>
+    </div>
+    <p class="dogfood rv d2">Extracting the shared kernel — and then <b>refactoring the production tool to consume the public package</b> instead of its own copy — means the open-source version is the one under real load, not a sanitized fork. The same code that ships to PyPI is the code answering real questionnaires.</p>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <div class="eyebrow rv" style="color:var(--muted)">bring your own model · let it tell you when you don't have the evidence</div>
+    <h2 class="rv grad-text">pip install attestq</h2>
+    <span class="pill rv d1" data-copy="pip install attestq" style="display:inline-flex"><span class="pfx">$</span><span>pip install attestq</span><span class="cp">click to copy</span></span>
+    <div class="final-links rv d2">
+      <a class="btn primary" href="https://pypi.org/project/attestq/">PyPI ↗</a>
+      <a class="btn ghost" href="https://github.com/vinayvobbili/attestq">GitHub ↗</a>
+      <a class="btn ghost" href="https://vinayvobbili.github.io/posts/attestq-evidence-grounded-questionnaires/">Read the full write-up</a>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap">
+  <span>© <span id="yr"></span> Vinay Vobbilichetty · built with attestq's own thesis: don't guess.</span>
+  <span><a href="https://vinayvobbili.github.io">← back to the blog</a></span>
+</div></footer>
+
+<div class="toast" id="toast">copied ✓</div>
+
+<script>
+(function(){
+  var rm = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  // scroll progress + nav
+  var bar=document.getElementById('bar'), nav=document.getElementById('nav');
+  function onScroll(){
+    var h=document.documentElement, sc=h.scrollTop||document.body.scrollTop;
+    var max=h.scrollHeight-h.clientHeight;
+    bar.style.width=(max>0?(sc/max*100):0)+'%';
+    nav.classList.toggle('scrolled', sc>20);
+  }
+  document.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  // reveal
+  var rvs=[].slice.call(document.querySelectorAll('.rv'));
+  if(rm){rvs.forEach(function(e){e.classList.add('in')});}
+  else{
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);
+        if(e.target.classList.contains('stat')) countUp(e.target.querySelector('[data-count]')); } });
+    },{threshold:.18});
+    rvs.forEach(function(e){io.observe(e)});
+  }
+  function countUp(el){ if(!el) return; var t=+el.getAttribute('data-count'); if(rm){el.textContent=t;return;}
+    var s=0, step=Math.max(1,Math.ceil(t/16))||1, d=t===0?1:t;
+    el.textContent='0'; var iv=setInterval(function(){ s+=1; if(s>=t){s=t;clearInterval(iv);} el.textContent=s; }, 70);
+    if(t===0){el.textContent='0';}
+  }
+
+  // copy pills
+  function toast(){ var t=document.getElementById('toast'); t.classList.add('show'); setTimeout(function(){t.classList.remove('show')},1400); }
+  [].slice.call(document.querySelectorAll('[data-copy]')).forEach(function(el){
+    el.addEventListener('click',function(){ var v=el.getAttribute('data-copy');
+      if(navigator.clipboard){navigator.clipboard.writeText(v).then(toast,toast);} else {toast();} });
+  });
+
+  // gate demo
+  var sl=document.getElementById('slider'), score=document.getElementById('score'),
+      v=document.getElementById('verdict'), vicon=document.getElementById('vicon'),
+      vtitle=document.getElementById('vtitle'), vbody=document.getElementById('vbody'),
+      cites=document.getElementById('cites'), llm=document.getElementById('llmflag');
+  var TH=0.45;
+  function render(){
+    var s=(+sl.value)/100; score.textContent=s.toFixed(2);
+    if(s>=TH){
+      v.className='verdict met'; vicon.textContent='✓'; vtitle.textContent='Determination: Met';
+      vbody.innerHTML='The evidence clears the bar (<b>'+s.toFixed(2)+' ≥ 0.45</b>), so the LLM drafts a grounded answer — strictly from the retrieved chunks — and returns it with citations and a confidence score.';
+      cites.style.display='flex'; llm.textContent='LLM called → drafts cited answer';
+    } else {
+      v.className='verdict insuff'; vicon.textContent='✕'; vtitle.textContent='Determination: Insufficient evidence';
+      vbody.innerHTML='Nothing clears the bar (<b>'+s.toFixed(2)+' &lt; 0.45</b>). attestq returns your configured absence outcome with a standardized note — <b>absence of evidence is a valid result, not an invitation to guess.</b>';
+      cites.style.display='none'; llm.textContent='NO LLM CALL — gate short-circuits';
+    }
+  }
+  sl.addEventListener('input',render); render();
+
+  document.getElementById('yr').textContent=(document.lastModified||'').slice(-4)||'2026';
+})();
+</script>
+</body>
+</html>
