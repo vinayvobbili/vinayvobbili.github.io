@@ -469,6 +469,57 @@ article[data-toc] > header {
   background: rgba($brand-blue, 0.045);
 }
 
+/* ---- TL;DR metric cards (reusable across flagship posts) --------------- */
+/* Use instead of an HTML <table> for the "0 deps / 1 gate / 2 tools" row —
+   the table version inherits .content h2 styling and Chirpy's responsive
+   table rules, which mangled the layout. This is a plain flex row that
+   wraps to 2/1 columns on narrow widths instead of scrolling or stacking. */
+.content .tldr-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1.6rem 0 2rem;
+  padding: 0;
+
+  .tldr-card {
+    flex: 1 1 0;
+    min-width: 190px;
+    text-align: center;
+    padding: 1.4rem 1.1rem;
+    border-radius: 14px;
+    background: var(--card-bg);
+    border: 1px solid var(--main-border-color);
+    box-shadow: 0 6px 20px -12px rgba(0, 40, 90, 0.25);
+  }
+
+  .tldr-num {
+    display: block;
+    margin-bottom: 0.55rem;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 2.1rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    background: $brand-grad;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  .tldr-sub {
+    display: block;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--text-muted-color, #5a6273);
+
+    em {
+      font-style: italic;
+      color: inherit;
+    }
+  }
+}
+
 .content {
   h2,
   h3 {

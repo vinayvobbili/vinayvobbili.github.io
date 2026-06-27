@@ -14,13 +14,11 @@ mermaid: true
 
 I shipped [**attestq**](https://pypi.org/project/attestq/) to PyPI — a small, model-agnostic RAG kernel for a problem every security and GRC program has: you hold a **questionnaire** (a vendor security review, a SIG/CAIQ response, an audit-evidence request, a due-diligence form, the security section of an RFP) and a **pile of evidence** (SOC 2 reports, policies, standards, prior questionnaires). attestq retrieves the relevant evidence per question and drafts a grounded, **cited** answer — and, crucially, tells you plainly when the evidence isn't there instead of inventing one. 🧾
 
-<table>
-<tr>
-<td align="center" width="33%"><h2>0 deps</h2><sub>pure-stdlib core — bring your own model, embedder, store</sub></td>
-<td align="center" width="33%"><h2>1 gate</h2><sub>weak evidence &rarr; <em>insufficient evidence</em>, no LLM call</sub></td>
-<td align="center" width="33%"><h2>2 tools</h2><sub>extracted from two production systems, now one kernel</sub></td>
-</tr>
-</table>
+<div class="tldr-cards">
+<div class="tldr-card"><span class="tldr-num">0 deps</span><span class="tldr-sub">pure-stdlib core — bring your own model, embedder, store</span></div>
+<div class="tldr-card"><span class="tldr-num">1 gate</span><span class="tldr-sub">weak evidence &rarr; <em>insufficient evidence</em>, no LLM call</span></div>
+<div class="tldr-card"><span class="tldr-num">2 tools</span><span class="tldr-sub">extracted from two production systems, now one kernel</span></div>
+</div>
 
 > ▶ **[Open the interactive version →](/attestq/)** — a full-bleed page where you can drag the retrieval score across the confidence threshold and watch the kernel flip between a cited answer and "insufficient evidence."
 {: .prompt-tip }
