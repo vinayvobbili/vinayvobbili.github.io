@@ -21,6 +21,9 @@ A real SOC runs 24×7 with eight or nine distinct roles — alert triage, deeper
 <div class="tldr-card"><span class="tldr-num">0 writes</span><span class="tldr-sub">to CrowdStrike, Tanium, Zscaler — agents <em>propose</em>, humans <em>execute</em></span></div>
 </div>
 
+> ▶ **[Open the interactive version →](/soc-in-a-box/)** — a full-bleed page where you can drop an alert onto the bus and watch it move through the org chart, one LLM wearing a different hat at each stop, until everything stops at the human-in-the-loop gate. The benign one gets closed by Tier 2 and never reaches it.
+{: .prompt-tip }
+
 The interesting parts aren't the agents themselves — there's nothing novel about an LLM-with-tools loop. The interesting parts are: (1) the architectural choices that let one local LLM serve a whole SOC org chart without melting, (2) the human-in-the-loop gate that makes "AI does containment" a real thing a security team will actually trust, and (3) a backtest harness that lets us put hard numbers on agent quality against real historical tickets before we hand the demo to leadership.
 
 ## The shape of the problem
