@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>document.documentElement.classList.add('js')</script>
+<title>detflow — a detection-engineering copilot you can pip install</title>
+<meta name="description" content="Draft, lint, dedupe and review detections — and turn a threat report into a grounded detection package. Deterministic primitives that never raise, with the LLM as an enhancement that can fail without taking the tool down.">
+<meta property="og:title" content="detflow — detection engineering, both directions">
+<meta property="og:description" content="Intel → rules and rules → reviewed merge. Lint & overlap need no model; review degrades to a deterministic floor. pip install detflow.">
+<meta property="og:image" content="https://vinayvobbili.github.io/assets/img/posts/detflow-hero.png">
+<meta property="og:type" content="website">
+<!-- Self-hosted fonts (Space Grotesk + JetBrains Mono); no Google Fonts CDN. -->
+<link rel="stylesheet" href="/assets/fonts/fonts.css">
+<style>
+:root{
+  /* forest brand family (matches the post's accent) */
+  --blue:#136f3b; --blue-l:#2f9e44; --green:#82c91e; --green-l:#66a80f;
+  --amber:#b07d0a;
+  /* semantic colours for the centerpiece */
+  --pass:#16a34a; --fail:#dc2626; --warn:#d97706;
+  --bg:#f9f5ea; --bg2:#f3eede; --surface:#fffdf7; --surface2:#f6f1e4;
+  --line:#e7dfcc; --line2:#d8cdb4;
+  --ink:#1d2433; --muted:#5a6273; --muted2:#8a8674;
+  --grad:linear-gradient(135deg,#136f3b 0%,#2f9e44 50%,#82c91e 100%);
+  --grad-soft:linear-gradient(135deg,#136f3b14 0%,#82c91e14 100%);
+  --shadow:0 8px 30px -16px rgba(15,70,35,.24);
+  --display:'Space Grotesk',system-ui,sans-serif;
+  --body:'Space Grotesk',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --r:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--body);
+  line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+.mono{font-family:var(--mono)}
+.grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* progress + nav */
+#bar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--grad);z-index:60;transition:width .1s linear}
+nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(12px);
+  background:rgba(249,245,234,.62);border-bottom:1px solid transparent;transition:border-color .3s,background .3s}
+nav.scrolled{border-bottom:1px solid var(--line);background:rgba(249,245,234,.86)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
+nav .logo{font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.02em}
+nav .links{display:flex;gap:22px;align-items:center;font-size:14px;font-weight:500}
+nav .links a{color:var(--muted);transition:color .2s}
+nav .links a:hover{color:var(--ink)}
+nav .links .cta{padding:7px 16px;border-radius:999px;background:var(--grad);color:#fff;font-weight:600}
+@media(max-width:640px){nav .links a.hide-sm{display:none}}
+
+/* hero */
+header.hero{position:relative;min-height:100vh;display:flex;align-items:center;
+  overflow:hidden;border-bottom:1px solid var(--line)}
+.mesh{position:absolute;inset:0;z-index:0}
+.blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.30;will-change:transform}
+.blob.b1{width:560px;height:560px;background:var(--blue);top:-140px;left:-120px;animation:float1 18s ease-in-out infinite}
+.blob.b2{width:520px;height:520px;background:var(--green);bottom:-160px;right:-100px;animation:float2 22s ease-in-out infinite}
+.blob.b3{width:420px;height:420px;background:var(--blue-l);top:30%;right:18%;opacity:.18;animation:float1 26s ease-in-out infinite reverse}
+@keyframes float1{0%,100%{transform:translate(0,0)}50%{transform:translate(60px,40px)}}
+@keyframes float2{0%,100%{transform:translate(0,0)}50%{transform:translate(-50px,-50px)}}
+.grid-ov{position:absolute;inset:0;z-index:1;opacity:.4;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:54px 54px;mask-image:radial-gradient(ellipse 80% 70% at 50% 40%,#000 30%,transparent 75%)}
+.hero .wrap{position:relative;z-index:2;padding-top:80px;padding-bottom:60px}
+.tag{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:600;
+  color:var(--muted);border:1px solid var(--line2);background:var(--surface);
+  padding:7px 15px;border-radius:999px;margin-bottom:26px}
+.tag .dot{width:7px;height:7px;border-radius:50%;background:var(--green-l);box-shadow:0 0 10px var(--green-l)}
+h1.title{font-family:var(--display);font-weight:700;font-size:clamp(56px,11vw,124px);
+  line-height:.95;letter-spacing:-.04em;margin-bottom:18px}
+.lede{font-size:clamp(19px,2.4vw,26px);color:var(--ink);max-width:720px;font-weight:500;margin-bottom:14px}
+.lede b{color:transparent;background:var(--grad);-webkit-background-clip:text;background-clip:text}
+.sub{font-size:17px;color:var(--muted);max-width:640px;margin-bottom:34px}
+.hero-cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.pill{font-family:var(--mono);font-size:15px;background:var(--surface);border:1px solid var(--line2);
+  padding:13px 18px;border-radius:12px;cursor:pointer;display:inline-flex;gap:12px;align-items:center;transition:border-color .2s}
+.pill:hover{border-color:var(--blue-l)}
+.pill .pfx{color:var(--green-l)}
+.pill .cp{font-family:var(--body);font-size:12px;color:var(--muted2);border-left:1px solid var(--line2);padding-left:12px}
+.btn{padding:13px 24px;border-radius:12px;font-weight:600;font-size:15px;transition:transform .15s,box-shadow .2s;display:inline-flex;align-items:center;gap:9px}
+.btn.primary{background:var(--grad);color:#fff;box-shadow:0 8px 30px -8px var(--blue)}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 14px 40px -10px var(--blue)}
+.btn.ghost{border:1px solid var(--line2);color:var(--ink)}
+.btn.ghost:hover{border-color:var(--muted);transform:translateY(-2px)}
+.scrollcue{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:2;color:var(--muted2);font-size:12px;
+  display:flex;flex-direction:column;align-items:center;gap:7px;animation:bob 2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
+
+/* sections */
+section{padding:108px 0;position:relative}
+.eyebrow{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--green-l);letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}
+h2{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,52px);line-height:1.05;letter-spacing:-.03em;margin-bottom:20px}
+.section-lede{font-size:19px;color:var(--muted);max-width:720px}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--line2),transparent)}
+
+/* reveal — progressive enhancement: visible by default, hidden only when JS is on */
+.rv{opacity:1;transform:none}
+.js .rv{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.js .rv.in{opacity:1;transform:none}
+.rv.d1{transition-delay:.08s}.rv.d2{transition-delay:.16s}.rv.d3{transition-delay:.24s}
+
+/* stat band */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:30px 26px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.stat::before{content:"";position:absolute;inset:0;background:var(--grad-soft);opacity:0;transition:opacity .3s}
+.stat:hover::before{opacity:1}
+.stat .num{font-family:var(--display);font-weight:700;font-size:60px;line-height:1;letter-spacing:-.03em;margin-bottom:10px}
+.stat .k{font-weight:600;color:var(--ink);margin-bottom:6px}
+.stat .v{font-size:14.5px;color:var(--muted);position:relative}
+@media(max-width:760px){.stats{grid-template-columns:1fr}}
+
+/* bad-action card */
+.chat{max-width:760px;margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.chat .q,.chat .a{padding:20px 24px}
+.chat .role{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:7px}
+.chat .q{border-bottom:1px solid var(--line)}
+.chat .a{background:linear-gradient(180deg,#fbe9ea,transparent);position:relative}
+.chat .a .role{color:#c0392b}
+.chat .a .txt{color:var(--ink)}
+.chat .a .flag{margin-top:14px;font-size:13.5px;color:#b3261f;display:flex;gap:9px;align-items:flex-start}
+.warn-note{margin-top:24px;font-size:17px;color:var(--muted);max-width:720px}
+.warn-note b{color:var(--ink)}
+
+/* centerpiece — never-raises / deterministic-floor demo */
+.demo{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:34px;margin-top:14px;box-shadow:var(--shadow)}
+.demo-lbl{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:12px}
+.verb-pick{display:flex;flex-wrap:wrap;gap:10px}
+.verb{font-family:var(--mono);font-size:13.5px;border:1px solid var(--line2);background:var(--surface2);border-radius:11px;
+  padding:11px 15px;cursor:pointer;display:flex;flex-direction:column;gap:3px;transition:border-color .2s,transform .15s,box-shadow .2s}
+.verb:hover{transform:translateY(-2px)}
+.verb.sel{border-color:var(--blue-l);box-shadow:0 0 0 2px #2f9e4433;background:#fff}
+.verb .vv{font-weight:700;color:var(--ink)}
+.verb .vl{font-family:var(--body);font-size:11.5px;color:var(--muted)}
+.pipe{display:flex;align-items:stretch;gap:8px;margin:26px 0 6px}
+.arr{color:var(--muted2);font-size:18px;flex:none;align-self:center}
+.stg{flex:1;padding:16px 14px;border:1px solid var(--line);border-radius:13px;background:var(--surface2);transition:all .35s}
+.stg.up{border-color:#bfe7cf;background:#16a34a0d}
+.stg.dim{opacity:.5}
+.stg.fail{border-color:#e7c3c3;background:#fdf3f3}
+.stg .sl{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--green-l);margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
+.stg .sl .dotk{width:8px;height:8px;border-radius:50%;background:var(--muted2)}
+.stg.up .sl .dotk{background:var(--pass)}
+.stg.fail .sl{color:var(--fail)}
+.stg.fail .sl .dotk{background:var(--fail)}
+.stg .sh{font-family:var(--display);font-weight:600;font-size:16px;margin-bottom:6px}
+.stg .ss{font-size:12.5px;color:var(--muted);line-height:1.45}
+.stg .ss b{color:var(--ink)}
+@media(max-width:760px){.pipe{flex-direction:column}.arr{transform:rotate(90deg);align-self:center}}
+.controls{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-top:22px}
+.toggle{display:inline-flex;align-items:center;gap:9px;font-size:14px;color:var(--muted);cursor:pointer;user-select:none}
+.toggle input{width:16px;height:16px;accent-color:var(--blue-l);cursor:pointer}
+.toggle .mono{color:var(--ink)}
+.dirhint{font-family:var(--mono);font-size:12px;color:var(--muted2)}
+.result{margin-top:20px;font-family:var(--mono);font-size:13px;line-height:1.6;padding:15px 17px;border-radius:12px;
+  border:1px solid var(--line2);background:var(--surface2);color:var(--muted)}
+.result b{color:var(--ink)}
+.result .ok{color:var(--pass);font-weight:700}
+.result .soft{color:var(--warn);font-weight:700}
+
+/* directions loop */
+.loopwrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:14px}
+@media(max-width:760px){.loopwrap{grid-template-columns:1fr}}
+.dircard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:26px;box-shadow:var(--shadow)}
+.dircard .dh{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--green-l);margin-bottom:12px}
+.dircard h3{font-family:var(--display);font-size:21px;font-weight:600;margin-bottom:14px;letter-spacing:-.02em}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.fnode{font-family:var(--mono);font-size:12.5px;background:var(--surface2);border:1px solid var(--line2);border-radius:9px;padding:8px 11px;color:var(--ink)}
+.fnode.start{background:var(--grad);color:#fff;border:none;font-family:var(--body);font-weight:600}
+.fnode.end{border-color:#bfe7cf;background:#16a34a0d}
+.fa{color:var(--muted2);font-size:14px}
+.dircard p{color:var(--muted);font-size:14.5px;margin-top:16px}
+
+/* verbs / capabilities */
+.layers{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.layer{display:flex;gap:18px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;padding:20px 22px;box-shadow:var(--shadow);transition:transform .2s,border-color .2s}
+.layer:hover{transform:translateX(4px);border-color:var(--line2)}
+.layer .ln{font-family:var(--mono);font-weight:700;font-size:15.5px;width:138px;flex:none;color:transparent;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;padding-top:3px}
+.layer .lc h3{font-family:var(--display);font-size:19px;font-weight:600;margin-bottom:3px}
+.layer .lc .lx{font-family:var(--mono);font-size:12px;color:var(--blue-l);margin-bottom:7px}
+.layer .lc p{color:var(--muted);font-size:15px}
+@media(max-width:640px){.layer{flex-direction:column;gap:8px}.layer .ln{width:auto}}
+.note{margin-top:24px;font-size:16px;color:var(--muted);max-width:740px}
+.note b{color:var(--ink)}
+
+/* code */
+.code{background:#0d1f15;border:1px solid #1c3326;border-radius:14px;overflow:hidden;margin-top:14px;box-shadow:var(--shadow)}
+.code .cbar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #1c3326;background:#0a1810}
+.code .cbar .d{width:11px;height:11px;border-radius:50%}
+.code .cbar .fn{margin-left:10px;font-family:var(--mono);font-size:12.5px;color:#7fae8c}
+.code pre{padding:22px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.75;color:#e0efe5}
+.code .c{color:#6f9c7d}.code .k{color:#9ad99f}.code .s{color:#cfe88a}.code .f{color:#ffd66e}.code .n{color:#7fd4c0}
+.extras{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.chip{font-family:var(--mono);font-size:13px;background:var(--surface);border:1px solid var(--line2);border-radius:999px;padding:8px 15px;color:var(--muted)}
+.chip b{color:var(--ink)}
+
+/* origin */
+.dogfood{margin-top:14px;font-size:17px;color:var(--muted);max-width:760px}
+.dogfood b{color:var(--ink)}
+
+/* final cta */
+.final{text-align:center;border-top:1px solid var(--line);background:
+  radial-gradient(ellipse 60% 100% at 50% 0%,#136f3b22,transparent 70%)}
+.final h2{margin-bottom:18px}
+.final .pill{margin:8px auto 28px;justify-content:center}
+.final-links{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+footer{border-top:1px solid var(--line);padding:34px 0;color:var(--muted2);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+footer a{color:var(--muted)}footer a:hover{color:var(--ink)}
+
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--grad);color:#fff;font-weight:600;font-size:14px;padding:11px 22px;border-radius:999px;
+  z-index:80;opacity:0;transition:transform .35s,opacity .35s;box-shadow:0 10px 30px -8px var(--blue)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;scroll-behavior:auto!important}
+  .js .rv{opacity:1;transform:none;transition:none}
+}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<nav id="nav"><div class="wrap">
+  <a class="logo" href="#top">detflow</a>
+  <div class="links">
+    <a class="hide-sm" href="https://vinayvobbili.github.io/posts/detflow-detection-engineering-copilot/">Read the post</a>
+    <a class="hide-sm" href="https://github.com/vinayvobbili/detflow">GitHub</a>
+    <a class="cta" href="https://pypi.org/project/detflow/">PyPI ↗</a>
+  </div>
+</div></nav>
+
+<header class="hero" id="top">
+  <div class="mesh"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span></div>
+  <div class="grid-ov"></div>
+  <div class="wrap">
+    <span class="tag"><span class="dot"></span>open source · pip install detflow</span>
+    <h1 class="title">detflow</h1>
+    <p class="lede">A vendor-neutral detection-engineering copilot that works <b>both directions</b> — turn intel into rules, and rules into a reviewed merge.</p>
+    <p class="sub">Draft, lint, dedupe and review detections as Sigma or Cortex XQL — and go the other way, from a raw threat report to a grounded ATT&CK + Sigma/YARA/Suricata package. Deterministic primitives that never raise; the LLM is an enhancement that can fail without taking the tool down.</p>
+    <div class="hero-cta">
+      <span class="pill" data-copy="pip install detflow"><span class="pfx">$</span><span>pip install detflow</span><span class="cp">click to copy</span></span>
+      <a class="btn primary" href="#floor">Pull the model ↓</a>
+      <a class="btn ghost" href="https://github.com/vinayvobbili/detflow">View source</a>
+    </div>
+  </div>
+  <a class="scrollcue" href="#stats"><span>scroll</span><span>↓</span></a>
+</header>
+
+<section id="stats" style="padding-top:90px;padding-bottom:90px">
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat rv"><div class="num grad-text" data-count="2">0</div><div class="k">directions</div><div class="v">analyze intel into rules — and draft, lint, dedupe & review rules toward a merge. Both ride the same model.</div></div>
+      <div class="stat rv d1"><div class="num grad-text" data-count="4">0</div><div class="k">rule formats</div><div class="v"><span class="mono">Sigma</span> · <span class="mono">Cortex XQL</span> · <span class="mono">YARA</span> · <span class="mono">Suricata</span> — portable where it can be, native where it counts.</div></div>
+      <div class="stat rv d2"><div class="num grad-text" data-count="0">0</div><div class="k">crashes</div><div class="v">lint &amp; overlap need no model; review degrades to a deterministic floor; everything else returns an error field, not an exception.</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="problem">
+  <div class="wrap">
+    <div class="eyebrow rv">the failure mode in AI detection tooling</div>
+    <h2 class="rv">One big <span class="grad-text">LLM call</span> and a prayer.</h2>
+    <p class="section-lede rv">The junior move is to make the whole pipeline a single model call — draft, validate, dedupe and review all in one prompt. Then the model is slow, rate-limited, or simply absent in CI, and the entire stage falls over with it.</p>
+    <div class="chat rv d1">
+      <div class="q"><div class="role">CI · a rule lands in a merge request</div><div>lint it, check it against the catalog, review it for FP risk — gate the merge on the result</div></div>
+      <div class="a"><div class="role">monolithic "AI reviewer"</div>
+        <div class="txt">Calling the model to lint + dedupe + review in one shot… <span class="mono">503 model unavailable</span> ✗</div>
+        <div class="flag">⚠ The schema check and the catalog dedup never needed a model at all — but they were welded to the LLM call, so a transient outage just failed a merge that was perfectly valid. The AI took the boring, testable parts down with it.</div>
+      </div>
+    </div>
+    <p class="warn-note rv d2">The fix isn't a more reliable model. It's structural: the <b>deterministic parts run without a model</b>, the AI is an <b>optional enhancement</b>, and every verb <b>degrades instead of breaking</b>.</p>
+  </div>
+</section>
+
+<section id="floor" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="eyebrow rv">the centerpiece · interactive</div>
+    <h2 class="rv">Pull the model. Watch what <span class="grad-text">still works</span>.</h2>
+    <p class="section-lede rv">Pick a verb, then toggle the model off. The deterministic core keeps running, the LLM layer drops to a floor or sets an error field — and nothing ever raises.</p>
+    <div class="demo rv d1">
+      <div class="demo-lbl">1 · choose a verb</div>
+      <div class="verb-pick" id="verbpick">
+        <button class="verb sel" data-k="lint"><span class="vv">lint</span><span class="vl">schema + best practice</span></button>
+        <button class="verb" data-k="overlap"><span class="vv">find_overlaps</span><span class="vl">catalog dedup</span></button>
+        <button class="verb" data-k="review"><span class="vv">review</span><span class="vl">senior-engineer pass</span></button>
+        <button class="verb" data-k="draft"><span class="vv">draft</span><span class="vl">English → rule</span></button>
+        <button class="verb" data-k="analyze"><span class="vv">analyze</span><span class="vl">report → package</span></button>
+      </div>
+
+      <div class="pipe">
+        <div class="stg" id="st-core"><div class="sl"><span>deterministic core</span><span class="dotk"></span></div><div class="sh">no model needed</div><div class="ss" id="ss-core"></div></div>
+        <div class="arr">+</div>
+        <div class="stg" id="st-llm"><div class="sl"><span>LLM layer</span><span class="dotk"></span></div><div class="sh">optional enhancement</div><div class="ss" id="ss-llm"></div></div>
+        <div class="arr">▸</div>
+        <div class="stg" id="st-out"><div class="sl"><span>the contract</span><span class="dotk"></span></div><div class="sh">never raises</div><div class="ss" id="ss-out"></div></div>
+      </div>
+
+      <div class="controls">
+        <label class="toggle"><input type="checkbox" id="model" checked> <span><span class="mono">model</span> available</span></label>
+        <span class="dirhint" id="dirhint"></span>
+      </div>
+      <div class="result" id="result"></div>
+    </div>
+  </div>
+</section>
+
+<section id="both">
+  <div class="wrap">
+    <div class="eyebrow rv">it goes both ways</div>
+    <h2 class="rv">Intel into rules. Rules into a <span class="grad-text">merge</span>.</h2>
+    <p class="section-lede rv">A new advisory drops and someone has to translate it into detection content; or an analyst describes a behavior and someone has to turn it into a reviewed rule. detflow does both halves of the detection-as-code loop — the only vendor-specific parts (where intel comes from, where rules deploy) are exactly what it leaves to you.</p>
+    <div class="loopwrap">
+      <div class="dircard rv d1">
+        <div class="dh">intel → detection · analyze()</div>
+        <h3>From a threat report to a package</h3>
+        <div class="flow">
+          <span class="fnode start">threat report</span><span class="fa">→</span>
+          <span class="fnode">ATT&amp;CK + confidence</span><span class="fa">→</span>
+          <span class="fnode">Sigma · YARA · Suricata</span><span class="fa">→</span>
+          <span class="fnode end">STIX · Navigator · brief</span>
+        </div>
+        <p>Paste a CVE advisory or a CTI writeup; get back tactic-ordered techniques with evidence, generated rules with the Sigma linted in place, and one-call exports to STIX 2.1, an ATT&amp;CK Navigator layer, or an audience-aware Markdown brief.</p>
+      </div>
+      <div class="dircard rv d2">
+        <div class="dh">detection → merge · draft / lint / review</div>
+        <h3>From plain English to a reviewed rule</h3>
+        <div class="flow">
+          <span class="fnode start">plain English</span><span class="fa">→</span>
+          <span class="fnode">Sigma / XQL</span><span class="fa">→</span>
+          <span class="fnode">lint + dedupe</span><span class="fa">→</span>
+          <span class="fnode end">quality · FP risk · verdict</span>
+        </div>
+        <p>Describe the behavior; get a first-draft rule, linted offline, deduped against the catalog you already run, and reviewed like a senior engineer — quality score, false-positive risk, ATT&amp;CK mapping and the gaps worth flagging.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="verbs" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="eyebrow rv">deterministic primitives first, the model as an enhancement</div>
+    <h2 class="rv">Each verb is independently <span class="grad-text">useful</span>.</h2>
+    <p class="section-lede rv">Every piece runs on its own, and the boring ones run with no model, no network and no keys — so they drop straight into CI.</p>
+    <div class="layers">
+      <div class="layer rv"><div class="ln grad-text">analyze</div><div class="lc"><h3>report → detection package</h3><div class="lx">needs a model</div><p>Map a raw report to tactic-ordered ATT&CK techniques with confidence, generate Sigma / YARA / Suricata, and treat the report as <b>hostile input</b> — the prompt is hardened against injection and never invents technique IDs.</p></div></div>
+      <div class="layer rv"><div class="ln grad-text">draft</div><div class="lc"><h3>English → Sigma / XQL</h3><div class="lx">needs a model</div><p>Turn a sentence into a first-draft rule in either language. The XQL prompt knows XQL — no <span class="mono">startswith</span>, no SQL <span class="mono">where</span> — so you don't get SQL-shaped hallucinations back.</p></div></div>
+      <div class="layer rv"><div class="ln grad-text">lint</div><div class="lc"><h3>schema + best practice</h3><div class="lx">no model · pure</div><p>Validate a rule offline — stdlib plus PyYAML — and get <span class="mono">pass</span> / <span class="mono">warn</span> / <span class="mono">fail</span> with per-finding messages. Runs in CI with zero secrets.</p></div></div>
+      <div class="layer rv"><div class="ln grad-text">find_overlaps</div><div class="lc"><h3>catalog dedup</h3><div class="lx">no model · pure</div><p>Check a rule against the inventory you already run, so you don't ship coverage you already have. Deterministic, no network.</p></div></div>
+      <div class="layer rv"><div class="ln grad-text">review</div><div class="lc"><h3>senior-engineer pass</h3><div class="lx">model optional · floor</div><p>Quality score, false-positive risk, ATT&CK mapping and verdict when a model is present — and a deterministic floor (lint + overlaps + parsed techniques) when it isn't. <b>Never raises.</b></p></div></div>
+      <div class="layer rv"><div class="ln grad-text">exports</div><div class="lc"><h3>STIX · Navigator · brief</h3><div class="lx">no model · pure</div><p>Each is one pure function of the analysis with deterministic IDs — a STIX 2.1 bundle for the TIP, an ATT&CK Navigator layer for the coverage map, and a Markdown brief framed for the reader you pass.</p></div></div>
+    </div>
+    <p class="note rv">The brief is the one piece that knows its audience: pass <span class="mono">audience=</span> and the same analysis is framed for <span class="mono">dr</span>, <span class="mono">soc</span>, <span class="mono">leadership</span>, <span class="mono">purple_team</span>, <span class="mono">red_team</span> or <span class="mono">general</span> — one analysis, six lenses. <b>The mappings and rules don't change; only the framing does.</b></p>
+  </div>
+</section>
+
+<section id="byom">
+  <div class="wrap">
+    <div class="eyebrow rv">model-agnostic on purpose</div>
+    <h2 class="rv">Bring any model. It's <span class="grad-text">one method</span>.</h2>
+    <p class="section-lede rv">detflow imports no SDK and hard-codes no provider. A "model" is anything with a single <span class="mono">complete()</span> method — so an OpenAI-compatible endpoint, a local vLLM/Ollama server, or a LangChain failover chain all drop straight in.</p>
+    <div class="code rv d1">
+      <div class="cbar"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="fn">quickstart.py</span></div>
+<pre><span class="k">import</span> detflow
+
+<span class="c"># both directions, one import ----------------------------------</span>
+sigma = detflow.<span class="f">draft</span>(<span class="s">"encoded PowerShell spawned from a Word macro"</span>)
+a     = detflow.<span class="f">analyze</span>(advisory_text, audience=<span class="s">"dr"</span>)   <span class="c"># report → package</span>
+
+<span class="c"># the deterministic verbs need no model, no network, no keys</span>
+report   = detflow.<span class="f">lint</span>(sigma.rule)               <span class="c"># pass / warn / fail</span>
+overlaps = detflow.<span class="f">find_overlaps</span>(sigma.rule, catalog)
+detflow.<span class="f">to_stix_bundle</span>(a)                          <span class="c"># pure fn → your TIP</span>
+
+<span class="c"># review uses a model when present, a floor when it isn't</span>
+result = detflow.<span class="f">review</span>(sigma.rule, catalog=catalog)
+<span class="k">print</span>(result.quality_score, result.false_positive_risk, result.verdict)
+
+<span class="c"># bring any model — here, a langchain-failover chain</span>
+<span class="k">from</span> langchain_failover <span class="k">import</span> FailoverChatModel
+<span class="k">from</span> detflow.llm <span class="k">import</span> LangChainModel
+model = <span class="f">LangChainModel</span>(<span class="f">FailoverChatModel</span>(models=[primary, local_fallback]))
+detflow.<span class="f">analyze</span>(advisory_text, model=model)        <span class="c"># rides the failover chain</span></pre>
+    </div>
+    <div class="extras rv d2">
+      <span class="chip">pip install <b>detflow</b></span>
+      <span class="chip"><b>complete(system, user, *, json)</b> → str</span>
+      <span class="chip">OpenAI-compatible via <b>DETFLOW_LLM_*</b></span>
+      <span class="chip"><b>langchain-failover</b> chain</span>
+      <span class="chip">Python <b>3.9+</b> · ships <b>py.typed</b></span>
+      <span class="chip">core is <b>stdlib + PyYAML</b></span>
+    </div>
+  </div>
+</section>
+
+<section id="origin" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="eyebrow rv">where it came from</div>
+    <h2 class="rv">Carved out of a real detection-as-code workbench.</h2>
+    <p class="section-lede rv">detflow is the detection-side sibling of <a href="https://vinayvobbili.github.io/iocflow/" style="color:var(--blue-l)">iocflow</a> — iocflow handles the <em>indicator</em> lifecycle; detflow handles the <em>rule</em> lifecycle. Same design DNA.</p>
+    <p class="dogfood rv d1">I kept re-implementing the same generic stages inside every pipeline — lint a rule, draft one from English, dedupe against the catalog, review it, and translate an advisory into detection content. The only vendor-specific parts are <b>compiling to your query language</b> and <b>dry-running against your tenant</b> — so I left exactly those out, scrubbed the generic middle, and shipped it. It even eats its own dog food: the failover model is <a href="https://pypi.org/project/langchain-failover/" style="color:var(--blue-l)">langchain-failover</a>, another package extracted from the same work. <b>Deterministic primitives plus optional AI</b> — the boring parts are boring and tested, the model adds judgment where judgment helps, and nothing falls over when it's slow or absent.</p>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <div class="eyebrow rv" style="color:var(--muted)">analyze intel · draft · lint · dedupe · review</div>
+    <h2 class="rv grad-text">pip install detflow</h2>
+    <span class="pill rv d1" data-copy="pip install detflow" style="display:inline-flex"><span class="pfx">$</span><span>pip install detflow</span><span class="cp">click to copy</span></span>
+    <div class="final-links rv d2">
+      <a class="btn primary" href="https://pypi.org/project/detflow/">PyPI ↗</a>
+      <a class="btn ghost" href="https://github.com/vinayvobbili/detflow">GitHub ↗</a>
+      <a class="btn ghost" href="https://vinayvobbili.github.io/posts/detflow-detection-engineering-copilot/">Read the full write-up</a>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap">
+  <span>© <span id="yr"></span> Vinay Vobbilichetty · deterministic primitives first, the model as an enhancement that can fail.</span>
+  <span><a href="https://vinayvobbili.github.io">← back to the blog</a></span>
+</div></footer>
+
+<div class="toast" id="toast">copied ✓</div>
+
+<script>
+(function(){
+  var rm = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  // scroll progress + nav
+  var bar=document.getElementById('bar'), nav=document.getElementById('nav');
+  function onScroll(){
+    var h=document.documentElement, sc=h.scrollTop||document.body.scrollTop;
+    var max=h.scrollHeight-h.clientHeight;
+    bar.style.width=(max>0?(sc/max*100):0)+'%';
+    nav.classList.toggle('scrolled', sc>20);
+  }
+  document.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  // reveal + count-up
+  var rvs=[].slice.call(document.querySelectorAll('.rv'));
+  if(rm){rvs.forEach(function(e){e.classList.add('in')});}
+  else{
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);
+        if(e.target.classList.contains('stat')) countUp(e.target.querySelector('[data-count]')); } });
+    },{threshold:.18});
+    rvs.forEach(function(e){io.observe(e)});
+  }
+  function countUp(el){ if(!el) return; var t=+el.getAttribute('data-count'); if(rm){el.textContent=t;return;}
+    if(t===0){el.textContent='0';return;}
+    var s=0; var iv=setInterval(function(){ s+=1; if(s>=t){s=t;clearInterval(iv);} el.textContent=s; }, 120);
+  }
+
+  // copy pills
+  function toast(){ var t=document.getElementById('toast'); t.classList.add('show'); setTimeout(function(){t.classList.remove('show')},1400); }
+  [].slice.call(document.querySelectorAll('[data-copy]')).forEach(function(el){
+    el.addEventListener('click',function(){ var v=el.getAttribute('data-copy');
+      if(navigator.clipboard){navigator.clipboard.writeText(v).then(toast,toast);} else {toast();} });
+  });
+
+  // ---- never-raises / deterministic-floor demo ----
+  // For each verb: what the deterministic core does, what the LLM layer adds,
+  // and what the contract returns — with the model present vs absent.
+  var VERBS={
+    lint:{
+      dir:'detection → merge',
+      core:'parses the rule, runs schema + best-practice checks → <b>pass / warn / fail</b>',
+      llmOn:'unused — lint never calls a model',
+      llmOff:'unused — lint never calls a model',
+      usesModel:false,
+      onText:'<span class="ok">RESULT · identical.</span> <b>lint()</b> is pure (stdlib + PyYAML). It returns the same findings whether or not a model is configured — it never touches one.',
+      offText:'<span class="ok">RESULT · identical.</span> Model gone, output unchanged: <b>lint()</b> needs no model, no network and no keys, so it runs in CI with zero secrets.'
+    },
+    overlap:{
+      dir:'detection → merge',
+      core:'compares the rule against your catalog → <b>"you may already cover this"</b>',
+      llmOn:'unused — dedup is deterministic',
+      llmOff:'unused — dedup is deterministic',
+      usesModel:false,
+      onText:'<span class="ok">RESULT · identical.</span> <b>find_overlaps()</b> is a pure comparison against the inventory you pass — no model involved either way.',
+      offText:'<span class="ok">RESULT · identical.</span> With the model gone you still get every catalog overlap: dedup is deterministic and network-free.'
+    },
+    review:{
+      dir:'detection → merge',
+      core:'always runs lint + overlaps + parses ATT&CK techniques',
+      llmOn:'adds the judgment: <b>quality score · FP risk · verdict · gaps</b>',
+      llmOff:'skipped — drops to the deterministic floor',
+      usesModel:true,
+      floor:true,
+      onText:'<span class="ok">RESULT · full review.</span> A senior-engineer pass: quality score, false-positive risk, ATT&CK mapping and verdict — on top of the lint and overlap results.',
+      offText:'<span class="soft">RESULT · deterministic floor.</span> No model, but <b>review() never raises</b>: you still get the lint findings, the catalog overlaps and the parsed ATT&CK techniques. The AI adds judgment when it can; the floor holds when it can\'t.'
+    },
+    draft:{
+      dir:'detection → merge',
+      core:'validates the request and shapes the result object',
+      llmOn:'writes the rule — <b>a full Sigma / Cortex XQL draft</b>, ready to lint',
+      llmOff:'no draft produced — generation needs a model',
+      usesModel:true,
+      floor:false,
+      onText:'<span class="ok">RESULT · a rule.</span> A first-draft Sigma or XQL rule. The XQL prompt is language-aware, so you don\'t get SQL-shaped hallucinations back.',
+      offText:'<span class="soft">RESULT · error field, not an exception.</span> Drafting is generative, so it needs a model — but a missing model comes back as a <b>DraftResult with .error set</b>, never a crash. The pipeline stays up.'
+    },
+    analyze:{
+      dir:'intel → detection',
+      core:'fences the report as hostile input; exports stay pure functions of the result',
+      llmOn:'maps ATT&CK + writes <b>Sigma / YARA / Suricata</b>, Sigma linted in place',
+      llmOff:'no analysis produced — mapping needs a model',
+      usesModel:true,
+      floor:false,
+      onText:'<span class="ok">RESULT · a package.</span> Tactic-ordered ATT&CK techniques with confidence, generated rules with the Sigma linted in place, then one-call STIX / Navigator / brief exports.',
+      offText:'<span class="soft">RESULT · error field, not an exception.</span> Mapping a report needs a model, so without one <b>analyze() returns a ThreatAnalysis with .error set</b> — it doesn\'t throw. And the STIX / Navigator / brief exporters are pure functions of the result.'
+    }
+  };
+
+  var cur='lint';
+  var pick=document.getElementById('verbpick'), model=document.getElementById('model'),
+      stCore=document.getElementById('st-core'), stLlm=document.getElementById('st-llm'), stOut=document.getElementById('st-out'),
+      ssCore=document.getElementById('ss-core'), ssLlm=document.getElementById('ss-llm'), ssOut=document.getElementById('ss-out'),
+      dirhint=document.getElementById('dirhint'), result=document.getElementById('result');
+
+  function render(){
+    var d=VERBS[cur], on=model.checked;
+    dirhint.textContent='direction: '+d.dir;
+
+    // deterministic core — always up
+    stCore.className='stg up';
+    ssCore.innerHTML=d.core;
+
+    // LLM layer
+    if(!d.usesModel){
+      stLlm.className='stg dim';
+      ssLlm.innerHTML=d.llmOn;
+    } else if(on){
+      stLlm.className='stg up';
+      ssLlm.innerHTML=d.llmOn;
+    } else {
+      stLlm.className='stg dim';
+      ssLlm.innerHTML=d.llmOff;
+    }
+
+    // the contract — never raises; "up" unless the verb couldn't produce its
+    // primary output (draft/analyze with no model) — even then it's a soft
+    // degrade, not a failure, so we mark it soft rather than fail.
+    var degraded = d.usesModel && !on;
+    var hardOutput = degraded && d.floor===false;
+    stOut.className = 'stg ' + (hardOutput ? '' : 'up');
+    if(!d.usesModel) ssOut.innerHTML='returns its result — same with or without a model';
+    else if(on) ssOut.innerHTML='returns the full enhanced result';
+    else if(d.floor) ssOut.innerHTML='returns the <b>deterministic floor</b> — never raises';
+    else ssOut.innerHTML='returns a result with <b>.error</b> set — never raises';
+
+    result.innerHTML = on ? d.onText : d.offText;
+  }
+
+  pick.addEventListener('click',function(e){
+    var b=e.target.closest('.verb'); if(!b) return;
+    [].slice.call(pick.children).forEach(function(c){c.classList.remove('sel')});
+    b.classList.add('sel'); cur=b.getAttribute('data-k'); render();
+  });
+  model.addEventListener('change',render);
+  render();
+
+  document.getElementById('yr').textContent=new Date().getFullYear();
+})();
+</script>
+</body>
+</html>
