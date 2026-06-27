@@ -456,7 +456,7 @@ ans = engine.<span class="f">evaluate</span>(
   }
   sl.addEventListener('input',render); render();
 
-  document.getElementById('yr').textContent=(document.lastModified||'').slice(-4)||'2026';
+  document.getElementById('yr').textContent=new Date().getFullYear();
 })();
 </script>
 </body>

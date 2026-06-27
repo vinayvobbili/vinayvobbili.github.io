@@ -53,6 +53,7 @@ Notice that L1–L5 have no idea an agent exists. They're just functions with st
 
 Layer 6 hands a report to a supervisor that routes to specialist agents — extractor, enricher, hunter, responder — each using L1–L5 as tools, then loops back until the case is done.
 
+{% raw %}
 ```mermaid
 flowchart TB
     START([report text]) --> SUP{supervisor<br/>routes next step}
@@ -68,6 +69,7 @@ flowchart TB
     RE -->|live block| SUP
     SUP -->|all done| END([Case])
 ```
+{% endraw %}
 
 ```python
 from iocflow.agent import investigate

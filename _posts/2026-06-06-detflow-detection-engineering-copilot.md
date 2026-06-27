@@ -76,6 +76,7 @@ for o in result.overlaps:               # "you may already cover this"
 
 The whole flow, end to end:
 
+{% raw %}
 ```mermaid
 flowchart LR
     NL([plain English]) -->|draft| RULE[Sigma / XQL rule]
@@ -85,6 +86,7 @@ flowchart LR
     OV --> REV
     REV --> V([quality · FP risk · ATT&CK · verdict])
 ```
+{% endraw %}
 
 There's a CLI too, for the terminal-and-CI crowd:
 
