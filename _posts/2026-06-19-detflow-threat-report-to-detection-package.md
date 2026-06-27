@@ -80,6 +80,7 @@ detflow.to_brief_markdown(a)                       # a shareable Markdown brief 
 
 The whole flow:
 
+{% raw %}
 ```mermaid
 flowchart LR
     R([threat report]) -->|analyze| A[ATT&CK techniques + confidence]
@@ -91,6 +92,7 @@ flowchart LR
     EXP --> NAV([Navigator layer])
     EXP --> MD([Markdown brief])
 ```
+{% endraw %}
 
 And the CLI, for CI and the terminal crowd:
 
