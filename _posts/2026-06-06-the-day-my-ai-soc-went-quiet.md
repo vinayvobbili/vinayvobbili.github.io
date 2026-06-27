@@ -12,6 +12,7 @@ mermaid: true
 image:
   path: /assets/img/posts/silent-failover-hero.png
   alt: "The failover returned 200 OK with an empty verdict — and the SOC went silent"
+accent: slate
 ---
 
 ## TL;DR
@@ -28,13 +29,11 @@ transparently switched to the backup, every request came back `200 OK` — and t
 backup returned **empty structured output**. An empty verdict reads, to the rest
 of the pipeline, exactly like "nothing to report." So the SOC reported nothing.
 
-<table>
-<tr>
-<td align="center" width="33%"><h2>200 OK</h2><sub>every backup request succeeded — with an empty verdict inside</sub></td>
-<td align="center" width="33%"><h2>0 errors</h2><sub>nothing raised, nothing logged; the room just went silent</sub></td>
-<td align="center" width="33%"><h2>1 check</h2><sub>validate the output, not the transport — and fail loud on empty</sub></td>
-</tr>
-</table>
+<div class="tldr-cards">
+<div class="tldr-card"><span class="tldr-num">200 OK</span><span class="tldr-sub">every backup request succeeded — with an empty verdict inside</span></div>
+<div class="tldr-card"><span class="tldr-num">0 errors</span><span class="tldr-sub">nothing raised, nothing logged; the room just went silent</span></div>
+<div class="tldr-card"><span class="tldr-num">1 check</span><span class="tldr-sub">validate the output, not the transport — and fail loud on empty</span></div>
+</div>
 
 The fix was one guard clause. The lesson took longer: in an LLM pipeline,
 **"the call succeeded" and "the call produced a usable answer" are different

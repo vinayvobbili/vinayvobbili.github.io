@@ -8,6 +8,7 @@ date: 2026-06-06 09:00:00 -0400
 categories: [Security, LLM]
 tags: [detection-engineering, sigma, cortex-xql, siem, detection-as-code, security-automation, open-source, langchain]
 mermaid: true
+accent: forest
 ---
 
 > **Update (v0.2):** detflow now goes the *other* direction too — paste a threat report and get back ATT&CK mappings, generated Sigma/YARA/Suricata, and STIX/Navigator/brief exports. See [detflow Goes Both Ways: From a Threat Report to a Detection Package](/posts/detflow-threat-report-to-detection-package/).
@@ -17,13 +18,11 @@ mermaid: true
 
 I shipped [**detflow**](https://pypi.org/project/detflow/) to PyPI — an open-source, **vendor-neutral detection-engineering copilot**. It does the four things I found myself re-implementing inside every detection-as-code workflow: **draft** a detection from plain English (as **Sigma** or **Cortex XSIAM XQL**), **lint** it offline, **find overlaps** against the rules you already run, and **review** it like a senior detection engineer. 🛡️
 
-<table>
-<tr>
-<td align="center" width="33%"><h2>2 formats</h2><sub>draft &amp; review in <strong>Sigma</strong> or <strong>Cortex XQL</strong> — one portable, one native</sub></td>
-<td align="center" width="33%"><h2>1 protocol</h2><sub>bring any model: an OpenAI-compatible endpoint or a LangChain failover chain</sub></td>
-<td align="center" width="33%"><h2>0 crashes</h2><sub>lint &amp; overlap need no model; review degrades to a deterministic floor</sub></td>
-</tr>
-</table>
+<div class="tldr-cards">
+<div class="tldr-card"><span class="tldr-num">2 formats</span><span class="tldr-sub">draft &amp; review in <strong>Sigma</strong> or <strong>Cortex XQL</strong> — one portable, one native</span></div>
+<div class="tldr-card"><span class="tldr-num">1 protocol</span><span class="tldr-sub">bring any model: an OpenAI-compatible endpoint or a LangChain failover chain</span></div>
+<div class="tldr-card"><span class="tldr-num">0 crashes</span><span class="tldr-sub">lint &amp; overlap need no model; review degrades to a deterministic floor</span></div>
+</div>
 
 This is the detection-side sibling of [iocflow](/posts/iocflow-agentic-ioc-lifecycle/). iocflow handles the *indicator* lifecycle; detflow handles the *rule* lifecycle. Same design DNA: **deterministic primitives first, the LLM as an enhancement that can fail without taking the tool down with it.** 🧱
 

@@ -8,19 +8,18 @@ date: 2026-06-19 22:00:00 -0400
 categories: [Security, LLM]
 tags: [detection-engineering, threat-intelligence, sigma, yara, suricata, mitre-attack, stix, detection-as-code, security-automation, open-source, langchain]
 mermaid: true
+accent: moss
 ---
 
 ## TL;DR 🚀
 
 [**detflow**](https://pypi.org/project/detflow/) `0.2.0` is out, and it now works in **both directions**. v0.1 took you from plain English to a detection rule. v0.2 adds the reverse: hand it a **raw threat report** — a CVE advisory, a CTI writeup, an IOC/TTP dump — and `analyze()` gives you back a grounded **detection package**. 🛡️
 
-<table>
-<tr>
-<td align="center" width="33%"><h2>1 verb</h2><sub><code>analyze(report)</code> → ATT&amp;CK + rules + brief, tactic-ordered and grounded</sub></td>
-<td align="center" width="33%"><h2>3 rule formats</h2><sub>generates <strong>Sigma + YARA + Suricata</strong>, with the Sigma linted in place</sub></td>
-<td align="center" width="33%"><h2>3 exports</h2><sub>one call each to <strong>STIX 2.1</strong>, <strong>ATT&amp;CK Navigator</strong>, or a Markdown brief</sub></td>
-</tr>
-</table>
+<div class="tldr-cards">
+<div class="tldr-card"><span class="tldr-num">1 verb</span><span class="tldr-sub"><code>analyze(report)</code> → ATT&amp;CK + rules + brief, tactic-ordered and grounded</span></div>
+<div class="tldr-card"><span class="tldr-num">3 rule formats</span><span class="tldr-sub">generates <strong>Sigma + YARA + Suricata</strong>, with the Sigma linted in place</span></div>
+<div class="tldr-card"><span class="tldr-num">3 exports</span><span class="tldr-sub">one call each to <strong>STIX 2.1</strong>, <strong>ATT&amp;CK Navigator</strong>, or a Markdown brief</span></div>
+</div>
 
 If v0.1 was the *authoring* half of a detection-as-code workflow, v0.2 is the *intel-to-detection* half — the step a CTI analyst does by hand every time a new advisory lands. 🧠
 

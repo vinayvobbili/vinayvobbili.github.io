@@ -8,6 +8,7 @@ mermaid: true
 image:
   path: /assets/img/posts/reranker-hero.png
   alt: "+41% MRR@10 uplift — fine-tuning a cross-encoder reranker on security-ticket pairs"
+accent: teal
 ---
 
 ## TL;DR
@@ -27,13 +28,11 @@ We fine-tuned the reranker on our own data. Held-out test set, time-based split:
 **+41% uplift.** No model architecture change, no embedding model swap. Just
 domain-specific fine-tuning of the same base reranker.
 
-<table>
-<tr>
-<td align="center" width="33%"><h2>+41%</h2><sub>MRR@10 uplift on held-out time-split test set</sub></td>
-<td align="center" width="33%"><h2>24,213 + 10,848</h2><sub>positive pairs + clean hard negatives, mined from close-notes</sub></td>
-<td align="center" width="33%"><h2>0</h2><sub>explicit relevance labels collected — all signal mined from existing analyst text</sub></td>
-</tr>
-</table>
+<div class="tldr-cards">
+<div class="tldr-card"><span class="tldr-num">+41%</span><span class="tldr-sub">MRR@10 uplift on held-out time-split test set</span></div>
+<div class="tldr-card"><span class="tldr-num">24,213 + 10,848</span><span class="tldr-sub">positive pairs + clean hard negatives, mined from close-notes</span></div>
+<div class="tldr-card"><span class="tldr-num">0</span><span class="tldr-sub">explicit relevance labels collected — all signal mined from existing analyst text</span></div>
+</div>
 
 The interesting part isn't the result — it's where the training data came from. We
 never logged a single explicit relevance judgement. The 24K positive pairs were

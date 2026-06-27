@@ -8,6 +8,7 @@ mermaid: true
 image:
   path: /assets/img/posts/template-check-hero.png
   alt: "3 patterns — Jinja2 chat-template traps that silently kill your prefix-KV cache"
+accent: crimson
 ---
 
 ## TL;DR
@@ -16,13 +17,11 @@ A 30B coder model behind a self-hosted Claude Code setup went from **~8 seconds 
 
 Prompt caching only works if the **unchanged prefix of the conversation renders to byte-identical text** between turns. Three Jinja2 patterns inside chat templates silently break that property. None of them are bugs — they're useful features for *generation*. They're just incompatible with prefix-KV caching.
 
-<table>
-<tr>
-<td align="center" width="33%"><h2>3 patterns</h2><sub>that quietly invalidate a prefix-KV cache turn-over-turn</sub></td>
-<td align="center" width="33%"><h2>~25 MB</h2><sub>system+tools KV snapshot for a 30B coder on 8-bit MLX</sub></td>
-<td align="center" width="33%"><h2>~13×</h2><sub>warm-turn speedup once the cache actually hits</sub></td>
-</tr>
-</table>
+<div class="tldr-cards">
+<div class="tldr-card"><span class="tldr-num">3 patterns</span><span class="tldr-sub">that quietly invalidate a prefix-KV cache turn-over-turn</span></div>
+<div class="tldr-card"><span class="tldr-num">~25 MB</span><span class="tldr-sub">system+tools KV snapshot for a 30B coder on 8-bit MLX</span></div>
+<div class="tldr-card"><span class="tldr-num">~13×</span><span class="tldr-sub">warm-turn speedup once the cache actually hits</span></div>
+</div>
 
 Run the check below against any model's published `tokenizer_config.json` **before** you download the weights. It takes five minutes and a Python interpreter.
 

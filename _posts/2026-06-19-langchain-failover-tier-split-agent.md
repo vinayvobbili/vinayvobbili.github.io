@@ -8,19 +8,18 @@ date: 2026-06-19 22:30:00 -0400
 categories: [LLM, Security]
 tags: [llm, agents, tool-calling, langchain, local-llm, latency, cost-optimization, multi-agent, open-source, security-automation]
 mermaid: true
+accent: indigo
 ---
 
 ## TL;DR 🚀
 
 [**langchain-failover**](https://pypi.org/project/langchain-failover/) `0.2.0` grows a second trick. v0.1 was a **failover** wrapper — serve from a primary chat model, fall back to a secondary on a connection error, with tool-calling surviving the switch. v0.2 reframes the package as **multi-model orchestration** and adds the other reason you run more than one model: **tier-split**. 🎛️
 
-<table>
-<tr>
-<td align="center" width="33%"><h2>2 strategies</h2><sub><strong>failover</strong> for resilience, <strong>tier-split</strong> for cost/latency — one interface</sub></td>
-<td align="center" width="33%"><h2>2 tiers</h2><sub>gather on a <strong>cheap/local</strong> model, compose on a <strong>frontier</strong> one</sub></td>
-<td align="center" width="33%"><h2>0 new deps</h2><sub>still <code>langchain-core</code> only; the tiers compose with failover</sub></td>
-</tr>
-</table>
+<div class="tldr-cards">
+<div class="tldr-card"><span class="tldr-num">2 strategies</span><span class="tldr-sub"><strong>failover</strong> for resilience, <strong>tier-split</strong> for cost/latency — one interface</span></div>
+<div class="tldr-card"><span class="tldr-num">2 tiers</span><span class="tldr-sub">gather on a <strong>cheap/local</strong> model, compose on a <strong>frontier</strong> one</span></div>
+<div class="tldr-card"><span class="tldr-num">0 new deps</span><span class="tldr-sub">still <code>langchain-core</code> only; the tiers compose with failover</span></div>
+</div>
 
 The headline result from the production SOC this came out of: on a contended local GPU, the agent's final turn went from **multiple minutes to a couple of seconds** — without changing a single tool. ⚡
 

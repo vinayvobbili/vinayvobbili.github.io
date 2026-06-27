@@ -8,19 +8,18 @@ date: 2026-05-30 09:00:00 -0400
 categories: [Security, LLM]
 tags: [soc, ai-agents, langgraph, redis-streams, multi-agent, hitl, crewai, autogen, security-automation, vllm, mlx]
 mermaid: true
+accent: aqua
 ---
 
 ## TL;DR
 
 A real SOC runs 24×7 with eight or nine distinct roles — alert triage, deeper investigation, incident response, threat intel, detection tuning, hunting, shift management, and a human approver for any destructive action. We built an AI version of that whole org chart, coordinated over a Redis Streams bus, with **one** local LLM (GLM-4.7-Flash on a Mac M1) wearing every hat. v1 is read-only against real systems; the only writes are XSOAR notes and Webex cards, plus a human-approval gate on every proposed containment action.
 
-<table>
-<tr>
-<td align="center" width="33%"><h2>8 roles</h2><sub>Sentinel · Tier 2 · IR Lead · Threat Intel · SOC Manager · Detection Eng · Threat Hunter · HITL</sub></td>
-<td align="center" width="33%"><h2>1 LLM</h2><sub>m1 GLM-4.7-Flash via vllm-mlx, with FailoverChatModel to a studio1 backup</sub></td>
-<td align="center" width="33%"><h2>0 writes</h2><sub>to CrowdStrike, Tanium, Zscaler — agents <em>propose</em>, humans <em>execute</em></sub></td>
-</tr>
-</table>
+<div class="tldr-cards">
+<div class="tldr-card"><span class="tldr-num">8 roles</span><span class="tldr-sub">Sentinel · Tier 2 · IR Lead · Threat Intel · SOC Manager · Detection Eng · Threat Hunter · HITL</span></div>
+<div class="tldr-card"><span class="tldr-num">1 LLM</span><span class="tldr-sub">m1 GLM-4.7-Flash via vllm-mlx, with FailoverChatModel to a studio1 backup</span></div>
+<div class="tldr-card"><span class="tldr-num">0 writes</span><span class="tldr-sub">to CrowdStrike, Tanium, Zscaler — agents <em>propose</em>, humans <em>execute</em></span></div>
+</div>
 
 The interesting parts aren't the agents themselves — there's nothing novel about an LLM-with-tools loop. The interesting parts are: (1) the architectural choices that let one local LLM serve a whole SOC org chart without melting, (2) the human-in-the-loop gate that makes "AI does containment" a real thing a security team will actually trust, and (3) a backtest harness that lets us put hard numbers on agent quality against real historical tickets before we hand the demo to leadership.
 
