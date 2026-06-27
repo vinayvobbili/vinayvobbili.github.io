@@ -8,19 +8,18 @@ date: 2026-05-31 09:00:00 -0400
 categories: [Security, LLM]
 tags: [ioc, threat-intelligence, ai-agents, langgraph, multi-agent, hitl, security-automation, dfir, open-source, langchain]
 mermaid: true
+accent: violet
 ---
 
 ## TL;DR 🚀
 
 I shipped [**iocflow**](https://pypi.org/project/iocflow/) to PyPI — an open-source Python library for the **entire indicator-of-compromise lifecycle**, built as six independently-useful layers behind pip extras. The headline isn't "another IOC parser." It's the *shape*: every layer is a deterministic, boring, testable primitive — and the top layer is a small **LangGraph multi-agent team** that orchestrates those primitives, with a **human-in-the-loop gate** standing between the AI and anything destructive.
 
-<table>
-<tr>
-<td align="center" width="33%"><h2>6 layers</h2><sub>extract · enrich · comment · hunt · block · agent — each its own pip extra</sub></td>
-<td align="center" width="33%"><h2>1 import</h2><sub><code>investigate(text)</code> runs the whole chain as a multi-agent team</sub></td>
-<td align="center" width="33%"><h2>0 rogue blocks</h2><sub>LLM <em>proposes</em> · human <em>authorizes</em> · a guard <em>vetoes</em></sub></td>
-</tr>
-</table>
+<div class="tldr-cards">
+<div class="tldr-card"><span class="tldr-num">6 layers</span><span class="tldr-sub">extract &middot; enrich &middot; comment &middot; hunt &middot; block &middot; agent — each its own pip extra</span></div>
+<div class="tldr-card"><span class="tldr-num">1 import</span><span class="tldr-sub"><em>investigate(text)</em> runs the whole chain as a multi-agent team</span></div>
+<div class="tldr-card"><span class="tldr-num">0 rogue blocks</span><span class="tldr-sub">LLM <em>proposes</em> &middot; human <em>authorizes</em> &middot; a guard <em>vetoes</em></span></div>
+</div>
 
 This is the OSS sibling of [SOC-in-a-Box](/posts/building-soc-in-a-box/), the AI SOC I wrote about last week. SOC-in-a-Box proved the *pattern* against real systems; iocflow packages the *lesson* so anyone can pip-install it. 🧰
 

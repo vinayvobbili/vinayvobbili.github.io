@@ -400,8 +400,8 @@ article[data-toc] > header {
   padding: clamp(1.6rem, 3.5vw, 2.6rem) clamp(1.3rem, 3vw, 2.2rem)
     clamp(1.25rem, 2.5vw, 1.7rem);
   border-radius: 18px;
-  background: $brand-grad;
-  box-shadow: 0 18px 48px rgba(0, 70, 173, 0.26);
+  background: var(--post-grad, #{$brand-grad});
+  box-shadow: 0 18px 48px var(--post-shadow, rgba(0, 70, 173, 0.26));
   overflow: hidden;
 
   /* soft radial highlights, same motif as the home hero */
@@ -411,7 +411,11 @@ article[data-toc] > header {
     inset: 0;
     background:
       radial-gradient(circle at 88% 12%, rgba(#fff, 0.25), transparent 42%),
-      radial-gradient(circle at 6% 102%, rgba(#00ffb3, 0.2), transparent 46%);
+      radial-gradient(
+        circle at 6% 102%,
+        var(--post-glow, rgba(#00ffb3, 0.2)),
+        transparent 46%
+      );
     pointer-events: none;
   }
 
@@ -456,7 +460,7 @@ article[data-toc] > header {
   height: 3px;
   margin: 2.4rem 0;
   border-radius: 3px;
-  background: $brand-grad;
+  background: var(--post-grad, #{$brand-grad});
   opacity: 0.55;
 }
 
@@ -466,7 +470,7 @@ article[data-toc] > header {
   border-left-width: 4px;
   border-radius: 0 9px 9px 0;
   padding: 0.55rem 1rem;
-  background: rgba($brand-blue, 0.045);
+  background: var(--post-tint, #{rgba($brand-blue, 0.045)});
 }
 
 /* ---- TL;DR metric cards (reusable across flagship posts) --------------- */
@@ -500,7 +504,7 @@ article[data-toc] > header {
     font-size: 2.1rem;
     line-height: 1;
     letter-spacing: -0.02em;
-    background: $brand-grad;
+    background: var(--post-grad, #{$brand-grad});
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -534,7 +538,7 @@ article[data-toc] > header {
       bottom: 0.18em;
       width: 5px;
       border-radius: 3px;
-      background: $brand-grad;
+      background: var(--post-grad, #{$brand-grad});
     }
   }
 
@@ -544,7 +548,7 @@ article[data-toc] > header {
   }
 
   blockquote {
-    border-left-color: $brand-green;
+    border-left-color: var(--post-accent, #{$brand-green});
   }
 
   a {
@@ -553,7 +557,7 @@ article[data-toc] > header {
 
   /* inline code with a subtle brand tint */
   code:not([class*='language-']) {
-    color: $brand-blue;
+    color: var(--post-accent, #{$brand-blue});
   }
 }
 
