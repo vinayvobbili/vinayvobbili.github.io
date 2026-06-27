@@ -8,19 +8,18 @@ date: 2026-06-14 10:00:00 -0400
 categories: [Security, LLM]
 tags: [dfir, forensics, ai-agents, mcp, claude-code, ioc, threat-intelligence, hallucination, sans, open-source]
 mermaid: true
+accent: magma
 ---
 
 ## TL;DR 🔎
 
 I built [**find-evil**](https://github.com/vinayvobbili/find-evil) for the SANS **FIND EVIL!** hackathon. [Protocol SIFT](https://github.com/teamdfir/protocol-sift) is a sharp idea — put a Claude Code agent in front of the SANS SIFT Workstation's 200+ forensic tools so a responder can investigate at machine speed. It works. But the brief says the quiet part out loud: *"it also hallucinates more than we'd like."* find-evil bolts my open-source [`iocflow`](https://github.com/vinayvobbili/iocflow) IOC lifecycle onto it as a **custom MCP server plus one skill**, so the agent stops eyeballing huge dumps and instead **reconciles its own findings against a deterministic, false-positive-defended extractor** — catching its hallucinations before they reach the report.
 
-<table>
-<tr>
-<td align="center" width="33%"><h2>1 skill</h2><sub>extract → reconcile / self-correct → hunt, instead of asserting by eye</sub></td>
-<td align="center" width="33%"><h2>0 shell verbs</h2><sub>the MCP server is text-in / dict-out — the agent <em>cannot</em> spoliate evidence or push a block</sub></td>
-<td align="center" width="33%"><h2>1 real C2</h2><sub>found fileless Empire C2 on the SANS image — and refused to invent any on the clean host</sub></td>
-</tr>
-</table>
+<div class="tldr-cards">
+<div class="tldr-card"><span class="tldr-num">1 skill</span><span class="tldr-sub">extract → reconcile / self-correct → hunt, instead of asserting by eye</span></div>
+<div class="tldr-card"><span class="tldr-num">0 shell verbs</span><span class="tldr-sub">the MCP server is text-in / dict-out — the agent <em>cannot</em> spoliate evidence or push a block</span></div>
+<div class="tldr-card"><span class="tldr-num">1 real C2</span><span class="tldr-sub">found fileless Empire C2 on the SANS image — and refused to invent any on the clean host</span></div>
+</div>
 
 This is the DFIR-facing sibling of [iocflow](/posts/iocflow-agentic-ioc-lifecycle/) and [SOC-in-a-Box](/posts/building-soc-in-a-box/): same architectural conviction — *the model orchestrates, deterministic code does the dangerous part* — pointed at a forensic agent on a SANS Workstation. 🛡️
 

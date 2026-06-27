@@ -8,6 +8,7 @@ mermaid: true
 image:
   path: /assets/img/posts/kv-cache-hero.png
   alt: "108-second turns to 7-second turns — fixing the prefix cache for self-hosted Claude Code"
+accent: ember
 ---
 
 > **Update (2026-05-14).** The SimpleEngine prefix-cache patch described in
@@ -62,13 +63,11 @@ Two findings, **both required** to get the speedup:
 Together: **108-second turns → 7-8 second follow-ups. A 13-15× speedup**, on the
 same hardware, with the same model.
 
-<table>
-<tr>
-<td align="center" width="33%"><h2>108s → 7-8s</h2><sub>warm-turn wall-clock, before vs after</sub></td>
-<td align="center" width="33%"><h2>13-15×</h2><sub>follow-up speedup, same hardware + model</sub></td>
-<td align="center" width="33%"><h2>81 bytes</h2><sub>of rotating header text that was costing 100+s/turn</sub></td>
-</tr>
-</table>
+<div class="tldr-cards">
+<div class="tldr-card"><span class="tldr-num">108s → 7-8s</span><span class="tldr-sub">warm-turn wall-clock, before vs after</span></div>
+<div class="tldr-card"><span class="tldr-num">13-15×</span><span class="tldr-sub">follow-up speedup, same hardware + model</span></div>
+<div class="tldr-card"><span class="tldr-num">81 bytes</span><span class="tldr-sub">of rotating header text that was costing 100+s/turn</span></div>
+</div>
 
 ## The setup
 

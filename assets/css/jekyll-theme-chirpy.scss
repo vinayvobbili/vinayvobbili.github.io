@@ -496,6 +496,12 @@ article[data-toc] > header {
     box-shadow: 0 6px 20px -12px rgba(0, 40, 90, 0.25);
   }
 
+  /* 4-card decks settle to a balanced 2x2 instead of 3 + one full-width
+     banner when the row can't hold all four (then 1-up on very narrow). */
+  &.cols-4 .tldr-card {
+    flex-basis: calc(50% - 0.5rem);
+  }
+
   .tldr-num {
     display: block;
     margin-bottom: 0.55rem;
@@ -509,6 +515,14 @@ article[data-toc] > header {
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
+  }
+
+  /* word labels (e.g. "Recall", "Interrogation") rather than short metrics —
+     smaller so a longer word still fits a narrow card in a 4-up row.
+     The leading emoji keeps its own colour (text-fill-color doesn't clip it). */
+  .tldr-num.tldr-label {
+    font-size: 1.35rem;
+    letter-spacing: -0.01em;
   }
 
   .tldr-sub {

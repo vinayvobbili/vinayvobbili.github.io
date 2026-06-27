@@ -8,6 +8,7 @@ date: 2026-06-20 09:00:00 -0400
 categories: [Security, LLM]
 tags: [soc, ai-agents, agentic-ai, event-sourcing, multi-agent, case-memory, ground-truth, hitl, security-automation, detection-engineering, redis-streams]
 mermaid: true
+accent: plum
 ---
 
 ## TL;DR
@@ -16,14 +17,12 @@ mermaid: true
 
 This post adds the thing that separates a senior analyst from a fast one: **memory**. Not a vector store bolted on the side — a read projection over the event log the SOC was already writing. Four capabilities fall out of it:
 
-<table>
-<tr>
-<td align="center" width="25%"><h3>🧠 Recall</h3><sub>Agents pull similar prior cases as precedent before they decide — gated behind a flag so we can A/B it</sub></td>
-<td align="center" width="25%"><h3>📊 Proof</h3><sub>Every verdict scored against analyst-curated ground truth — per-role accuracy, published, not hidden</sub></td>
-<td align="center" width="25%"><h3>🔍 Interrogation</h3><sub>"Why did the IR Lead contain that host?" answered from the recorded trace, never a fresh rationalization</sub></td>
-<td align="center" width="25%"><h3>🛰️ Campaigns</h3><sub>Cross-incident clustering on shared infra — the view no single ticket reveals</sub></td>
-</tr>
-</table>
+<div class="tldr-cards cols-4">
+<div class="tldr-card"><span class="tldr-num tldr-label">🧠 Recall</span><span class="tldr-sub">Agents pull similar prior cases as precedent before they decide — gated behind a flag so we can A/B it</span></div>
+<div class="tldr-card"><span class="tldr-num tldr-label">📊 Proof</span><span class="tldr-sub">Every verdict scored against analyst-curated ground truth — per-role accuracy, published, not hidden</span></div>
+<div class="tldr-card"><span class="tldr-num tldr-label">🔍 Interrogation</span><span class="tldr-sub">"Why did the IR Lead contain that host?" answered from the recorded trace, never a fresh rationalization</span></div>
+<div class="tldr-card"><span class="tldr-num tldr-label">🛰️ Campaigns</span><span class="tldr-sub">Cross-incident clustering on shared infra — the view no single ticket reveals</span></div>
+</div>
 
 The interesting part isn't that an agent can remember. It's that once you can remember, you can **measure** — and once you measure, you have to be honest about whether the clever idea actually worked. That honesty is the whole post.
 
