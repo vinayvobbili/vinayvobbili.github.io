@@ -21,6 +21,9 @@ I shipped [**iocflow**](https://pypi.org/project/iocflow/) to PyPI — an open-s
 <div class="tldr-card"><span class="tldr-num">0 rogue blocks</span><span class="tldr-sub">LLM <em>proposes</em> &middot; human <em>authorizes</em> &middot; a guard <em>vetoes</em></span></div>
 </div>
 
+> ▶ **[Open the interactive version →](/iocflow/)** — a full-bleed page where you can walk an indicator through the lifecycle and watch the three-layer authority model in action: the benign `8.8.8.8` gets vetoed by the allowlist guard before the agent can ever propose it.
+{: .prompt-tip }
+
 This is the OSS sibling of [SOC-in-a-Box](/posts/building-soc-in-a-box/), the AI SOC I wrote about last week. SOC-in-a-Box proved the *pattern* against real systems; iocflow packages the *lesson* so anyone can pip-install it. 🧰
 
 ![iocflow investigate() running the full IOC lifecycle with a human-in-the-loop approval gate](/assets/img/posts/iocflow-demo.gif)
