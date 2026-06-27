@@ -1,2 +1,20 @@
 <!-- Fonts are self-hosted via Chirpy's `webfonts` data key
      (_data/origin/cors.yml -> /assets/fonts/fonts.css). No Google Fonts CDN. -->
+
+<!-- Per-post accent palette: `accent: <key>` in front matter swaps the
+     post-scoped colour family (hero band, rails, hr, TL;DR numbers, links,
+     inline code). Palettes live in _data/accents.yml. Falls back to brand
+     blue->green when unset. include (not include_cached) so each post emits
+     its own block. -->
+{%- if page.accent and site.data.accents[page.accent] -%}
+  {%- assign _accent = site.data.accents[page.accent] -%}
+  <style>
+    article[data-toc] {
+      --post-grad: {{ _accent.grad }};
+      --post-accent: {{ _accent.accent }};
+      --post-tint: {{ _accent.tint }};
+      --post-glow: {{ _accent.glow }};
+      --post-shadow: {{ _accent.shadow }};
+    }
+  </style>
+{%- endif -%}

@@ -1,0 +1,94 @@
+# Per-post accent palettes.
+#
+# Set `accent: <key>` in a post's front matter to give that post its own
+# colour identity. The key is looked up here and injected as CSS variables
+# scoped to the post article (see _includes/metadata-hook.html), overriding
+# the brand blue->green default used by the post hero band, section rails,
+# `<hr>` dividers, TL;DR card numbers, links and inline code.
+#
+# Fields per palette:
+#   grad   - the headline gradient (hero band, rails, hr, TL;DR numbers)
+#   accent - solid accent (links, inline code, blockquote rail)
+#   tint   - faint fill behind plain blockquotes
+#   glow   - the lower-left radial highlight on the hero band
+#   shadow - the hero band drop shadow
+#
+# Cream/ivory page backdrop and self-hosted fonts are unchanged — only the
+# accent family shifts, so every post still reads as part of the same site.
+
+ember: # warm amber/orange — caches, throughput, "heat"
+  grad: "linear-gradient(135deg, #b8400a 0%, #e0680c 50%, #f2a516 100%)"
+  accent: "#c2510c"
+  tint: "rgba(194, 81, 12, 0.06)"
+  glow: "rgba(245, 165, 22, 0.22)"
+  shadow: "rgba(184, 64, 10, 0.26)"
+
+crimson: # deep red — cache invalidation, things that break
+  grad: "linear-gradient(135deg, #8a1538 0%, #c01f4a 52%, #e8576b 100%)"
+  accent: "#b01e44"
+  tint: "rgba(176, 30, 68, 0.055)"
+  glow: "rgba(232, 87, 107, 0.22)"
+  shadow: "rgba(138, 21, 56, 0.26)"
+
+teal: # teal -> indigo — retrieval / RAG quality
+  grad: "linear-gradient(135deg, #0e7490 0%, #1f6fd0 52%, #4338ca 100%)"
+  accent: "#0e7490"
+  tint: "rgba(14, 116, 144, 0.055)"
+  glow: "rgba(67, 56, 202, 0.2)"
+  shadow: "rgba(14, 116, 144, 0.26)"
+
+violet: # purple — iocflow / IOC lifecycle
+  grad: "linear-gradient(135deg, #5b21b6 0%, #7c3aed 50%, #a855f7 100%)"
+  accent: "#6d28d9"
+  tint: "rgba(109, 40, 217, 0.055)"
+  glow: "rgba(168, 85, 247, 0.22)"
+  shadow: "rgba(91, 33, 182, 0.28)"
+
+forest: # green -> lime — detection engineering
+  grad: "linear-gradient(135deg, #136f3b 0%, #2f9e44 50%, #82c91e 100%)"
+  accent: "#1a7f3c"
+  tint: "rgba(26, 127, 60, 0.055)"
+  glow: "rgba(130, 201, 30, 0.22)"
+  shadow: "rgba(19, 111, 59, 0.26)"
+
+moss: # teal-green -> olive — detection, second variant
+  grad: "linear-gradient(135deg, #0f766e 0%, #2f9e44 52%, #a3b81e 100%)"
+  accent: "#0f766e"
+  tint: "rgba(15, 118, 110, 0.055)"
+  glow: "rgba(163, 184, 30, 0.2)"
+  shadow: "rgba(15, 118, 110, 0.26)"
+
+slate: # charcoal -> amber — incident / "went quiet"
+  grad: "linear-gradient(135deg, #334155 0%, #475569 45%, #d97706 100%)"
+  accent: "#475569"
+  tint: "rgba(71, 85, 105, 0.06)"
+  glow: "rgba(217, 119, 6, 0.2)"
+  shadow: "rgba(51, 65, 85, 0.28)"
+
+magma: # red -> orange — find evil / DFIR
+  grad: "linear-gradient(135deg, #991b1b 0%, #dc2626 48%, #f97316 100%)"
+  accent: "#b91c1c"
+  tint: "rgba(185, 28, 28, 0.055)"
+  glow: "rgba(249, 115, 22, 0.22)"
+  shadow: "rgba(153, 27, 27, 0.28)"
+
+indigo: # indigo -> sky — failover / tier-split routing
+  grad: "linear-gradient(135deg, #3730a3 0%, #4f46e5 48%, #0ea5e9 100%)"
+  accent: "#4338ca"
+  tint: "rgba(67, 56, 202, 0.055)"
+  glow: "rgba(14, 165, 233, 0.22)"
+  shadow: "rgba(55, 48, 163, 0.28)"
+
+aqua: # blue -> cyan — SOC-in-a-Box
+  grad: "linear-gradient(135deg, #0046ad 0%, #0782c5 50%, #06b6d4 100%)"
+  accent: "#0369a1"
+  tint: "rgba(3, 105, 161, 0.055)"
+  glow: "rgba(6, 182, 212, 0.22)"
+  shadow: "rgba(0, 70, 173, 0.26)"
+
+plum: # purple -> blue — case memory
+  grad: "linear-gradient(135deg, #7c3aed 0%, #6366f1 50%, #2563eb 100%)"
+  accent: "#6d28d9"
+  tint: "rgba(109, 40, 217, 0.055)"
+  glow: "rgba(37, 99, 235, 0.22)"
+  shadow: "rgba(124, 58, 237, 0.28)"
