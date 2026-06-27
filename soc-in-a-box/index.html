@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>document.documentElement.classList.add('js')</script>
+<title>SOC-in-a-Box — one LLM, eight hats, a production-bar AI SOC</title>
+<meta name="description" content="A multi-agent AI SOC where one local LLM plays eight analyst roles over a Redis Streams bus — agents propose, a human executes, and an event-sourced case memory makes it senior instead of just fast.">
+<meta property="og:title" content="SOC-in-a-Box — one LLM, eight hats">
+<meta property="og:description" content="The bus is the org chart; LangGraph is the runtime. Agents propose, humans execute. 0 writes to real systems. pip install aisoc.">
+<meta property="og:image" content="https://vinayvobbili.github.io/assets/img/posts/soc-in-a-box-hero.png">
+<meta property="og:type" content="website">
+<!-- Self-hosted fonts (Space Grotesk + JetBrains Mono); no Google Fonts CDN. -->
+<link rel="stylesheet" href="/assets/fonts/fonts.css">
+<style>
+:root{
+  /* aqua brand family (matches the post's accent) */
+  --blue:#0046ad; --blue-l:#0782c5; --green:#06b6d4; --green-l:#0369a1;
+  --amber:#b07d0a;
+  /* semantic colours for the centerpiece */
+  --mal:#dc2626; --ben:#16a34a; --warn:#d97706;
+  --bg:#f9f5ea; --bg2:#f3eede; --surface:#fffdf7; --surface2:#f6f1e4;
+  --line:#e7dfcc; --line2:#d8cdb4;
+  --ink:#1d2433; --muted:#5a6273; --muted2:#8a8674;
+  --grad:linear-gradient(135deg,#0046ad 0%,#0782c5 50%,#06b6d4 100%);
+  --grad-soft:linear-gradient(135deg,#0046ad14 0%,#06b6d414 100%);
+  --shadow:0 8px 30px -16px rgba(0,50,120,.24);
+  --display:'Space Grotesk',system-ui,sans-serif;
+  --body:'Space Grotesk',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --r:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--body);
+  line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+.mono{font-family:var(--mono)}
+.grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* progress + nav */
+#bar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--grad);z-index:60;transition:width .1s linear}
+nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(12px);
+  background:rgba(249,245,234,.62);border-bottom:1px solid transparent;transition:border-color .3s,background .3s}
+nav.scrolled{border-bottom:1px solid var(--line);background:rgba(249,245,234,.86)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
+nav .logo{font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.02em}
+nav .links{display:flex;gap:22px;align-items:center;font-size:14px;font-weight:500}
+nav .links a{color:var(--muted);transition:color .2s}
+nav .links a:hover{color:var(--ink)}
+nav .links .cta{padding:7px 16px;border-radius:999px;background:var(--grad);color:#fff;font-weight:600}
+@media(max-width:640px){nav .links a.hide-sm{display:none}}
+
+/* hero */
+header.hero{position:relative;min-height:100vh;display:flex;align-items:center;
+  overflow:hidden;border-bottom:1px solid var(--line)}
+.mesh{position:absolute;inset:0;z-index:0}
+.blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.30;will-change:transform}
+.blob.b1{width:560px;height:560px;background:var(--blue);top:-140px;left:-120px;animation:float1 18s ease-in-out infinite}
+.blob.b2{width:520px;height:520px;background:var(--green);bottom:-160px;right:-100px;animation:float2 22s ease-in-out infinite}
+.blob.b3{width:420px;height:420px;background:var(--blue-l);top:30%;right:18%;opacity:.18;animation:float1 26s ease-in-out infinite reverse}
+@keyframes float1{0%,100%{transform:translate(0,0)}50%{transform:translate(60px,40px)}}
+@keyframes float2{0%,100%{transform:translate(0,0)}50%{transform:translate(-50px,-50px)}}
+.grid-ov{position:absolute;inset:0;z-index:1;opacity:.4;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:54px 54px;mask-image:radial-gradient(ellipse 80% 70% at 50% 40%,#000 30%,transparent 75%)}
+.hero .wrap{position:relative;z-index:2;padding-top:80px;padding-bottom:60px}
+.tag{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:600;
+  color:var(--muted);border:1px solid var(--line2);background:var(--surface);
+  padding:7px 15px;border-radius:999px;margin-bottom:26px}
+.tag .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
+h1.title{font-family:var(--display);font-weight:700;font-size:clamp(46px,9vw,104px);
+  line-height:.95;letter-spacing:-.04em;margin-bottom:18px}
+.lede{font-size:clamp(19px,2.4vw,26px);color:var(--ink);max-width:740px;font-weight:500;margin-bottom:14px}
+.lede b{color:transparent;background:var(--grad);-webkit-background-clip:text;background-clip:text}
+.sub{font-size:17px;color:var(--muted);max-width:660px;margin-bottom:34px}
+.hero-cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.pill{font-family:var(--mono);font-size:15px;background:var(--surface);border:1px solid var(--line2);
+  padding:13px 18px;border-radius:12px;cursor:pointer;display:inline-flex;gap:12px;align-items:center;transition:border-color .2s}
+.pill:hover{border-color:var(--blue-l)}
+.pill .pfx{color:var(--green-l)}
+.pill .cp{font-family:var(--body);font-size:12px;color:var(--muted2);border-left:1px solid var(--line2);padding-left:12px}
+.btn{padding:13px 24px;border-radius:12px;font-weight:600;font-size:15px;transition:transform .15s,box-shadow .2s;display:inline-flex;align-items:center;gap:9px}
+.btn.primary{background:var(--grad);color:#fff;box-shadow:0 8px 30px -8px var(--blue)}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 14px 40px -10px var(--blue)}
+.btn.ghost{border:1px solid var(--line2);color:var(--ink)}
+.btn.ghost:hover{border-color:var(--muted);transform:translateY(-2px)}
+.scrollcue{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:2;color:var(--muted2);font-size:12px;
+  display:flex;flex-direction:column;align-items:center;gap:7px;animation:bob 2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
+
+/* sections */
+section{padding:108px 0;position:relative}
+.eyebrow{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--green-l);letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}
+h2{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,52px);line-height:1.05;letter-spacing:-.03em;margin-bottom:20px}
+.section-lede{font-size:19px;color:var(--muted);max-width:740px}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--line2),transparent)}
+
+/* reveal — progressive enhancement: visible by default, hidden only when JS is on */
+.rv{opacity:1;transform:none}
+.js .rv{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.js .rv.in{opacity:1;transform:none}
+.rv.d1{transition-delay:.08s}.rv.d2{transition-delay:.16s}.rv.d3{transition-delay:.24s}
+
+/* stat band */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:30px 26px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.stat::before{content:"";position:absolute;inset:0;background:var(--grad-soft);opacity:0;transition:opacity .3s}
+.stat:hover::before{opacity:1}
+.stat .num{font-family:var(--display);font-weight:700;font-size:60px;line-height:1;letter-spacing:-.03em;margin-bottom:10px}
+.stat .k{font-weight:600;color:var(--ink);margin-bottom:6px}
+.stat .v{font-size:14.5px;color:var(--muted);position:relative}
+@media(max-width:760px){.stats{grid-template-columns:1fr}}
+
+/* bad-action card */
+.chat{max-width:760px;margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.chat .q,.chat .a{padding:20px 24px}
+.chat .role{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:7px}
+.chat .q{border-bottom:1px solid var(--line)}
+.chat .a{background:linear-gradient(180deg,#fbe9ea,transparent);position:relative}
+.chat .a .role{color:#c0392b}
+.chat .a .txt{color:var(--ink)}
+.chat .a .flag{margin-top:14px;font-size:13.5px;color:#b3261f;display:flex;gap:9px;align-items:flex-start}
+.warn-note{margin-top:24px;font-size:17px;color:var(--muted);max-width:720px}
+.warn-note b{color:var(--ink)}
+
+/* centerpiece — cascade + HITL gate */
+.demo{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:34px;margin-top:14px;box-shadow:var(--shadow)}
+.demo-lbl{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:12px}
+.alert-pick{display:flex;flex-wrap:wrap;gap:10px}
+.al{font-family:var(--mono);font-size:13px;border:1px solid var(--line2);background:var(--surface2);border-radius:11px;
+  padding:11px 15px;cursor:pointer;display:flex;flex-direction:column;gap:3px;transition:border-color .2s,transform .15s,box-shadow .2s;text-align:left}
+.al:hover{transform:translateY(-2px)}
+.al.sel{border-color:var(--blue-l);box-shadow:0 0 0 2px #0782c533;background:#fff}
+.al .av{font-weight:700;color:var(--ink)}
+.al .alh{font-family:var(--body);font-size:11.5px;color:var(--muted)}
+.pipe{display:flex;align-items:stretch;gap:8px;margin:26px 0 6px}
+.arr{color:var(--muted2);font-size:18px;flex:none;align-self:center}
+.stg{flex:1;padding:15px 13px;border:1px solid var(--line);border-radius:13px;background:var(--surface2);transition:all .35s}
+.stg.active{border-color:var(--blue-l);background:#fff;box-shadow:0 6px 20px -14px var(--blue)}
+.stg.dim{opacity:.5}
+.stg .sl{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--green-l);margin-bottom:7px;display:flex;justify-content:space-between;gap:6px}
+.stg .sl .hat{color:var(--muted2);text-transform:none;letter-spacing:0}
+.stg .sh{font-family:var(--display);font-weight:600;font-size:15px;margin-bottom:6px}
+.stg .ss{font-size:12.5px;color:var(--muted);line-height:1.45}
+.stg .ss b.mal{color:var(--mal)}.stg .ss b.ben{color:var(--ben)}
+.stg .bus{margin-top:8px;font-family:var(--mono);font-size:10.5px;color:var(--blue-l);background:#0782c512;border-radius:6px;padding:4px 7px;display:inline-block}
+@media(max-width:760px){.pipe{flex-direction:column}.arr{transform:rotate(90deg);align-self:center}}
+.gate{margin-top:24px;border:1px solid var(--line2);border-radius:16px;padding:22px;background:linear-gradient(180deg,#fff8e6,var(--surface2))}
+.gate.clear{background:linear-gradient(180deg,#eafaef,var(--surface2));border-color:#bfe7cf}
+.gate .gh{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--warn);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.gate.clear .gh{color:var(--ben)}
+.gate .gt{font-weight:600;font-size:16px;margin-bottom:6px}
+.gate .gd{font-size:13.5px;color:var(--muted);margin-bottom:14px}
+.gate .gd .mono{color:var(--ink)}
+.controls{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.authbtn{padding:12px 22px;border-radius:12px;font-weight:600;font-size:14px;background:var(--grad);color:#fff;border:none;
+  cursor:pointer;transition:transform .15s,opacity .2s;box-shadow:0 8px 24px -10px var(--blue)}
+.authbtn:hover:not([disabled]){transform:translateY(-2px)}
+.authbtn[disabled]{opacity:.38;cursor:not-allowed;box-shadow:none}
+.gnote{font-size:12.5px;color:var(--muted2)}
+.result{margin-top:20px;font-family:var(--mono);font-size:13px;line-height:1.6;padding:15px 17px;border-radius:12px;
+  border:1px solid var(--line2);background:var(--surface2);color:var(--muted)}
+.result b{color:var(--ink)}
+.result .ok{color:var(--ben);font-weight:700}
+.result .soft{color:var(--warn);font-weight:700}
+
+/* split / decision cards */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:14px}
+@media(max-width:760px){.split{grid-template-columns:1fr}}
+.scard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:26px;box-shadow:var(--shadow)}
+.scard h3{font-family:var(--display);font-size:20px;font-weight:600;margin-bottom:10px;letter-spacing:-.02em}
+.scard h3 .mono{font-size:15px;color:var(--blue-l)}
+.scard p{color:var(--muted);font-size:14.5px}
+.scard .vs{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--green-l);margin-bottom:12px}
+.considered{display:flex;flex-direction:column;gap:10px;margin-top:24px}
+.crow{display:flex;gap:14px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px;box-shadow:var(--shadow)}
+.crow .cn{font-weight:600;width:150px;flex:none}
+.crow .cx{color:var(--muted);font-size:14px}
+.crow.win{border-color:#a9d6f0;background:#0782c50a}
+.crow.win .cn{color:var(--blue-l)}
+@media(max-width:640px){.crow{flex-direction:column;gap:4px}.crow .cn{width:auto}}
+
+/* roles deck */
+.roles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+@media(max-width:880px){.roles{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.roles{grid-template-columns:1fr}}
+.role{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);transition:transform .2s,border-color .2s}
+.role:hover{transform:translateY(-3px);border-color:var(--line2)}
+.role .ic{font-size:22px;margin-bottom:10px}
+.role .rn{font-family:var(--display);font-weight:600;font-size:16px;margin-bottom:3px}
+.role .rk{font-family:var(--mono);font-size:11px;color:var(--blue-l);margin-bottom:8px}
+.role .rd{font-size:13px;color:var(--muted);line-height:1.45}
+.role .tagk{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;
+  padding:3px 8px;border-radius:999px;margin-top:10px;border:1px solid var(--line2);color:var(--muted2)}
+.role .tagk.react{color:var(--blue-l);border-color:#a9d6f0;background:#0782c50a}
+.role .tagk.timer{color:#0f766e;border-color:#a7d8d0;background:#0f766e0a}
+.role .tagk.human{color:var(--warn);border-color:#e6d3a3;background:#d977060a}
+
+/* memory cards */
+.mem{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:14px}
+@media(max-width:760px){.mem{grid-template-columns:1fr}}
+.mcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:24px;box-shadow:var(--shadow)}
+.mcard .mh{font-size:22px;margin-bottom:10px}
+.mcard h3{font-family:var(--display);font-size:18px;font-weight:600;margin-bottom:8px}
+.mcard p{color:var(--muted);font-size:14px}
+.mcard p b{color:var(--ink)}
+.note{margin-top:24px;font-size:16px;color:var(--muted);max-width:760px}
+.note b{color:var(--ink)}
+
+/* backtest numbers */
+.bt{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}
+@media(max-width:680px){.bt{grid-template-columns:repeat(2,1fr)}}
+.btcell{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center;box-shadow:var(--shadow)}
+.btcell .bk{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.btcell .bl{font-size:12.5px;color:var(--muted)}
+.btcell.tp{border-color:#bfe7cf}.btcell.tp .bk{color:var(--ben)}
+.btcell.fp{border-color:#e6d3a3}.btcell.fp .bk{color:var(--warn)}
+.btcell.fn{border-color:#e7c3c3}.btcell.fn .bk{color:var(--mal)}
+
+/* code */
+.code{background:#0a142e;border:1px solid #182447;border-radius:14px;overflow:hidden;margin-top:14px;box-shadow:var(--shadow)}
+.code .cbar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #182447;background:#070f24}
+.code .cbar .d{width:11px;height:11px;border-radius:50%}
+.code .cbar .fn{margin-left:10px;font-family:var(--mono);font-size:12.5px;color:#7f93c4}
+.code pre{padding:22px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.75;color:#dde6f7}
+.code .c{color:#6f82b5}.code .k{color:#8fb8ff}.code .s{color:#8fe0c0}.code .f{color:#ffd66e}.code .n{color:#f0a6d0}
+.extras{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.chip{font-family:var(--mono);font-size:13px;background:var(--surface);border:1px solid var(--line2);border-radius:999px;padding:8px 15px;color:var(--muted)}
+.chip b{color:var(--ink)}
+
+/* origin */
+.dogfood{margin-top:14px;font-size:17px;color:var(--muted);max-width:760px}
+.dogfood b{color:var(--ink)}
+
+/* final cta */
+.final{text-align:center;border-top:1px solid var(--line);background:
+  radial-gradient(ellipse 60% 100% at 50% 0%,#0046ad22,transparent 70%)}
+.final h2{margin-bottom:18px}
+.final .pill{margin:8px auto 28px;justify-content:center}
+.final-links{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+footer{border-top:1px solid var(--line);padding:34px 0;color:var(--muted2);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+footer a{color:var(--muted)}footer a:hover{color:var(--ink)}
+
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--grad);color:#fff;font-weight:600;font-size:14px;padding:11px 22px;border-radius:999px;
+  z-index:80;opacity:0;transition:transform .35s,opacity .35s;box-shadow:0 10px 30px -8px var(--blue)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;scroll-behavior:auto!important}
+  .js .rv{opacity:1;transform:none;transition:none}
+}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<nav id="nav"><div class="wrap">
+  <a class="logo" href="#top">SOC-in-a-Box</a>
+  <div class="links">
+    <a class="hide-sm" href="https://vinayvobbili.github.io/posts/building-soc-in-a-box/">Read the post</a>
+    <a class="hide-sm" href="https://github.com/vinayvobbili/security-ops-platform">GitHub</a>
+    <a class="cta" href="https://pypi.org/project/aisoc/">aisoc ↗</a>
+  </div>
+</div></nav>
+
+<header class="hero" id="top">
+  <div class="mesh"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span></div>
+  <div class="grid-ov"></div>
+  <div class="wrap">
+    <span class="tag"><span class="dot"></span>open source · pip install aisoc</span>
+    <h1 class="title">SOC-in-a-Box</h1>
+    <p class="lede">A production-bar AI SOC where <b>one local LLM plays eight analyst roles</b> over a bus — and the agents propose while a human executes.</p>
+    <p class="sub">Sentinel, Tier 2, IR Lead, Threat Intel, SOC Manager, Detection Engineer, Threat Hunter and a human gate — one GLM model wearing every hat, coordinated over Redis Streams, read-only against real systems, with an event-sourced case memory that makes it senior instead of just fast.</p>
+    <div class="hero-cta">
+      <span class="pill" data-copy="pip install &quot;aisoc[agent]&quot;"><span class="pfx">$</span><span>pip install "aisoc[agent]"</span><span class="cp">click to copy</span></span>
+      <a class="btn primary" href="#cascade">Work an alert ↓</a>
+      <a class="btn ghost" href="https://github.com/vinayvobbili/security-ops-platform">View source</a>
+    </div>
+  </div>
+  <a class="scrollcue" href="#stats"><span>scroll</span><span>↓</span></a>
+</header>
+
+<section id="stats" style="padding-top:90px;padding-bottom:90px">
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat rv"><div class="num grad-text" data-count="8">0</div><div class="k">roles</div><div class="v">Sentinel · Tier 2 · IR Lead · Threat Intel · SOC Manager · Detection Eng · Threat Hunter · the human gate.</div></div>
+      <div class="stat rv d1"><div class="num grad-text" data-count="1">0</div><div class="k">LLM</div><div class="v">one local GLM model wears every hat — different prompt, tool budget and output schema per role.</div></div>
+      <div class="stat rv d2"><div class="num grad-text" data-count="0">0</div><div class="k">writes</div><div class="v">to CrowdStrike, Tanium, Zscaler. Agents <em>propose</em>; a human <em>executes</em>. Trust is earned in v1.</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="problem">
+  <div class="wrap">
+    <div class="eyebrow rv">why most autonomous SOCs get unplugged</div>
+    <h2 class="rv">An AI that auto-isolates a host at 3 AM gets <span class="grad-text">pulled in a month</span>.</h2>
+    <p class="section-lede rv">The hard question was never "can the AI decide to contain?" It's "how does it hand off to a human in a way the human will actually trust?" Give an agent the keys to a destructive action and the first false positive costs you the whole program.</p>
+    <div class="chat rv d1">
+      <div class="q"><div class="role">3:14 AM · CrowdStrike detection on a finance workstation</div><div>encoded PowerShell, outbound to an unfamiliar IP — looks like a beacon</div></div>
+      <div class="a"><div class="role">autonomous agent, ungated</div>
+        <div class="txt">Classified malicious. Isolating FIN-WS-04 via CrowdStrike RTR now. ✅</div>
+        <div class="flag">⚠ It was a sanctioned pentest. The agent network-isolated a trading desk machine at market open — no human in the loop, no audit trail anyone trusts. That's the last night this SOC runs an AI.</div>
+      </div>
+    </div>
+    <p class="warn-note rv d2">The fix is structural: agents <b>propose</b> and never execute, every decision is <b>replayable from the record</b>, and the handoff <b>addresses a human by role</b> — "Action required from: IR Lead On-Call," not "click here."</p>
+  </div>
+</section>
+
+<section id="cascade" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="eyebrow rv">the centerpiece · interactive</div>
+    <h2 class="rv">Watch an alert move through the <span class="grad-text">org chart</span>.</h2>
+    <p class="section-lede rv">Pick an alert and follow it down the bus — one LLM, a different hat at each stop. The reactive roles run on their own; then everything stops at the human gate, because no agent can touch a real system alone.</p>
+    <div class="demo rv d1">
+      <div class="demo-lbl">1 · an alert lands from the XSOAR feed</div>
+      <div class="alert-pick" id="alertpick">
+        <button class="al sel" data-k="beacon"><span class="av">Cobalt Strike beacon · FIN-WS-04</span><span class="alh">encoded PS + C2 callout · finance workstation</span></button>
+        <button class="al" data-k="psexec"><span class="av">PsExec lateral movement · DC-02</span><span class="alh">remote service create on a domain controller</span></button>
+        <button class="al" data-k="benign"><span class="av">PowerShell run · MKT-LT-19</span><span class="alh">signed admin script, scheduled window</span></button>
+      </div>
+
+      <div class="pipe">
+        <div class="stg" id="st-se"><div class="sl"><span>Tier 1</span><span class="hat">one LLM</span></div><div class="sh">Sentinel</div><div class="ss" id="ss-se"></div></div>
+        <div class="arr">▸</div>
+        <div class="stg" id="st-t2"><div class="sl"><span>Tier 2</span><span class="hat">same LLM</span></div><div class="sh">Analyst</div><div class="ss" id="ss-t2"></div></div>
+        <div class="arr">▸</div>
+        <div class="stg" id="st-ir"><div class="sl"><span>IR Lead</span><span class="hat">same LLM</span></div><div class="sh">SEV + plan</div><div class="ss" id="ss-ir"></div></div>
+        <div class="arr">▸</div>
+        <div class="stg" id="st-ti"><div class="sl"><span>Threat Intel</span><span class="hat">same LLM</span></div><div class="sh">Attribution</div><div class="ss" id="ss-ti"></div></div>
+      </div>
+
+      <div class="gate" id="gate">
+        <div class="gh" id="gate-h">🧑 human-in-the-loop gate</div>
+        <div class="gt" id="gate-t"></div>
+        <div class="gd" id="gate-d"></div>
+        <div class="controls">
+          <button class="authbtn" id="authbtn">Approve containment</button>
+          <span class="gnote" id="gate-n"></span>
+        </div>
+      </div>
+      <div class="result" id="result"></div>
+    </div>
+  </div>
+</section>
+
+<section id="arch">
+  <div class="wrap">
+    <div class="eyebrow rv">the architecture decision that carried everything</div>
+    <h2 class="rv">The bus is the org chart. LangGraph is the <span class="grad-text">runtime</span>.</h2>
+    <p class="section-lede rv">A SOC isn't a crew running one task or two LLMs in a chat — it's independent roles with their own uptime, audit and restart semantics. So the split is the point: LangGraph gives each role a clean tool-loop, and Redis Streams gives the roles a way to coordinate without knowing about each other.</p>
+    <div class="split">
+      <div class="scard rv d1">
+        <div class="vs">per-role reasoning</div>
+        <h3>LangGraph <span class="mono">· the agent</span></h3>
+        <p>Each role is a tool-loop with explicit state and a tool whitelist — Tier 2 gets 30 tool calls, IR Lead 15, Threat Intel 12. The framework does the prompt + tool-loop + state plumbing so the role file doesn't have to.</p>
+      </div>
+      <div class="scard rv d2">
+        <div class="vs">inter-role coordination</div>
+        <h3>Redis Streams <span class="mono">· the org chart</span></h3>
+        <p>Durable events, consumer groups for at-least-once delivery, and an audit stream that's just another consumer. Adding a role is a 200-line file plus a systemd unit — the existing roles never find out.</p>
+      </div>
+    </div>
+    <div class="considered">
+      <div class="crow rv"><div class="cn">CrewAI</div><div class="cx">a crew runs one task in-process; our roles are independent processes with their own uptime and HITL. Could slot in <em>inside</em> a single role's reasoning.</div></div>
+      <div class="crow rv"><div class="cn">AutoGen</div><div class="cx">conversation-shaped. But Tier 2 doesn't <em>talk to</em> Tier 1 — it consumes Tier 1's verdict. Chat-history-as-state taxes a problem that isn't a conversation.</div></div>
+      <div class="crow rv"><div class="cn">Plain LangChain</div><div class="cx">a synchronous chain forces every role to wait, kills per-role restart, and makes HITL a hack. Fine for two roles. We had eight.</div></div>
+      <div class="crow rv"><div class="cn">n8n / visual</div><div class="cx">leadership likes the boxes, but LLM nodes aren't first-class and the graph lives in a DB, not a reviewable PR. Worse auditability.</div></div>
+      <div class="crow win rv"><div class="cn">LangGraph + bus</div><div class="cx"><b>what we picked.</b> Agent runtime per role; the bus is the coordination. Don't conflate them — that separation is what let memory ship a release later as a query, not a rewrite.</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="roles" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="eyebrow rv">one intelligence, eight jobs</div>
+    <h2 class="rv">The whole org chart, <span class="grad-text">one model</span>.</h2>
+    <p class="section-lede rv">The roles aren't different intelligences — they're the same local LLM with a different system prompt, tool budget and output schema. Some react to each event; some wake on a calendar and replay the audit stream; one is a human.</p>
+    <div class="roles">
+      <div class="role rv"><div class="ic">🛰️</div><div class="rn">Sentinel</div><div class="rk">Tier 1 triage</div><div class="rd">Reacts to each new XSOAR ticket, triages it, and publishes a verdict the rest of the floor picks up.</div><span class="tagk react">reactive</span></div>
+      <div class="role rv"><div class="ic">🔬</div><div class="rn">Tier 2 Analyst</div><div class="rk">deeper investigation</div><div class="rd">Consumes malicious / high-priority verdicts, digs in, and decides: escalate, close, or send for human review.</div><span class="tagk react">reactive</span></div>
+      <div class="role rv"><div class="ic">🎯</div><div class="rn">IR Lead</div><div class="rk">SEV + containment</div><div class="rd">Takes escalated cases, assigns severity, and proposes a containment plan — behind the HITL gate, always.</div><span class="tagk react">reactive</span></div>
+      <div class="role rv"><div class="ic">🧭</div><div class="rn">Threat Intel</div><div class="rk">actor + MITRE</div><div class="rd">Attributes the activity to an actor and maps it to ATT&CK — kept out of IR Lead's prompt so both stay tight.</div><span class="tagk react">reactive</span></div>
+      <div class="role rv"><div class="ic">📋</div><div class="rn">SOC Manager</div><div class="rk">shift summaries</div><div class="rd">Wakes on a timer three times a day, replays the audit stream, and emits a shift summary card.</div><span class="tagk timer">periodic</span></div>
+      <div class="role rv"><div class="ic">🛠️</div><div class="rn">Detection Engineer</div><div class="rk">rule tuning</div><div class="rd">Weekday mornings, finds noisy rules a reactive role would never see — "fired 47 times, 41 closed benign."</div><span class="tagk timer">periodic</span></div>
+      <div class="role rv"><div class="ic">🏹</div><div class="rn">Threat Hunter</div><div class="rk">pattern sweeps</div><div class="rd">Sweeps the audit log twice a day for patterns no single ticket reveals, then proposes hunts.</div><span class="tagk timer">periodic</span></div>
+      <div class="role rv"><div class="ic">🧑</div><div class="rn">The Human</div><div class="rk">approval gate</div><div class="rd">A Webex card addresses an on-call by role; a two-step Flask page records the decision. The AI never executes.</div><span class="tagk human">human</span></div>
+    </div>
+    <p class="note rv">Why one model instead of a different provider per role? <b>Cost</b> — one model loaded once, running 24×7. <b>Latency</b> — no inter-provider hop. <b>Simplicity</b> — one health check, one log file. The resilience comes from a <a href="https://pypi.org/project/langchain-failover/" style="color:var(--blue-l)">langchain-failover</a> chain that transparently falls back to a backup box and flips back the moment the primary recovers — tool-calls intact across the failover.</p>
+  </div>
+</section>
+
+<section id="memory">
+  <div class="wrap">
+    <div class="eyebrow rv">the layer that makes it senior, not just fast</div>
+    <h2 class="rv">We gave it a <span class="grad-text">past tense</span>.</h2>
+    <p class="section-lede rv">v1 was amnesiac — every alert was the first alert it had ever seen. The fix wasn't a vector store bolted on the side. Because the SOC was already event-sourced, memory is a <b>read projection over the log it was already writing</b> — a query, not a migration. Four capabilities fall out of it.</p>
+    <div class="mem">
+      <div class="mcard rv d1"><div class="mh">🧠</div><h3>Recall — agents that cite precedent</h3><p>Before a role decides, it sees the prior cases that share a strong indicator — same actor, hash, domain, CVE. The precedent is injected as something to <b>weigh</b>, not a rule that forces a verdict. <b>Retrieve mechanically; judge semantically.</b></p></div>
+      <div class="mcard rv d1"><div class="mh">📊</div><h3>Proof — does memory actually help?</h3><p>Every verdict is scored against analyst-curated ground truth and the per-role accuracy is <b>published on the page, red bands and all</b>. Recall sits behind a flag, so "did precedent help the IR Lead?" is a measured A/B delta — including when the answer is no.</p></div>
+      <div class="mcard rv d1"><div class="mh">🔍</div><h3>Interrogation — explained from the record</h3><p>"Why did it contain that host?" is answered from the <b>recorded trace</b>, never a fresh rationalization. Recall is deterministic; the narrator LLM may only cite what's in the trace. An agent must never sound smarter than it actually was.</p></div>
+      <div class="mcard rv d1"><div class="mh">🛰️</div><h3>Campaigns — the view no one ticket gives</h3><p>Clustering cases on shared infra surfaces the campaign no single-ticket analyst is positioned to see — "these four boxes phoned the same C2." The agent's edge isn't IQ; it's holding every case in the window at once.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="backtest" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="eyebrow rv">numbers, not vibes</div>
+    <h2 class="rv">Proven against <span class="grad-text">32K real tickets</span> before it ever touched a live alert.</h2>
+    <p class="section-lede rv">The hardest sell to a SOC director isn't "we built it" — it's "how do you know it works?" So the cascade replays historical CrowdStrike tickets with every side effect neutered, and scores its escalations against what a human analyst actually did.</p>
+    <div class="bt">
+      <div class="btcell tp rv"><div class="bk">TP</div><div class="bl">human escalated <b>and</b> the cascade escalated to IR Lead</div></div>
+      <div class="btcell fn rv"><div class="bk">FN</div><div class="bl">human escalated <b>but</b> Tier 2 closed it</div></div>
+      <div class="btcell fp rv"><div class="bk">FP</div><div class="bl">human closed <b>but</b> the cascade escalated</div></div>
+      <div class="btcell tn rv"><div class="bk">TN</div><div class="bl">human closed <b>and</b> Tier 2 closed it</div></div>
+    </div>
+    <p class="note rv">Precision and recall on that confusion matrix answer the question leadership actually asks: <b>how often does the AI escalate when a human would, and how often does it cry wolf?</b> A <span class="mono">--dry-run</span> mode swaps the LLM for a canned-JSON stub so the whole pipeline validates end-to-end in under two seconds without burning a token. The number lands in JSON the dashboard reads — a metric, not a vibe.</p>
+  </div>
+</section>
+
+<section id="oss">
+  <div class="wrap">
+    <div class="eyebrow rv">we open-sourced the kernel</div>
+    <h2 class="rv">The reusable heart is on PyPI — <span class="grad-text">bring your own everything</span>.</h2>
+    <p class="section-lede rv">The event contract, the bus, case memory as a read model, and the role-agent framework are extracted into a vendor-neutral package. Three injection seams — chat model, alert source, tools — mean nothing in the kernel knows about any one vendor. SOC-in-a-Box is literally this package with my environment plugged in.</p>
+    <div class="code rv d1">
+      <div class="cbar"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="fn">soc.py</span></div>
+<pre><span class="c"># pip install "aisoc[agent]" — bring your own LLM, alerts, and tools</span>
+<span class="k">from</span> aisoc <span class="k">import</span> Bus, RoleTeam, Memory
+
+bus  = <span class="f">Bus</span>()                         <span class="c"># stdlib in-memory, or Redis Streams for durable</span>
+team = <span class="f">RoleTeam</span>(model=my_llm, tools=my_tools)   <span class="c"># the same intelligence, many hats</span>
+
+<span class="c"># an alert lands → the team works the case over the shared log</span>
+team.<span class="f">consume</span>(alert_source)             <span class="c"># Sentinel → Tier 2 → IR Lead → Threat Intel</span>
+
+<span class="c"># human-in-the-loop: agents propose, a human authorizes, nothing auto-executes</span>
+team.<span class="f">on_action_proposed</span>(gate=my_hitl_gate)
+
+<span class="c"># memory is a query over the audit log the bus already kept</span>
+mem = <span class="f">Memory</span>(bus.audit)
+mem.<span class="f">recall_similar</span>(case)             <span class="c"># precedent by shared strong indicators</span>
+mem.<span class="f">find_campaign_clusters</span>()         <span class="c"># the cross-incident view, read-only</span></pre>
+    </div>
+    <div class="extras rv d2">
+      <span class="chip">pip install <b>aisoc[agent]</b></span>
+      <span class="chip">seam · <b>chat model</b></span>
+      <span class="chip">seam · <b>alert source</b></span>
+      <span class="chip">seam · <b>tools</b></span>
+      <span class="chip">bus · <b>in-memory or Redis</b></span>
+      <span class="chip">brain · <b>langchain-failover</b></span>
+    </div>
+  </div>
+</section>
+
+<section id="origin" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="eyebrow rv">where it came from</div>
+    <h2 class="rv">An AVP-sponsored experiment that earned its trust.</h2>
+    <p class="section-lede rv">SOC-in-a-Box is the parent of the OSS family — <a href="https://vinayvobbili.github.io/iocflow/" style="color:var(--blue-l)">iocflow</a> and <a href="https://vinayvobbili.github.io/detflow/" style="color:var(--blue-l)">detflow</a> are the lessons from it, packaged.</p>
+    <p class="dogfood rv d1">The most useful thing to copy isn't any one agent — an LLM-with-tools loop isn't novel. It's the four ideas that turned eight separate experiments into one thing a SOC team would actually run: the <b>bus shape</b>, the <b>schema-per-event</b> discipline, the <b>audit-stream-as-truth</b> pattern, and the <b>HITL handoff that addresses a human by role</b>. Get those right and "the model orchestrates but never does the irreversible work" stops being a slogan and becomes the architecture. That's the lesson the whole library family carries forward.</p>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <div class="eyebrow rv" style="color:var(--muted)">one LLM · eight hats · agents propose · a human executes</div>
+    <h2 class="rv grad-text">pip install "aisoc[agent]"</h2>
+    <span class="pill rv d1" data-copy="pip install &quot;aisoc[agent]&quot;" style="display:inline-flex"><span class="pfx">$</span><span>pip install "aisoc[agent]"</span><span class="cp">click to copy</span></span>
+    <div class="final-links rv d2">
+      <a class="btn primary" href="https://pypi.org/project/aisoc/">aisoc on PyPI ↗</a>
+      <a class="btn ghost" href="https://github.com/vinayvobbili/security-ops-platform">GitHub ↗</a>
+      <a class="btn ghost" href="https://vinayvobbili.github.io/posts/building-soc-in-a-box/">Read the full write-up</a>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap">
+  <span>© <span id="yr"></span> Vinay Vobbilichetty · agents propose, a human executes — the AI never gets the final say.</span>
+  <span><a href="https://vinayvobbili.github.io">← back to the blog</a></span>
+</div></footer>
+
+<div class="toast" id="toast">copied ✓</div>
+
+<script>
+(function(){
+  var rm = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  // scroll progress + nav
+  var bar=document.getElementById('bar'), nav=document.getElementById('nav');
+  function onScroll(){
+    var h=document.documentElement, sc=h.scrollTop||document.body.scrollTop;
+    var max=h.scrollHeight-h.clientHeight;
+    bar.style.width=(max>0?(sc/max*100):0)+'%';
+    nav.classList.toggle('scrolled', sc>20);
+  }
+  document.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  // reveal + count-up
+  var rvs=[].slice.call(document.querySelectorAll('.rv'));
+  if(rm){rvs.forEach(function(e){e.classList.add('in')});}
+  else{
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);
+        if(e.target.classList.contains('stat')) countUp(e.target.querySelector('[data-count]')); } });
+    },{threshold:.18});
+    rvs.forEach(function(e){io.observe(e)});
+  }
+  function countUp(el){ if(!el) return; var t=+el.getAttribute('data-count'); if(rm){el.textContent=t;return;}
+    if(t===0){el.textContent='0';return;}
+    var s=0; var iv=setInterval(function(){ s+=1; if(s>=t){s=t;clearInterval(iv);} el.textContent=s; }, 110);
+  }
+
+  // copy pills
+  function toast(){ var t=document.getElementById('toast'); t.classList.add('show'); setTimeout(function(){t.classList.remove('show')},1400); }
+  [].slice.call(document.querySelectorAll('[data-copy]')).forEach(function(el){
+    el.addEventListener('click',function(){ var v=el.getAttribute('data-copy');
+      if(navigator.clipboard){navigator.clipboard.writeText(v).then(toast,toast);} else {toast();} });
+  });
+
+  // ---- cascade + HITL gate demo ----
+  var ALERTS={
+    beacon:{
+      escalate:true,
+      se:{v:'<b class="mal">TP · malicious</b><br>priority 9 · beaconing pattern', bus:'AlertTriaged'},
+      t2:{v:'engaged → <b>escalate</b><br>encoded PS + C2 callout, confirmed real', bus:'CaseEscalated'},
+      ir:{v:'<b>SEV-2</b> · proposes:<br>isolate <b>FIN-WS-04</b> via CrowdStrike RTR', bus:'IRPlan + ActionProposed'},
+      ti:{v:'commodity Cobalt Strike loader<br>ATT&CK T1071 · T1059.001', bus:'ThreatIntelReport'},
+      precedent:'🛰️ Campaign Radar: 3 prior cases share this C2 — flagged as one campaign.',
+      action:'isolate FIN-WS-04 via CrowdStrike RTR'
+    },
+    psexec:{
+      escalate:true,
+      se:{v:'<b class="mal">TP · malicious</b><br>priority 8 · remote service create', bus:'AlertTriaged'},
+      t2:{v:'engaged → <b>escalate</b><br>PsExec to a domain controller, not change-approved', bus:'CaseEscalated'},
+      ir:{v:'<b>SEV-1</b> · proposes:<br>isolate <b>DC-02</b> + disable the service account', bus:'IRPlan + ActionProposed'},
+      ti:{v:'hands-on-keyboard lateral movement<br>ATT&CK T1021.002 · T1569.002', bus:'ThreatIntelReport'},
+      precedent:null,
+      action:'isolate DC-02 and disable the service account'
+    },
+    benign:{
+      escalate:false,
+      se:{v:'<b class="ben">likely benign</b><br>priority 3 · signed binary', bus:'AlertTriaged'},
+      t2:{v:'engaged → <b>close</b><br>signed admin script in its scheduled window', bus:'closed · no escalation'},
+      ir:null, ti:null, precedent:null, action:null
+    }
+  };
+
+  var cur='beacon', approved=false;
+  var pick=document.getElementById('alertpick'),
+      ssSe=document.getElementById('ss-se'), ssT2=document.getElementById('ss-t2'),
+      ssIr=document.getElementById('ss-ir'), ssTi=document.getElementById('ss-ti'),
+      stSe=document.getElementById('st-se'), stT2=document.getElementById('st-t2'),
+      stIr=document.getElementById('st-ir'), stTi=document.getElementById('st-ti'),
+      gate=document.getElementById('gate'), gateH=document.getElementById('gate-h'),
+      gateT=document.getElementById('gate-t'), gateD=document.getElementById('gate-d'),
+      gateN=document.getElementById('gate-n'), authbtn=document.getElementById('authbtn'),
+      result=document.getElementById('result');
+
+  function busTag(s){ return '<span class="bus">'+s+'</span>'; }
+
+  function render(){
+    var d=ALERTS[cur], esc=d.escalate;
+
+    // Sentinel + Tier 2 always run
+    stSe.className='stg active'; ssSe.innerHTML=d.se.v+'<br>'+busTag('→ '+d.se.bus);
+    stT2.className='stg active'; ssT2.innerHTML=d.t2.v+'<br>'+busTag('→ '+d.t2.bus);
+
+    if(!esc){
+      stIr.className='stg dim'; ssIr.innerHTML='not engaged — Tier 2 closed the case';
+      stTi.className='stg dim'; ssTi.innerHTML='not engaged';
+    } else {
+      stIr.className='stg active'; ssIr.innerHTML=d.ir.v+'<br>'+busTag('→ '+d.ir.bus);
+      // Threat Intel runs once the case is escalated (it consumes the IR plan)
+      stTi.className='stg active'; ssTi.innerHTML=d.ti.v+'<br>'+busTag('→ '+d.ti.bus);
+    }
+
+    // gate
+    if(!esc){
+      gate.className='gate clear';
+      gateH.innerHTML='✓ no action proposed';
+      gateT.textContent='Tier 2 closed it. The gate never appears.';
+      gateD.innerHTML='No containment was proposed, so there is nothing to authorize — and <b>zero writes</b> hit any real system.';
+      authbtn.style.display='none'; gateN.textContent='';
+    } else {
+      authbtn.style.display='';
+      if(!approved){
+        gate.className='gate';
+        gateH.innerHTML='🧑 action required from: <b style="color:inherit">IR Lead On-Call</b>';
+        gateT.textContent='Proposed: '+d.action;
+        gateD.innerHTML='The IR Lead did a <span class="mono">dry_run</span> and proposed this containment. Nothing executes until a human authorizes — the model cannot do this itself.';
+        authbtn.disabled=false; authbtn.textContent='Approve containment';
+        gateN.textContent='a Webex card carried this to the on-call; a two-step Flask page records the decision';
+      } else {
+        gate.className='gate clear';
+        gateH.innerHTML='✓ authorized by a human';
+        gateT.textContent='Approved: '+d.action;
+        gateD.innerHTML='Decision logged to the HITL store, an <span class="mono">ActionDecision</span> event published. In v1 the executor is stubbed (<span class="mono">dummy=True</span>) — trust is earned before the write path is armed.';
+        authbtn.disabled=true; authbtn.textContent='Authorized ✓';
+        gateN.textContent='';
+      }
+    }
+
+    // result
+    if(!esc){
+      result.innerHTML='<b>RESULT · <span class="ok">closed, no action.</span></b> Sentinel triaged it benign, Tier 2 confirmed and closed it. It never reached the IR Lead, the gate never appeared, and no real system was touched. Most alerts end right here.';
+    } else if(!approved){
+      result.innerHTML='<b>RESULT · pending a human.</b> The cascade attributed the activity and staged a containment plan — but it has <b>proposed</b>, not acted. '+(d.precedent?d.precedent+' ':'')+'Nothing happens until the on-call authorizes.';
+    } else {
+      result.innerHTML='<b>RESULT · <span class="ok">authorized &amp; recorded.</span></b> A human approved '+d.action+'. Every step — each role\'s verdict, the evidence, the approver and their reason — is on a replayable timeline, so "why did it do that?" is answered from the record, not a fresh rationalization.';
+    }
+  }
+
+  pick.addEventListener('click',function(e){
+    var b=e.target.closest('.al'); if(!b) return;
+    [].slice.call(pick.children).forEach(function(c){c.classList.remove('sel')});
+    b.classList.add('sel'); cur=b.getAttribute('data-k'); approved=false; render();
+  });
+  authbtn.addEventListener('click',function(){ if(authbtn.disabled) return; approved=true; render(); });
+  render();
+
+  document.getElementById('yr').textContent=new Date().getFullYear();
+})();
+</script>
+</body>
+</html>
