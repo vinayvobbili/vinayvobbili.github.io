@@ -22,7 +22,7 @@ $brand-grad-soft: linear-gradient(135deg, #0046ad22 0%, #00a65122 100%);
 /* ---- Fonts -------------------------------------------------------------- */
 :root {
   --font-heading: 'Space Grotesk', 'Lato', 'Microsoft Yahei', sans-serif;
-  --font-body: 'Inter', 'Source Sans Pro', 'Microsoft Yahei', sans-serif;
+  --font-body: 'Space Grotesk', 'Inter', 'Source Sans Pro', 'Microsoft Yahei', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', menlo, consolas, monospace;
 }
 
@@ -49,8 +49,8 @@ code, pre, kbd, samp,
 /* Mirrors Chirpy's _sass/base/_base.scss scoping so these win the cascade.  */
 
 @mixin brand-light {
-  --main-bg: #f4f6f9; /* soft off-white instead of stark white */
-  --main-border-color: #e7ebf1;
+  --main-bg: #f9f5ea; /* warm cream/ivory */
+  --main-border-color: #ece3d2;
   --link-color: #{$brand-blue};
   --link-underline-color: #{rgba($brand-blue, 0.35)};
   --heading-color: #10203b;
