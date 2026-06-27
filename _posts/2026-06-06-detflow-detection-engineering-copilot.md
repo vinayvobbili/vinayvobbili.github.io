@@ -24,6 +24,9 @@ I shipped [**detflow**](https://pypi.org/project/detflow/) to PyPI — an open-s
 <div class="tldr-card"><span class="tldr-num">0 crashes</span><span class="tldr-sub">lint &amp; overlap need no model; review degrades to a deterministic floor</span></div>
 </div>
 
+> ▶ **[Open the interactive version →](/detflow/)** — a full-bleed page where you can pick a verb, pull the model out from under it, and watch what still works: lint and overlap don't move, review drops to a deterministic floor, and nothing ever raises.
+{: .prompt-tip }
+
 This is the detection-side sibling of [iocflow](/posts/iocflow-agentic-ioc-lifecycle/). iocflow handles the *indicator* lifecycle; detflow handles the *rule* lifecycle. Same design DNA: **deterministic primitives first, the LLM as an enhancement that can fail without taking the tool down with it.** 🧱
 
 ## The itch
