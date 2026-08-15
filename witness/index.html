@@ -7,7 +7,7 @@
 <title>witness — a DFIR agent that can only report what it can prove a tool said</title>
 <meta name="description" content="A finding is admitted only when a deterministic check re-reads the cited tool output and confirms the field. No second language model anywhere in the gate. Clone it and run python demo.py — no install, no API key, no memory image.">
 <meta property="og:title" content="witness — prove it, or it doesn't go in the report">
-<meta property="og:description" content="The oracle is a field comparison in plain Python. A model can be argued out of a correct refutation; a comparison cannot. 1,083 scored claims, 119 crafted attacks, one command.">
+<meta property="og:description" content="The oracle is a field comparison in plain Python. A model can be argued out of a correct refutation; a comparison cannot. 1,083 scored claims, 120 crafted attacks, one command.">
 <meta property="og:image" content="https://vinayvobbili.github.io/assets/img/posts/witness-hero.png">
 <meta property="og:type" content="website">
 <!-- Self-hosted fonts (Space Grotesk + JetBrains Mono); no Google Fonts CDN. -->
@@ -284,7 +284,7 @@ footer a{color:var(--muted)}footer a:hover{color:var(--ink)}
   <div class="wrap">
     <div class="stats">
       <div class="stat rv"><div class="num grad-text" data-count="0">0</div><div class="k">language models in the gate</div><div class="v">The oracle is a field comparison in plain Python. Nothing in the admission path can be persuaded, and nothing in it needs a key.</div></div>
-      <div class="stat rv d1"><div class="num grad-text" data-count="119">0</div><div class="k">crafted attacks</div><div class="v">Nine families, each stating one invariant and then attacking it — alongside 1,083 scored claims in 29 classes of the way analysis actually goes wrong.</div></div>
+      <div class="stat rv d1"><div class="num grad-text" data-count="120">0</div><div class="k">crafted attacks</div><div class="v">Nine families, each stating one invariant and then attacking it — alongside 1,083 scored claims in 29 classes of the way analysis actually goes wrong.</div></div>
       <div class="stat rv d2"><div class="num grad-text" data-count="3">0</div><div class="k">seconds, start to finish</div><div class="v">Clone it and run one command. No install, no API key, no network, no 3 GB memory image to download first.</div></div>
     </div>
   </div>
@@ -506,7 +506,7 @@ EvidenceCheck(
     <div class="eyebrow rv">where it came from</div>
     <h2 class="rv">A rebuild of an entry that <span class="grad-text">didn't win.</span></h2>
     <p class="dogfood rv d1">In June I submitted <a href="https://github.com/vinayvobbili/find-evil" style="border-bottom:1px solid var(--line2)">find-evil</a> to the SANS <b>FIND EVIL!</b> hackathon — an IOC-lifecycle layer that catches a forensic agent's hallucinated indicators. It didn't place. Reading the entries that did, the ones I looked at had reached for the same defence I had: put a second language model in front of the first and have it argue. That is the part I now think is wrong, and this is the rebuild from scratch — same problem, an oracle that cannot be talked round.</p>
-    <p class="note rv d2">Roughly 4,000 lines, standard library only, enforced by a test that parses every shipped module and fails on any import that is not local or stdlib. <b>259 tests</b>, including one that copies the repo to a temp directory and runs the demo with an isolated interpreter — because a clone-and-run claim in a README is worth exactly as much as the test that keeps it true.</p>
+    <p class="note rv d2">Roughly 5,000 lines, standard library only, enforced by a test that parses every shipped module and fails on any import that is not local or stdlib. <b>349 tests</b>, including one that copies the repo to a temp directory and runs the demo with an isolated interpreter — because a clone-and-run claim in a README is worth exactly as much as the test that keeps it true.</p>
   </div>
 </section>
 
