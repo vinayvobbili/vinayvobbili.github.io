@@ -22,6 +22,9 @@ In June I submitted [find-evil](https://vinayvobbili.github.io/posts/find-evil-s
 <div class="tldr-card"><span class="tldr-num">1 command</span><span class="tldr-sub">clone and run: no install, no API key, no 3 GB memory image</span></div>
 </div>
 
+> ▶ **[Open the interactive version →](/witness/)** — a full-bleed page where you can edit the claimed PID one digit at a time and watch a finding flip between admitted and refused against the real `psscan` output, then switch to gate 2 and see why "nobody ran the tool" is not a pass.
+{: .prompt-tip }
+
 ---
 
 ## The failure mode is not what people expect
