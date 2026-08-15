@@ -92,3 +92,10 @@ plum: # purple -> blue — case memory
   tint: "rgba(109, 40, 217, 0.055)"
   glow: "rgba(37, 99, 235, 0.22)"
   shadow: "rgba(124, 58, 237, 0.28)"
+
+steel: # steel blue -> cool slate — proof, ledgers, things that must not drift
+  grad: "linear-gradient(135deg, #1e3a5f 0%, #2b6b8f 52%, #5c8ea6 100%)"
+  accent: "#245a7a"
+  tint: "rgba(36, 90, 122, 0.055)"
+  glow: "rgba(92, 142, 166, 0.22)"
+  shadow: "rgba(30, 58, 95, 0.28)"

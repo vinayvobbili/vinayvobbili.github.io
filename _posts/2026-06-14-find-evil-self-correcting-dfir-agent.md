@@ -11,6 +11,9 @@ mermaid: true
 accent: magma
 ---
 
+> **Update, August 2026.** This entry didn't win, and reading the ones that placed changed my mind about the approach. I rebuilt it from scratch as [**witness**](https://vinayvobbili.github.io/posts/witness-prove-it-or-it-doesnt-go-in-the-report/), around an oracle that isn't a language model at all. The post below stands as written — it's the entry I submitted.
+{: .prompt-info }
+
 ## TL;DR 🔎
 
 I built [**find-evil**](https://github.com/vinayvobbili/find-evil) for the SANS **FIND EVIL!** hackathon. [Protocol SIFT](https://github.com/teamdfir/protocol-sift) is a sharp idea — put a Claude Code agent in front of the SANS SIFT Workstation's 200+ forensic tools so a responder can investigate at machine speed. It works. But the brief says the quiet part out loud: *"it also hallucinates more than we'd like."* find-evil bolts my open-source [`iocflow`](https://github.com/vinayvobbili/iocflow) IOC lifecycle onto it as a **custom MCP server plus one skill**, so the agent stops eyeballing huge dumps and instead **reconciles its own findings against a deterministic, false-positive-defended extractor** — catching its hallucinations before they reach the report.
