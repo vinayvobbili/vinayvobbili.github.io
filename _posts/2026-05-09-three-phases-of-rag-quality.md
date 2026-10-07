@@ -69,7 +69,7 @@ one and re-orders by relevance to your specific question.
 
 Off-the-shelf rerankers like `bge-reranker-v2-m3` are trained on general English
 passage retrieval (MS MARCO and friends). They've never seen an XSOAR ticket. They
-don't know that *"<hostname>: ML via Cloud-based ML"* matters in a way that
+don't know that *"&lt;hostname&gt;: ML via Cloud-based ML"* matters in a way that
 generic English semantic similarity cannot capture. Fine-tuning is how you teach
 them.
 
