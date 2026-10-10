@@ -3,7 +3,7 @@ title: "attestq: When \"We Don't Have Evidence for That\" Is the Feature"
 image:
   path: /assets/img/posts/attestq-hero.png
   alt: "attestq — a model-agnostic RAG kernel that answers security questionnaires from your own evidence, and refuses to guess when the evidence isn't there"
-description: "Every security and GRC team rebuilds the same pipeline one-off: chunk the SOC 2s and policies, embed them, retrieve per question, prompt an LLM, paste into the form. Done naively it hallucinates confident answers with no supporting evidence — the single worst failure mode in compliance. attestq is the small, model-/embedder-/store-agnostic kernel I extracted from two production tools (a vendor due-diligence assistant and a customer-assurance drafter) that bakes in the two fixes that actually matter: a confidence gate that answers \"insufficient evidence\" without ever calling the LLM, and a wide rerank window so the one document that had the answer doesn't get dropped. pip install attestq."
+description: "Every security and GRC team rebuilds the same pipeline one-off: chunk the SOC 2s and policies, embed them, retrieve per question, prompt an LLM, paste into the form. Done naively it hallucinates confident answers with no supporting evidence — the single worst failure mode in compliance. attestq is a small, model-/embedder-/store-agnostic kernel that bakes in the two fixes that actually matter: a confidence gate that answers \"insufficient evidence\" without ever calling the LLM, and a wide rerank window so the one document that had the answer doesn't get dropped. pip install attestq."
 date: 2026-06-26 09:00:00 -0400
 categories: [Security, LLM]
 tags: [rag, grc, compliance, questionnaires, vendor-risk, security-automation, llm, retrieval, open-source, ai-agents, attestations]
@@ -17,13 +17,13 @@ I shipped [**attestq**](https://pypi.org/project/attestq/) to PyPI — a small, 
 <div class="tldr-cards">
 <div class="tldr-card"><span class="tldr-num">0 deps</span><span class="tldr-sub">pure-stdlib core — bring your own model, embedder, store</span></div>
 <div class="tldr-card"><span class="tldr-num">1 gate</span><span class="tldr-sub">weak evidence &rarr; <em>insufficient evidence</em>, no LLM call</span></div>
-<div class="tldr-card"><span class="tldr-num">2 tools</span><span class="tldr-sub">extracted from two production systems, now one kernel</span></div>
+<div class="tldr-card"><span class="tldr-num">1 namespace</span><span class="tldr-sub">per vendor — one vendor's evidence never answers for another</span></div>
 </div>
 
 > ▶ **[Open the interactive version →](/attestq/)** — a full-bleed page where you can drag the retrieval score across the confidence threshold and watch the kernel flip between a cited answer and "insufficient evidence."
 {: .prompt-tip }
 
-This is the GRC sibling of my earlier OSS work — [iocflow](/posts/iocflow-agentic-ioc-lifecycle/) for the IOC lifecycle and [detflow](/posts/detflow-detection-engineering-copilot/) for detection engineering. Same instinct: a pattern kept getting hand-rolled inside production tools, so I pulled the durable part out, made it boring and testable, and put it on PyPI. 🧰
+This is the GRC sibling of my earlier OSS work — [iocflow](/posts/iocflow-agentic-ioc-lifecycle/) for the IOC lifecycle and [detflow](/posts/detflow-detection-engineering-copilot/) for detection engineering. Same instinct: a pattern every team keeps hand-rolling deserves one clean, generic, boring, testable version on PyPI. 🧰
 
 ## The failure mode nobody talks about
 
@@ -57,7 +57,7 @@ The gate keys on the **retrieval** score — the raw cosine similarity from your
 
 ### 2. A wide rerank window so the right doc survives
 
-The other naive-RAG bug is subtler: you retrieve a handful of chunks, rerank, keep the top 3 — and on a small or lopsided corpus, the single focused document that actually answered the question gets shoved out of the window by a cluster of vaguely-related ones. attestq keeps a deliberately generous post-rerank window (`rerank_top_k`) so a lone relevant chunk isn't dropped. This was a real bug in the production tool before extraction; it's now a default.
+The other naive-RAG bug is subtler: you retrieve a handful of chunks, rerank, keep the top 3 — and on a small or lopsided corpus, the single focused document that actually answered the question gets shoved out of the window by a cluster of vaguely-related ones. attestq keeps a deliberately generous post-rerank window (`rerank_top_k`) so a lone relevant chunk isn't dropped. It's an easy bug to ship; in attestq the generous window is the default.
 
 ## Bring your own everything
 
@@ -127,18 +127,9 @@ attestq run -q questionnaire.yaml -e ./vendor-evidence -n acme -o report.docx
 attestq demo --provider ollama     # local, no key, nothing leaves the host
 ```
 
-## Where it came from (and why I trust it)
-
-attestq isn't a greenfield toy. It's the distilled kernel of two tools I built and run in production:
-
-- a **third-party / vendor cyber due-diligence assistant** that drafts a due-diligence form from a vendor's uploaded evidence, per-vendor, and
-- a **customer-assurance drafter** that answers inbound customer security questionnaires from our internal policy corpus.
-
-Both were independently solving the same retrieve → rerank → gate → cited-draft problem, and quietly drifting apart. Extracting the shared kernel — and then **refactoring the production tool to consume the public package** instead of its own copy — means the open-source version is the one under real load, not a sanitized fork. The dogfooding is the point: the same code that ships to PyPI is the code answering real questionnaires.
+## Why build it this way
 
 If you've read my [three phases of RAG quality](/posts/three-phases-of-rag-quality/) post, attestq is what the "grounding" phase looks like when you take it seriously enough to let the system say *no*.
-
-## Why build it this way
 
 The honest lesson across iocflow, detflow, and now attestq is the same: **the valuable, durable part of an AI system is usually the boring scaffolding around the model, not the model call itself.** Here that scaffolding is one decision — *don't let the LLM answer a question your evidence can't support* — turned into a default you can't forget to apply.
 

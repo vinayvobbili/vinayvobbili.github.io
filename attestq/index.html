@@ -176,16 +176,6 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
 .chip{font-family:var(--mono);font-size:13px;background:var(--surface);border:1px solid var(--line2);border-radius:999px;padding:8px 15px;color:var(--muted)}
 .chip b{color:var(--ink)}
 
-/* two-col origin */
-.origin{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:14px}
-.src{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:28px;position:relative;box-shadow:var(--shadow)}
-.src .pin{font-family:var(--mono);font-size:12px;color:var(--green-l);margin-bottom:12px}
-.src h4{font-family:var(--display);font-size:19px;font-weight:600;margin-bottom:8px}
-.src p{color:var(--muted);font-size:15px}
-.dogfood{margin-top:26px;font-size:17px;color:var(--muted);max-width:720px}
-.dogfood b{color:var(--ink)}
-@media(max-width:760px){.origin{grid-template-columns:1fr}}
-
 /* final cta */
 .final{text-align:center;border-top:1px solid var(--line);background:
   radial-gradient(ellipse 60% 100% at 50% 0%,#0046ad22,transparent 70%)}
@@ -240,7 +230,7 @@ footer a{color:var(--muted)}footer a:hover{color:var(--ink)}
     <div class="stats">
       <div class="stat rv"><div class="num grad-text" data-count="0">0</div><div class="k">dependencies</div><div class="v">pure-stdlib core — bring your own model, embedder, and store as plain callables. Adapters are opt-in extras.</div></div>
       <div class="stat rv d1"><div class="num grad-text" data-count="1">0</div><div class="k">confidence gate</div><div class="v">below threshold, the answer is "insufficient evidence" — with no LLM call at all.</div></div>
-      <div class="stat rv d2"><div class="num grad-text" data-count="2">0</div><div class="k">production tools</div><div class="v">extracted from a vendor due-diligence assistant and a customer-assurance drafter — now both run on this kernel.</div></div>
+      <div class="stat rv d2"><div class="num grad-text" data-count="1">0</div><div class="k">namespace per vendor</div><div class="v">retrieval filters on it, so one vendor's evidence never answers another vendor's questions.</div></div>
     </div>
   </div>
 </section>
@@ -304,7 +294,7 @@ footer a{color:var(--muted)}footer a:hover{color:var(--ink)}
       <div class="feat rv d2">
         <div class="ic">🪟</div>
         <h3>A wide rerank window</h3>
-        <p>The subtle bug: you retrieve a few chunks, rerank, keep the top 3 — and on a small or lopsided corpus the single focused document that actually answered the question gets shoved out by vaguely-related ones. attestq keeps a deliberately generous post-rerank window so a lone relevant chunk survives. It was a real production bug; now it's a default.</p>
+        <p>The subtle bug: you retrieve a few chunks, rerank, keep the top 3 — and on a small or lopsided corpus the single focused document that actually answered the question gets shoved out by vaguely-related ones. attestq keeps a deliberately generous post-rerank window so a lone relevant chunk survives. It's an easy bug to ship; here it's a default.</p>
       </div>
     </div>
   </div>
@@ -366,18 +356,6 @@ ans = engine.<span class="f">evaluate</span>(
   </div>
 </section>
 
-<section id="origin" style="background:var(--bg2)">
-  <div class="wrap">
-    <div class="eyebrow rv">where it came from</div>
-    <h2 class="rv">Extracted from production, not a greenfield toy.</h2>
-    <p class="section-lede rv">Two internal tools were independently solving the same retrieve → rerank → gate → cited-draft problem, and quietly drifting apart.</p>
-    <div class="origin">
-      <div class="src rv d1"><div class="pin">● source #1</div><h4>Vendor due-diligence assistant</h4><p>Drafts a due-diligence form from a vendor's uploaded evidence — per-vendor, with strict evidence isolation.</p></div>
-      <div class="src rv d2"><div class="pin">● source #2</div><h4>Customer-assurance drafter</h4><p>Answers inbound customer security questionnaires from an internal policy corpus.</p></div>
-    </div>
-    <p class="dogfood rv d2">Extracting the shared kernel — and then <b>refactoring the production tool to consume the public package</b> instead of its own copy — means the open-source version is the one under real load, not a sanitized fork. The same code that ships to PyPI is the code answering real questionnaires.</p>
-  </div>
-</section>
 
 <section class="final">
   <div class="wrap">
