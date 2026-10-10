@@ -99,3 +99,10 @@ steel: # steel blue -> cool slate — proof, ledgers, things that must not drift
   tint: "rgba(36, 90, 122, 0.055)"
   glow: "rgba(92, 142, 166, 0.22)"
   shadow: "rgba(30, 58, 95, 0.28)"
+
+coral: # rose -> coral -> peach — meetings, voices, the human side
+  grad: "linear-gradient(135deg, #9f1d4f 0%, #e0533d 52%, #f59e6b 100%)"
+  accent: "#c2412d"
+  tint: "rgba(194, 65, 45, 0.055)"
+  glow: "rgba(245, 158, 107, 0.22)"
+  shadow: "rgba(159, 29, 79, 0.28)"
