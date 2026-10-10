@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script>document.documentElement.classList.add('js')</script>
-<title>SOC-in-a-Box — one LLM, eight hats, a production-bar AI SOC</title>
+<title>aisoc — one LLM, eight hats, a production-bar AI SOC</title>
 <meta name="description" content="A multi-agent AI SOC where one local LLM plays eight analyst roles over a Redis Streams bus — agents propose, a human executes, and an event-sourced case memory makes it senior instead of just fast.">
-<meta property="og:title" content="SOC-in-a-Box — one LLM, eight hats">
+<meta property="og:title" content="aisoc — one LLM, eight hats">
 <meta property="og:description" content="The bus is the org chart; LangGraph is the runtime. Agents propose, humans execute. 0 writes to the systems it watches. pip install aisoc.">
-<meta property="og:image" content="https://vinayvobbili.github.io/assets/img/posts/soc-in-a-box-hero.png">
+<meta property="og:image" content="https://vinayvobbili.github.io/assets/img/posts/aisoc-hero.png">
 <meta property="og:type" content="website">
 <!-- Self-hosted fonts (Space Grotesk + JetBrains Mono); no Google Fonts CDN. -->
 <link rel="stylesheet" href="/assets/fonts/fonts.css">
@@ -260,9 +260,9 @@ footer a{color:var(--muted)}footer a:hover{color:var(--ink)}
 <body>
 <div id="bar"></div>
 <nav id="nav"><div class="wrap">
-  <a class="logo" href="#top">SOC-in-a-Box</a>
+  <a class="logo" href="#top">aisoc</a>
   <div class="links">
-    <a class="hide-sm" href="https://vinayvobbili.github.io/posts/building-soc-in-a-box/">Read the post</a>
+    <a class="hide-sm" href="https://vinayvobbili.github.io/posts/building-aisoc/">Read the post</a>
     <a class="cta" href="https://pypi.org/project/aisoc/">aisoc ↗</a>
   </div>
 </div></nav>
@@ -272,7 +272,7 @@ footer a{color:var(--muted)}footer a:hover{color:var(--ink)}
   <div class="grid-ov"></div>
   <div class="wrap">
     <span class="tag"><span class="dot"></span>open source · pip install aisoc</span>
-    <h1 class="title">SOC-in-a-Box</h1>
+    <h1 class="title">aisoc</h1>
     <p class="lede">A production-bar AI SOC where <b>one local LLM plays eight analyst roles</b> over a bus — and the agents propose while a human executes.</p>
     <p class="sub">Sentinel, Tier 2, IR Lead, Threat Intel, SOC Manager, Detection Engineer, Threat Hunter and a human gate — one GLM model wearing every hat, coordinated over Redis Streams, read-only against the systems it watches, with an event-sourced case memory that makes it senior instead of just fast.</p>
     <div class="hero-cta">
@@ -426,9 +426,9 @@ footer a{color:var(--muted)}footer a:hover{color:var(--ink)}
 
 <section id="oss">
   <div class="wrap">
-    <div class="eyebrow rv">we open-sourced the kernel</div>
-    <h2 class="rv">The reusable heart is on PyPI — <span class="grad-text">bring your own everything</span>.</h2>
-    <p class="section-lede rv">The event contract, the bus, case memory as a read model, and the role-agent framework are extracted into a vendor-neutral package. Three injection seams — chat model, alert source, tools — mean nothing in the kernel knows about any one vendor. SOC-in-a-Box is literally this package with my environment plugged in.</p>
+    <div class="eyebrow rv">open source</div>
+    <h2 class="rv">It's on PyPI — <span class="grad-text">bring your own everything</span>.</h2>
+    <p class="section-lede rv">The event contract, the bus, case memory as a read model, and the role-agent framework ship as one vendor-neutral package. Three injection seams — chat model, alert source, tools — mean nothing in the kernel knows about any one vendor.</p>
     <div class="code rv d1">
       <div class="cbar"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="fn">soc.py</span></div>
 <pre><span class="c"># pip install "aisoc[agent]" — bring your own LLM, alerts, and tools</span>
@@ -459,12 +459,12 @@ mem.<span class="f">find_campaign_clusters</span>()         <span class="c"># th
   </div>
 </section>
 
-<section id="origin" style="background:var(--bg2)">
+<section id="design" style="background:var(--bg2)">
   <div class="wrap">
-    <div class="eyebrow rv">where it came from</div>
-    <h2 class="rv">An experiment that earned its trust.</h2>
-    <p class="section-lede rv">SOC-in-a-Box is the parent of the OSS family — <a href="https://vinayvobbili.github.io/iocflow/" style="color:var(--blue-l)">iocflow</a> and <a href="https://vinayvobbili.github.io/detflow/" style="color:var(--blue-l)">detflow</a> are the lessons from it, packaged.</p>
-    <p class="dogfood rv d1">The most useful thing to copy isn't any one agent — an LLM-with-tools loop isn't novel. It's the four ideas that turned eight separate experiments into one thing a SOC team would actually run: the <b>bus shape</b>, the <b>schema-per-event</b> discipline, the <b>audit-stream-as-truth</b> pattern, and the <b>HITL handoff that addresses a human by role</b>. Get those right and "the model orchestrates but never does the irreversible work" stops being a slogan and becomes the architecture. That's the lesson the whole library family carries forward.</p>
+    <div class="eyebrow rv">what to copy</div>
+    <h2 class="rv">Four ideas, not eight agents.</h2>
+    <p class="section-lede rv"><a href="https://vinayvobbili.github.io/iocflow/" style="color:var(--blue-l)">iocflow</a> and <a href="https://vinayvobbili.github.io/detflow/" style="color:var(--blue-l)">detflow</a> apply the same ideas to the IOC lifecycle and detection engineering.</p>
+    <p class="dogfood rv d1">The most useful thing to copy isn't any one agent — an LLM-with-tools loop isn't novel. It's the four ideas that turn eight separate roles into one system a SOC team would actually run: the <b>bus shape</b>, the <b>schema-per-event</b> discipline, the <b>audit-stream-as-truth</b> pattern, and the <b>HITL handoff that addresses a human by role</b>. Get those right and "the model orchestrates but never does the irreversible work" stops being a slogan and becomes the architecture. That's the lesson the whole library family carries forward.</p>
   </div>
 </section>
 
@@ -475,7 +475,7 @@ mem.<span class="f">find_campaign_clusters</span>()         <span class="c"># th
     <span class="pill rv d1" data-copy="pip install &quot;aisoc[agent]&quot;" style="display:inline-flex"><span class="pfx">$</span><span>pip install "aisoc[agent]"</span><span class="cp">click to copy</span></span>
     <div class="final-links rv d2">
       <a class="btn primary" href="https://pypi.org/project/aisoc/">aisoc on PyPI ↗</a>
-      <a class="btn ghost" href="https://vinayvobbili.github.io/posts/building-soc-in-a-box/">Read the full write-up</a>
+      <a class="btn ghost" href="https://vinayvobbili.github.io/posts/building-aisoc/">Read the full write-up</a>
     </div>
   </div>
 </section>

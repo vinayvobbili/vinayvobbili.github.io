@@ -1,7 +1,7 @@
 ---
 title: "Giving an AI SOC a Memory: Precedent, Proof, and the Campaigns No Analyst Sees"
 image:
-  path: /assets/img/posts/soc-in-a-box-memory-hero.png
+  path: /assets/img/posts/aisoc-memory-hero.png
   alt: "An event-sourced case memory that lets a multi-agent SOC recall prior cases, score its own accuracy, and cluster cross-incident campaigns"
 description: "The first version of our AI SOC had eight roles and zero memory — every alert started from scratch. This post adds the layer that makes a SOC senior instead of just fast: an event-sourced case memory. Agents recall similar prior cases as precedent, every verdict is scored against ground truth so we can prove whether the agents are actually right, any past decision can be interrogated from the recorded trace instead of a hallucinated rationale, and cross-incident campaigns surface that no single analyst working one ticket would ever see. Plus the honest part — we flag-gated precedent so we can A/B whether memory actually helps."
 date: 2026-06-20 09:00:00 -0400
@@ -13,7 +13,7 @@ accent: plum
 
 ## TL;DR
 
-[Last time](/posts/building-soc-in-a-box/) we built the org chart: one local LLM wearing eight analyst hats, coordinated over a Redis Streams bus, with a human-in-the-loop gate before any real-system action. It was fast. It was also **amnesiac** — every alert was the first alert it had ever seen.
+[Last time](/posts/building-aisoc/) we built the org chart: one local LLM wearing eight analyst hats, coordinated over a Redis Streams bus, with a human-in-the-loop gate before any real-system action. It was fast. It was also **amnesiac** — every alert was the first alert it had ever seen.
 
 This post adds the thing that separates a senior analyst from a fast one: **memory**. Not a vector store bolted on the side — a read projection over the event log the SOC was already writing. Four capabilities fall out of it:
 
@@ -75,7 +75,7 @@ This is where most "we added memory to our agents" posts stop — at the demo wh
 
 Precedent injection is a hypothesis: *agents that see prior cases make better calls.* It is not self-evidently true. It could just as easily anchor an agent on a stale verdict, or teach it to over-escalate because last week's similar case escalated. The only honest way to ship it is to make it **measurable and reversible**.
 
-**Measurable.** Every agent verdict already carries a `ground_truth` field in backtest — sourced from the same analyst-curated escalation labels the [v1 backtest harness](/posts/building-soc-in-a-box/) used (historical alerts, each marked by whether a human actually escalated it). So per-role accuracy isn't a vibe: for each role we count verdicts that matched the human outcome over verdicts that had a ground-truth label, and render it as a card on the page — green when the role is pulling its weight, red when it isn't, honest "no labels yet → run the backtest" when we can't claim anything.
+**Measurable.** Every agent verdict already carries a `ground_truth` field in backtest — sourced from the same analyst-curated escalation labels the [v1 backtest harness](/posts/building-aisoc/) used (historical alerts, each marked by whether a human actually escalated it). So per-role accuracy isn't a vibe: for each role we count verdicts that matched the human outcome over verdicts that had a ground-truth label, and render it as a card on the page — green when the role is pulling its weight, red when it isn't, honest "no labels yet → run the backtest" when we can't claim anything.
 
 **Reversible.** Precedent recall sits behind a feature flag. Flip it off and the agents run baseline; flip it on and they get memory. Same harness, same tickets, two accuracy numbers. That's an A/B, not an assertion — and it means the answer to "did memory help the IR Lead?" is a delta we can read, including the delta being *negative* and us turning it back off.
 
@@ -134,6 +134,6 @@ If you're building agents that need a past tense, the transferable ideas aren't 
 
 The v1 post ended on "the bus shape is worth more than any one agent." A release later, the bus shape is what made memory a weekend instead of a rewrite. The failover brain underneath is still the open-source [`langchain-failover`](https://pypi.org/project/langchain-failover/).
 
-And the bus shape itself is now its own thing. The event contract, the in-memory/Redis bus, case memory as a read model, and the role-agent framework are published as a vendor-neutral package on PyPI: [`aisoc`](https://pypi.org/project/aisoc/). `pip install "aisoc[agent]"`, plug in your own LLM, alerts, and tools, and the kernel this whole series is built on is yours — memory included, because memory was just a query over the log the bus was already keeping. 🚀
+All of it — the event contract, the in-memory/Redis bus, case memory as a read model, and the role-agent framework — is in the vendor-neutral [`aisoc`](https://pypi.org/project/aisoc/) package on PyPI. `pip install "aisoc[agent]"`, plug in your own LLM, alerts, and tools, and you get memory too, because memory was just a query over the log the bus was already keeping. 🚀
 
 **What's next:** promote per-role accuracy to a regression gate so a precedent change that *drops* a role's accuracy fails the build, and feed confirmed campaigns back to the Threat Hunter as standing hunt hypotheses — closing the loop from "we noticed a campaign" to "we went and found the rest of it." Memory was the prerequisite. Now the agents get to use it.

@@ -24,7 +24,7 @@ I built [**find-evil**](https://github.com/vinayvobbili/find-evil) for the SANS 
 <div class="tldr-card"><span class="tldr-num">1 real C2</span><span class="tldr-sub">found fileless Empire C2 on the SANS image — and refused to invent any on the clean host</span></div>
 </div>
 
-This is the DFIR-facing sibling of [iocflow](/posts/iocflow-agentic-ioc-lifecycle/) and [SOC-in-a-Box](/posts/building-soc-in-a-box/): same architectural conviction — *the model orchestrates, deterministic code does the dangerous part* — pointed at a forensic agent on a SANS Workstation. 🛡️
+This is the DFIR-facing sibling of [iocflow](/posts/iocflow-agentic-ioc-lifecycle/) and [aisoc](/posts/building-aisoc/): same architectural conviction — *the model orchestrates, deterministic code does the dangerous part* — pointed at a forensic agent on a SANS Workstation. 🛡️
 
 {% include embed/youtube.html id='8ufHSoOfc5Q' %}
 _A live Protocol SIFT investigation: the agent extracts, reconciles against ground truth, corrects its own read, and hunts — on the real SANS compromised image._

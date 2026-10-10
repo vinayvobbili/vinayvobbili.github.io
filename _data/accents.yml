@@ -79,7 +79,7 @@ indigo: # indigo -> sky — failover / tier-split routing
   glow: "rgba(14, 165, 233, 0.22)"
   shadow: "rgba(55, 48, 163, 0.28)"
 
-aqua: # blue -> cyan — SOC-in-a-Box
+aqua: # blue -> cyan — aisoc
   grad: "linear-gradient(135deg, #0046ad 0%, #0782c5 50%, #06b6d4 100%)"
   accent: "#0369a1"
   tint: "rgba(3, 105, 161, 0.055)"

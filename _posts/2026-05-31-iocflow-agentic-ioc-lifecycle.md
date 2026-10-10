@@ -24,7 +24,7 @@ I shipped [**iocflow**](https://pypi.org/project/iocflow/) to PyPI — an open-s
 > ▶ **[Open the interactive version →](/iocflow/)** — a full-bleed page where you can walk an indicator through the lifecycle and watch the three-layer authority model in action: the benign `8.8.8.8` gets vetoed by the allowlist guard before the agent can ever propose it.
 {: .prompt-tip }
 
-It's a sibling of [SOC-in-a-Box](/posts/building-soc-in-a-box/), the AI SOC I wrote about last week: the same safety pattern, packaged so anyone can pip-install it. 🧰
+It's a sibling of [aisoc](/posts/building-aisoc/), the AI SOC I wrote about last week: the same safety pattern, packaged so anyone can pip-install it. 🧰
 
 ![iocflow investigate() running the full IOC lifecycle with a human-in-the-loop approval gate](/assets/img/posts/iocflow-demo.gif)
 _One call: extract IOCs from a report → enrich → suggest hunts → propose blocks → wait for a human → block at the firewall. The benign `8.8.8.8` never even gets proposed._
@@ -86,7 +86,7 @@ The model is **any** LangChain chat model. The bundled `default_agent_model()` b
 
 ## Three-layer authority (the part that matters) 🔒
 
-Blocking is the only step that can hurt you, so it gets the full treatment from SOC-in-a-Box:
+Blocking is the only step that can hurt you, so it gets the full treatment from aisoc:
 
 1. **The agent proposes.** The responder does a *dry run* of L5 — full audit, zero changes — and turns it into a proposal.
 2. **A human authorizes.** An `ApprovalGate` reviews the proposal and returns the approved subset. The default is `DenyAllGate` — **an unattended run blocks nothing.**
@@ -114,6 +114,6 @@ Everything but the agent layer runs on Python 3.9+; `import iocflow` stays depen
 
 - 📦 PyPI: [`pip install iocflow`](https://pypi.org/project/iocflow/)
 - 🛠️ Source: [github.com/vinayvobbili/iocflow](https://github.com/vinayvobbili/iocflow)
-- 🧠 Related: [SOC-in-a-Box](/posts/building-soc-in-a-box/)
+- 🧠 Related: [aisoc](/posts/building-aisoc/)
 
 If you try it, I'd love to hear what control points you'd plug in. 👋

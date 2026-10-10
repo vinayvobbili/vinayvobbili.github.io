@@ -98,7 +98,7 @@ v0.1 of this package gave a local LLM a backup for when it goes down. v0.2 is fo
 
 - 📦 PyPI: [`pip install langchain-failover`](https://pypi.org/project/langchain-failover/) (`>=0.2.0`)
 - 🛠️ Source: [github.com/vinayvobbili/langchain-failover](https://github.com/vinayvobbili/langchain-failover)
-- 🏗️ Related: [SOC-in-a-Box: One LLM, Eight Hats](/posts/building-soc-in-a-box/)
+- 🏗️ Related: [aisoc: One LLM, Eight Hats](/posts/building-aisoc/)
 - 🧩 Sibling OSS: [iocflow](/posts/iocflow-agentic-ioc-lifecycle/) · [detflow](/posts/detflow-detection-engineering-copilot/)
 
 If you run agents on local models, I'd love to hear what your gather/compose split looks like. 👋

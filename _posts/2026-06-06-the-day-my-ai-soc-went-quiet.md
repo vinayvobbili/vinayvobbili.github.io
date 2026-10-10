@@ -17,7 +17,7 @@ accent: slate
 
 ## TL;DR
 
-I run [SOC-in-a-Box](/posts/building-soc-in-a-box/) — a multi-agent AI SOC where
+I run [aisoc](/posts/building-aisoc/) — a multi-agent AI SOC where
 one local LLM plays every analyst role behind a human-in-the-loop gate. One
 afternoon it stopped posting verdicts to the team room. No exception. No alert.
 No error in any log. It just went quiet, and stayed quiet, for long enough that
@@ -42,7 +42,7 @@ total silence.
 
 ## The symptom: a room that just stopped
 
-SOC-in-a-Box posts a card to a team chat room for every alert it triages —
+aisoc posts a card to a team chat room for every alert it triages —
 disposition, reasoning, recommended action, and a button for a human to approve
 anything destructive. Those cards are the heartbeat of the system. You glance at
 the room and you know it's alive.
@@ -89,7 +89,7 @@ the SOC hadn't errored out, because it was *designed* not to.
 
 ## What was actually happening
 
-SOC-in-a-Box doesn't call a single model. It calls a `FailoverChatModel`: a
+aisoc doesn't call a single model. It calls a `FailoverChatModel`: a
 thin wrapper around a primary and a backup chat model that serves from the
 primary, transparently falls back to the secondary on connection errors, and
 flips back when the primary recovers. (The same pattern is available as an

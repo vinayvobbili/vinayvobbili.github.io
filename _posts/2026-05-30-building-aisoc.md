@@ -1,7 +1,7 @@
 ---
-title: "SOC-in-a-Box: One LLM, Eight Hats, A Production-Bar AI SOC on a Single GPU"
+title: "aisoc: One LLM, Eight Hats, A Production-Bar AI SOC on a Single GPU"
 image:
-  path: /assets/img/posts/soc-in-a-box-hero.png
+  path: /assets/img/posts/aisoc-hero.png
   alt: "One local LLM playing eight analyst roles — a production-bar AI SOC on a single GPU"
 description: A multi-agent SOC where one local LLM plays Sentinel, Tier 2, IR Lead, Threat Intel, SOC Manager, Detection Engineer, and Threat Hunter — coordinated over a Redis Streams bus with a human-in-the-loop approval gate before any real-system action. The framework choices, the architectural trade-offs, and the backtest harness that lets us put real numbers on agent quality before going live.
 date: 2026-05-30 09:00:00 -0400
@@ -21,7 +21,7 @@ A real SOC runs 24×7 with eight or nine distinct roles — alert triage, deeper
 <div class="tldr-card"><span class="tldr-num">0 writes</span><span class="tldr-sub">to EDR, proxy or endpoint tools — agents <em>propose</em>, humans <em>execute</em></span></div>
 </div>
 
-> ▶ **[Open the interactive version →](/soc-in-a-box/)** — a full-bleed page where you can drop an alert onto the bus and watch it move through the org chart, one LLM wearing a different hat at each stop, until everything stops at the human-in-the-loop gate. The benign one gets closed by Tier 2 and never reaches it.
+> ▶ **[Open the interactive version →](/aisoc/)** — a full-bleed page where you can drop an alert onto the bus and watch it move through the org chart, one LLM wearing a different hat at each stop, until everything stops at the human-in-the-loop gate. The benign one gets closed by Tier 2 and never reaches it.
 {: .prompt-tip }
 
 The interesting parts aren't the agents themselves — there's nothing novel about an LLM-with-tools loop. The interesting parts are: (1) the architectural choices that let one local LLM serve a whole SOC org chart without melting, (2) the human-in-the-loop gate that makes "AI does containment" a real thing a security team will actually trust, and (3) a backtest harness that lets us put hard numbers on agent quality against historical alerts before anyone has to take it on faith.
@@ -213,7 +213,7 @@ Three things, in order of how much they changed the design:
 
 ## Try it / What's next
 
-> **📦 New — we open-sourced the kernel.** The reusable heart of this — the event contract, the bus, case memory, and the role-agent framework — is now a standalone, vendor-neutral package on PyPI: [`aisoc`](https://pypi.org/project/aisoc/). `pip install "aisoc[agent]"`, bring your own LLM, alert source, and tools, and you get the same event-sourced multi-agent SOC this post describes: a stdlib-only in-memory bus (or Redis Streams for the durable path), a role team that works a case over the shared log, memory as a read model, human-in-the-loop gating, and a replayable audit you can backtest against. The non-obvious part it gets right: three **injection seams** — chat model, alert source, tools — mean nothing in the kernel knows about any one vendor. The SOC-in-a-Box you just read about is literally *this package* with my environment plugged into those seams. Source, tests, and runnable examples ship in the package. 🚀
+> **📦 Try it.** aisoc is a vendor-neutral package on PyPI: [`aisoc`](https://pypi.org/project/aisoc/) — the event contract, the bus, case memory, and the role-agent framework. `pip install "aisoc[agent]"`, bring your own LLM, alert source, and tools, and you get the event-sourced multi-agent SOC this post describes: a stdlib-only in-memory bus (or Redis Streams for the durable path), a role team that works a case over the shared log, memory as a read model, human-in-the-loop gating, and a replayable audit you can backtest against. The non-obvious part it gets right: three **injection seams** — chat model, alert source, tools — mean nothing in the kernel knows about any one vendor. Source, tests, and runnable examples ship in the package. 🚀
 
 What's not in v1 and what we'll work on next:
 
