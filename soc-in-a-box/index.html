@@ -7,7 +7,7 @@
 <title>SOC-in-a-Box — one LLM, eight hats, a production-bar AI SOC</title>
 <meta name="description" content="A multi-agent AI SOC where one local LLM plays eight analyst roles over a Redis Streams bus — agents propose, a human executes, and an event-sourced case memory makes it senior instead of just fast.">
 <meta property="og:title" content="SOC-in-a-Box — one LLM, eight hats">
-<meta property="og:description" content="The bus is the org chart; LangGraph is the runtime. Agents propose, humans execute. 0 writes to real systems. pip install aisoc.">
+<meta property="og:description" content="The bus is the org chart; LangGraph is the runtime. Agents propose, humans execute. 0 writes to the systems it watches. pip install aisoc.">
 <meta property="og:image" content="https://vinayvobbili.github.io/assets/img/posts/soc-in-a-box-hero.png">
 <meta property="og:type" content="website">
 <!-- Self-hosted fonts (Space Grotesk + JetBrains Mono); no Google Fonts CDN. -->
@@ -263,7 +263,6 @@ footer a{color:var(--muted)}footer a:hover{color:var(--ink)}
   <a class="logo" href="#top">SOC-in-a-Box</a>
   <div class="links">
     <a class="hide-sm" href="https://vinayvobbili.github.io/posts/building-soc-in-a-box/">Read the post</a>
-    <a class="hide-sm" href="https://github.com/vinayvobbili/security-ops-platform">GitHub</a>
     <a class="cta" href="https://pypi.org/project/aisoc/">aisoc ↗</a>
   </div>
 </div></nav>
@@ -275,11 +274,11 @@ footer a{color:var(--muted)}footer a:hover{color:var(--ink)}
     <span class="tag"><span class="dot"></span>open source · pip install aisoc</span>
     <h1 class="title">SOC-in-a-Box</h1>
     <p class="lede">A production-bar AI SOC where <b>one local LLM plays eight analyst roles</b> over a bus — and the agents propose while a human executes.</p>
-    <p class="sub">Sentinel, Tier 2, IR Lead, Threat Intel, SOC Manager, Detection Engineer, Threat Hunter and a human gate — one GLM model wearing every hat, coordinated over Redis Streams, read-only against real systems, with an event-sourced case memory that makes it senior instead of just fast.</p>
+    <p class="sub">Sentinel, Tier 2, IR Lead, Threat Intel, SOC Manager, Detection Engineer, Threat Hunter and a human gate — one GLM model wearing every hat, coordinated over Redis Streams, read-only against the systems it watches, with an event-sourced case memory that makes it senior instead of just fast.</p>
     <div class="hero-cta">
       <span class="pill" data-copy="pip install &quot;aisoc[agent]&quot;"><span class="pfx">$</span><span>pip install "aisoc[agent]"</span><span class="cp">click to copy</span></span>
       <a class="btn primary" href="#cascade">Work an alert ↓</a>
-      <a class="btn ghost" href="https://github.com/vinayvobbili/security-ops-platform">View source</a>
+      <a class="btn ghost" href="https://pypi.org/project/aisoc/">aisoc on PyPI</a>
     </div>
   </div>
   <a class="scrollcue" href="#stats"><span>scroll</span><span>↓</span></a>
@@ -290,7 +289,7 @@ footer a{color:var(--muted)}footer a:hover{color:var(--ink)}
     <div class="stats">
       <div class="stat rv"><div class="num grad-text" data-count="8">0</div><div class="k">roles</div><div class="v">Sentinel · Tier 2 · IR Lead · Threat Intel · SOC Manager · Detection Eng · Threat Hunter · the human gate.</div></div>
       <div class="stat rv d1"><div class="num grad-text" data-count="1">0</div><div class="k">LLM</div><div class="v">one local GLM model wears every hat — different prompt, tool budget and output schema per role.</div></div>
-      <div class="stat rv d2"><div class="num grad-text" data-count="0">0</div><div class="k">writes</div><div class="v">to CrowdStrike, Tanium, Zscaler. Agents <em>propose</em>; a human <em>executes</em>. Trust is earned in v1.</div></div>
+      <div class="stat rv d2"><div class="num grad-text" data-count="0">0</div><div class="k">writes</div><div class="v">to EDR, proxy or endpoint tools. Agents <em>propose</em>; a human <em>executes</em>. Trust is earned in v1.</div></div>
     </div>
   </div>
 </section>
@@ -303,9 +302,9 @@ footer a{color:var(--muted)}footer a:hover{color:var(--ink)}
     <h2 class="rv">An AI that auto-isolates a host at 3 AM gets <span class="grad-text">pulled in a month</span>.</h2>
     <p class="section-lede rv">The hard question was never "can the AI decide to contain?" It's "how does it hand off to a human in a way the human will actually trust?" Give an agent the keys to a destructive action and the first false positive costs you the whole program.</p>
     <div class="chat rv d1">
-      <div class="q"><div class="role">3:14 AM · CrowdStrike detection on a finance workstation</div><div>encoded PowerShell, outbound to an unfamiliar IP — looks like a beacon</div></div>
+      <div class="q"><div class="role">3:14 AM · EDR detection on a finance workstation</div><div>encoded PowerShell, outbound to an unfamiliar IP — looks like a beacon</div></div>
       <div class="a"><div class="role">autonomous agent, ungated</div>
-        <div class="txt">Classified malicious. Isolating FIN-WS-04 via CrowdStrike RTR now. ✅</div>
+        <div class="txt">Classified malicious. Isolating FIN-WS-04 via EDR now. ✅</div>
         <div class="flag">⚠ It was a sanctioned pentest. The agent network-isolated a trading desk machine at market open — no human in the loop, no audit trail anyone trusts. That's the last night this SOC runs an AI.</div>
       </div>
     </div>
@@ -319,7 +318,7 @@ footer a{color:var(--muted)}footer a:hover{color:var(--ink)}
     <h2 class="rv">Watch an alert move through the <span class="grad-text">org chart</span>.</h2>
     <p class="section-lede rv">Pick an alert and follow it down the bus — one LLM, a different hat at each stop. The reactive roles run on their own; then everything stops at the human gate, because no agent can touch a real system alone.</p>
     <div class="demo rv d1">
-      <div class="demo-lbl">1 · an alert lands from the XSOAR feed</div>
+      <div class="demo-lbl">1 · an alert lands from the alert feed</div>
       <div class="alert-pick" id="alertpick">
         <button class="al sel" data-k="beacon"><span class="av">Cobalt Strike beacon · FIN-WS-04</span><span class="alh">encoded PS + C2 callout · finance workstation</span></button>
         <button class="al" data-k="psexec"><span class="av">PsExec lateral movement · DC-02</span><span class="alh">remote service create on a domain controller</span></button>
@@ -371,7 +370,7 @@ footer a{color:var(--muted)}footer a:hover{color:var(--ink)}
       <div class="crow rv"><div class="cn">CrewAI</div><div class="cx">a crew runs one task in-process; our roles are independent processes with their own uptime and HITL. Could slot in <em>inside</em> a single role's reasoning.</div></div>
       <div class="crow rv"><div class="cn">AutoGen</div><div class="cx">conversation-shaped. But Tier 2 doesn't <em>talk to</em> Tier 1 — it consumes Tier 1's verdict. Chat-history-as-state taxes a problem that isn't a conversation.</div></div>
       <div class="crow rv"><div class="cn">Plain LangChain</div><div class="cx">a synchronous chain forces every role to wait, kills per-role restart, and makes HITL a hack. Fine for two roles. We had eight.</div></div>
-      <div class="crow rv"><div class="cn">n8n / visual</div><div class="cx">leadership likes the boxes, but LLM nodes aren't first-class and the graph lives in a DB, not a reviewable PR. Worse auditability.</div></div>
+      <div class="crow rv"><div class="cn">n8n / visual</div><div class="cx">boxes are easy to read, but LLM nodes aren't first-class and the graph lives in a DB, not a reviewable PR. Worse auditability.</div></div>
       <div class="crow win rv"><div class="cn">LangGraph + bus</div><div class="cx"><b>what we picked.</b> Agent runtime per role; the bus is the coordination. Don't conflate them — that separation is what let memory ship a release later as a query, not a rewrite.</div></div>
     </div>
   </div>
@@ -383,14 +382,14 @@ footer a{color:var(--muted)}footer a:hover{color:var(--ink)}
     <h2 class="rv">The whole org chart, <span class="grad-text">one model</span>.</h2>
     <p class="section-lede rv">The roles aren't different intelligences — they're the same local LLM with a different system prompt, tool budget and output schema. Some react to each event; some wake on a calendar and replay the audit stream; one is a human.</p>
     <div class="roles">
-      <div class="role rv"><div class="ic">🛰️</div><div class="rn">Sentinel</div><div class="rk">Tier 1 triage</div><div class="rd">Reacts to each new XSOAR ticket, triages it, and publishes a verdict the rest of the floor picks up.</div><span class="tagk react">reactive</span></div>
+      <div class="role rv"><div class="ic">🛰️</div><div class="rn">Sentinel</div><div class="rk">Tier 1 triage</div><div class="rd">Reacts to each new alert, triages it, and publishes a verdict the rest of the floor picks up.</div><span class="tagk react">reactive</span></div>
       <div class="role rv"><div class="ic">🔬</div><div class="rn">Tier 2 Analyst</div><div class="rk">deeper investigation</div><div class="rd">Consumes malicious / high-priority verdicts, digs in, and decides: escalate, close, or send for human review.</div><span class="tagk react">reactive</span></div>
       <div class="role rv"><div class="ic">🎯</div><div class="rn">IR Lead</div><div class="rk">SEV + containment</div><div class="rd">Takes escalated cases, assigns severity, and proposes a containment plan — behind the HITL gate, always.</div><span class="tagk react">reactive</span></div>
       <div class="role rv"><div class="ic">🧭</div><div class="rn">Threat Intel</div><div class="rk">actor + MITRE</div><div class="rd">Attributes the activity to an actor and maps it to ATT&CK — kept out of IR Lead's prompt so both stay tight.</div><span class="tagk react">reactive</span></div>
       <div class="role rv"><div class="ic">📋</div><div class="rn">SOC Manager</div><div class="rk">shift summaries</div><div class="rd">Wakes on a timer three times a day, replays the audit stream, and emits a shift summary card.</div><span class="tagk timer">periodic</span></div>
       <div class="role rv"><div class="ic">🛠️</div><div class="rn">Detection Engineer</div><div class="rk">rule tuning</div><div class="rd">Weekday mornings, finds noisy rules a reactive role would never see — "fired 47 times, 41 closed benign."</div><span class="tagk timer">periodic</span></div>
       <div class="role rv"><div class="ic">🏹</div><div class="rn">Threat Hunter</div><div class="rk">pattern sweeps</div><div class="rd">Sweeps the audit log twice a day for patterns no single ticket reveals, then proposes hunts.</div><span class="tagk timer">periodic</span></div>
-      <div class="role rv"><div class="ic">🧑</div><div class="rn">The Human</div><div class="rk">approval gate</div><div class="rd">A Webex card addresses an on-call by role; a two-step Flask page records the decision. The AI never executes.</div><span class="tagk human">human</span></div>
+      <div class="role rv"><div class="ic">🧑</div><div class="rn">The Human</div><div class="rk">approval gate</div><div class="rd">A team-chat card addresses an on-call by role; a two-step Flask page records the decision. The AI never executes.</div><span class="tagk human">human</span></div>
     </div>
     <p class="note rv">Why one model instead of a different provider per role? <b>Cost</b> — one model loaded once, running 24×7. <b>Latency</b> — no inter-provider hop. <b>Simplicity</b> — one health check, one log file. The resilience comes from a <a href="https://pypi.org/project/langchain-failover/" style="color:var(--blue-l)">langchain-failover</a> chain that transparently falls back to a backup box and flips back the moment the primary recovers — tool-calls intact across the failover.</p>
   </div>
@@ -413,15 +412,15 @@ footer a{color:var(--muted)}footer a:hover{color:var(--ink)}
 <section id="backtest" style="background:var(--bg2)">
   <div class="wrap">
     <div class="eyebrow rv">numbers, not vibes</div>
-    <h2 class="rv">Proven against <span class="grad-text">32K real tickets</span> before it ever touched a live alert.</h2>
-    <p class="section-lede rv">The hardest sell to a SOC director isn't "we built it" — it's "how do you know it works?" So the cascade replays historical CrowdStrike tickets with every side effect neutered, and scores its escalations against what a human analyst actually did.</p>
+    <h2 class="rv">Proven against <span class="grad-text">historical alerts</span> before it ever touched a live one.</h2>
+    <p class="section-lede rv">The hardest sell to a SOC director isn't "we built it" — it's "how do you know it works?" So the cascade replays historical EDR alerts with every side effect neutered, and scores its escalations against what a human analyst actually did.</p>
     <div class="bt">
       <div class="btcell tp rv"><div class="bk">TP</div><div class="bl">human escalated <b>and</b> the cascade escalated to IR Lead</div></div>
       <div class="btcell fn rv"><div class="bk">FN</div><div class="bl">human escalated <b>but</b> Tier 2 closed it</div></div>
       <div class="btcell fp rv"><div class="bk">FP</div><div class="bl">human closed <b>but</b> the cascade escalated</div></div>
       <div class="btcell tn rv"><div class="bk">TN</div><div class="bl">human closed <b>and</b> Tier 2 closed it</div></div>
     </div>
-    <p class="note rv">Precision and recall on that confusion matrix answer the question leadership actually asks: <b>how often does the AI escalate when a human would, and how often does it cry wolf?</b> A <span class="mono">--dry-run</span> mode swaps the LLM for a canned-JSON stub so the whole pipeline validates end-to-end in under two seconds without burning a token. The number lands in JSON the dashboard reads — a metric, not a vibe.</p>
+    <p class="note rv">Precision and recall on that confusion matrix answer the question anyone deciding whether to trust it asks: <b>how often does the AI escalate when a human would, and how often does it cry wolf?</b> A <span class="mono">--dry-run</span> mode swaps the LLM for a canned-JSON stub so the whole pipeline validates end-to-end in under two seconds without burning a token. The number lands in JSON the dashboard reads — a metric, not a vibe.</p>
   </div>
 </section>
 
@@ -463,7 +462,7 @@ mem.<span class="f">find_campaign_clusters</span>()         <span class="c"># th
 <section id="origin" style="background:var(--bg2)">
   <div class="wrap">
     <div class="eyebrow rv">where it came from</div>
-    <h2 class="rv">An AVP-sponsored experiment that earned its trust.</h2>
+    <h2 class="rv">An experiment that earned its trust.</h2>
     <p class="section-lede rv">SOC-in-a-Box is the parent of the OSS family — <a href="https://vinayvobbili.github.io/iocflow/" style="color:var(--blue-l)">iocflow</a> and <a href="https://vinayvobbili.github.io/detflow/" style="color:var(--blue-l)">detflow</a> are the lessons from it, packaged.</p>
     <p class="dogfood rv d1">The most useful thing to copy isn't any one agent — an LLM-with-tools loop isn't novel. It's the four ideas that turned eight separate experiments into one thing a SOC team would actually run: the <b>bus shape</b>, the <b>schema-per-event</b> discipline, the <b>audit-stream-as-truth</b> pattern, and the <b>HITL handoff that addresses a human by role</b>. Get those right and "the model orchestrates but never does the irreversible work" stops being a slogan and becomes the architecture. That's the lesson the whole library family carries forward.</p>
   </div>
@@ -476,7 +475,6 @@ mem.<span class="f">find_campaign_clusters</span>()         <span class="c"># th
     <span class="pill rv d1" data-copy="pip install &quot;aisoc[agent]&quot;" style="display:inline-flex"><span class="pfx">$</span><span>pip install "aisoc[agent]"</span><span class="cp">click to copy</span></span>
     <div class="final-links rv d2">
       <a class="btn primary" href="https://pypi.org/project/aisoc/">aisoc on PyPI ↗</a>
-      <a class="btn ghost" href="https://github.com/vinayvobbili/security-ops-platform">GitHub ↗</a>
       <a class="btn ghost" href="https://vinayvobbili.github.io/posts/building-soc-in-a-box/">Read the full write-up</a>
     </div>
   </div>
@@ -530,10 +528,10 @@ mem.<span class="f">find_campaign_clusters</span>()         <span class="c"># th
       escalate:true,
       se:{v:'<b class="mal">TP · malicious</b><br>priority 9 · beaconing pattern', bus:'AlertTriaged'},
       t2:{v:'engaged → <b>escalate</b><br>encoded PS + C2 callout, confirmed real', bus:'CaseEscalated'},
-      ir:{v:'<b>SEV-2</b> · proposes:<br>isolate <b>FIN-WS-04</b> via CrowdStrike RTR', bus:'IRPlan + ActionProposed'},
+      ir:{v:'<b>SEV-2</b> · proposes:<br>isolate <b>FIN-WS-04</b> via EDR', bus:'IRPlan + ActionProposed'},
       ti:{v:'commodity Cobalt Strike loader<br>ATT&CK T1071 · T1059.001', bus:'ThreatIntelReport'},
       precedent:'🛰️ Campaign Radar: 3 prior cases share this C2 — flagged as one campaign.',
-      action:'isolate FIN-WS-04 via CrowdStrike RTR'
+      action:'isolate FIN-WS-04 via EDR'
     },
     psexec:{
       escalate:true,
@@ -596,7 +594,7 @@ mem.<span class="f">find_campaign_clusters</span>()         <span class="c"># th
         gateT.textContent='Proposed: '+d.action;
         gateD.innerHTML='The IR Lead did a <span class="mono">dry_run</span> and proposed this containment. Nothing executes until a human authorizes — the model cannot do this itself.';
         authbtn.disabled=false; authbtn.textContent='Approve containment';
-        gateN.textContent='a Webex card carried this to the on-call; a two-step Flask page records the decision';
+        gateN.textContent='a team-chat card carried this to the on-call; a two-step Flask page records the decision';
       } else {
         gate.className='gate clear';
         gateH.innerHTML='✓ authorized by a human';

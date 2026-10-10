@@ -4,14 +4,14 @@ icon: fas fa-info-circle
 order: 4
 ---
 
-I'm a Principal Security Automation Engineer based in Raleigh, NC. I architect and operate
-an enterprise SOC platform — a fleet of Webex/Teams chatbots, dozens of internal web apps,
-and an on-prem LLM inference platform — that has reduced incident response times by 80%+
-and replaced multiple recurring manual analyst workflows with auditable LLM pipelines.
+I'm a Principal Security Automation Engineer based in Raleigh, NC. I build security
+automation and self-hosted LLM systems — chatbots, web apps and the inference behind
+them — that have cut incident response times by 80%+ and replaced recurring manual
+analyst workflows with auditable LLM pipelines.
 
 This blog is where I write up the engineering problems I find interesting:
-distributed LLM serving, RAG at scale, hosted-to-local routing with fallback,
-fine-tuning rerankers on real data, and the kind of debugging stories that
+distributed LLM serving, RAG at scale, failover across inference hosts,
+fine-tuning rerankers on domain data, and the kind of debugging stories that
 don't fit in a commit message.
 
 **Background**

@@ -3,7 +3,7 @@ title: "SOC-in-a-Box: One LLM, Eight Hats, A Production-Bar AI SOC on a Single G
 image:
   path: /assets/img/posts/soc-in-a-box-hero.png
   alt: "One local LLM playing eight analyst roles — a production-bar AI SOC on a single GPU"
-description: An AVP-sponsored multi-agent SOC where one local LLM plays Sentinel, Tier 2, IR Lead, Threat Intel, SOC Manager, Detection Engineer, and Threat Hunter — coordinated over a Redis Streams bus with a human-in-the-loop approval gate before any real-system action. The framework choices, the architectural trade-offs, and the backtest harness that lets us put real numbers on agent quality before going live.
+description: A multi-agent SOC where one local LLM plays Sentinel, Tier 2, IR Lead, Threat Intel, SOC Manager, Detection Engineer, and Threat Hunter — coordinated over a Redis Streams bus with a human-in-the-loop approval gate before any real-system action. The framework choices, the architectural trade-offs, and the backtest harness that lets us put real numbers on agent quality before going live.
 date: 2026-05-30 09:00:00 -0400
 categories: [Security, LLM]
 tags: [soc, ai-agents, langgraph, redis-streams, multi-agent, hitl, crewai, autogen, security-automation, vllm, mlx]
@@ -13,18 +13,18 @@ accent: aqua
 
 ## TL;DR
 
-A real SOC runs 24×7 with eight or nine distinct roles — alert triage, deeper investigation, incident response, threat intel, detection tuning, hunting, shift management, and a human approver for any destructive action. We built an AI version of that whole org chart, coordinated over a Redis Streams bus, with **one** local LLM (GLM-4.7-Flash on a Mac M1) wearing every hat. v1 is read-only against real systems; the only writes are XSOAR notes and Webex cards, plus a human-approval gate on every proposed containment action.
+A real SOC runs 24×7 with eight or nine distinct roles — alert triage, deeper investigation, incident response, threat intel, detection tuning, hunting, shift management, and a human approver for any destructive action. We built an AI version of that whole org chart, coordinated over a Redis Streams bus, with **one** local LLM (GLM-4.7-Flash on a Mac M1) wearing every hat. v1 is read-only against the systems it watches; the only writes are case notes and team-chat cards, plus a human-approval gate on every proposed containment action.
 
 <div class="tldr-cards">
 <div class="tldr-card"><span class="tldr-num">8 roles</span><span class="tldr-sub">Sentinel · Tier 2 · IR Lead · Threat Intel · SOC Manager · Detection Eng · Threat Hunter · HITL</span></div>
 <div class="tldr-card"><span class="tldr-num">1 LLM</span><span class="tldr-sub">m1 GLM-4.7-Flash via vllm-mlx, with FailoverChatModel to a studio1 backup</span></div>
-<div class="tldr-card"><span class="tldr-num">0 writes</span><span class="tldr-sub">to CrowdStrike, Tanium, Zscaler — agents <em>propose</em>, humans <em>execute</em></span></div>
+<div class="tldr-card"><span class="tldr-num">0 writes</span><span class="tldr-sub">to EDR, proxy or endpoint tools — agents <em>propose</em>, humans <em>execute</em></span></div>
 </div>
 
 > ▶ **[Open the interactive version →](/soc-in-a-box/)** — a full-bleed page where you can drop an alert onto the bus and watch it move through the org chart, one LLM wearing a different hat at each stop, until everything stops at the human-in-the-loop gate. The benign one gets closed by Tier 2 and never reaches it.
 {: .prompt-tip }
 
-The interesting parts aren't the agents themselves — there's nothing novel about an LLM-with-tools loop. The interesting parts are: (1) the architectural choices that let one local LLM serve a whole SOC org chart without melting, (2) the human-in-the-loop gate that makes "AI does containment" a real thing a security team will actually trust, and (3) a backtest harness that lets us put hard numbers on agent quality against real historical tickets before we hand the demo to leadership.
+The interesting parts aren't the agents themselves — there's nothing novel about an LLM-with-tools loop. The interesting parts are: (1) the architectural choices that let one local LLM serve a whole SOC org chart without melting, (2) the human-in-the-loop gate that makes "AI does containment" a real thing a security team will actually trust, and (3) a backtest harness that lets us put hard numbers on agent quality against historical alerts before anyone has to take it on faith.
 
 ## The shape of the problem
 
@@ -42,8 +42,8 @@ The architecture is a consequence of those constraints, not the other way around
 
 ```mermaid
 flowchart TB
-    XSOAR[XSOAR ticket feed] --> Sentinel
-    subgraph Bus["Redis Streams bus (lab-vm1)"]
+    Feed[Alert feed] --> Sentinel
+    subgraph Bus["Redis Streams bus"]
         direction LR
         STRG[soc.triage]
         SCAS[soc.cases]
@@ -55,14 +55,14 @@ flowchart TB
     SCAS --> IR[IR Lead<br/>SEV + containment plan]
     IR --> SCAS
     IR -.HITL action proposed.-> Flask[Flask HITL pages<br/>/soc-hitl/decide<br/>/soc-hitl/audit]
-    Webex[Webex card buttons] -.click.-> Flask
+    Chat[Chat card buttons] -.click.-> Flask
     Flask --> SCAS
     SCAS --> TI[Threat Intel<br/>actor + MITRE]
     TI --> SCAS
 
-    SAUD -.replay.-> SOCMgr[SOC Manager<br/>shift summaries<br/>06/14/22 EST]
-    SAUD -.replay.-> DetEng[Detection Engineer<br/>rule tuning<br/>09:00 EST M-F]
-    SAUD -.replay.-> Hunter[Threat Hunter<br/>pattern sweeps<br/>06/18 EST]
+    SAUD -.replay.-> SOCMgr[SOC Manager<br/>shift summaries<br/>every 8 hours]
+    SAUD -.replay.-> DetEng[Detection Engineer<br/>rule tuning<br/>weekday mornings]
+    SAUD -.replay.-> Hunter[Threat Hunter<br/>pattern sweeps<br/>twice a day]
     STRG -.mirror.-> SAUD
     SCAS -.mirror.-> SAUD
 
@@ -81,7 +81,7 @@ The framework choice was load-bearing — once you pick wrong, every later abstr
 
 [CrewAI](https://github.com/crewAIInc/crewAI) is excellent at what it's designed for: a "crew" of role-shaped agents collaborating on one task. Declarative `Agent` + `Task` + `Process` (sequential or hierarchical), with strong primitives for delegation between agents inside the same crew.
 
-The mismatch for a SOC: CrewAI assumes a single in-process orchestration run. *"Spin up a crew, run a task, get an output."* Our roles aren't a crew — they're independent processes with their own uptime, audit, restart semantics, and HITL gates. CrewAI's human-in-the-loop is `human_input=True` on a Task — a blocking stdin prompt during the crew run. That doesn't survive a "Webex card → Flask page → SQLite sidecar → bus event back into the cascade" flow. We'd lose audit-stream replay, backtest, and per-role systemd uptime if we forced this shape.
+The mismatch for a SOC: CrewAI assumes a single in-process orchestration run. *"Spin up a crew, run a task, get an output."* Our roles aren't a crew — they're independent processes with their own uptime, audit, restart semantics, and HITL gates. CrewAI's human-in-the-loop is `human_input=True` on a Task — a blocking stdin prompt during the crew run. That doesn't survive a "chat card → Flask page → SQLite sidecar → bus event back into the cascade" flow. We'd lose audit-stream replay, backtest, and per-role systemd uptime if we forced this shape.
 
 Where CrewAI *could* slot in: as the internal reasoning of a single role. e.g. inside Tier 2's `handle()`, swap one LLM-with-tool-loop for a small crew (investigator + critic + decider) before emitting the `Tier2Analysis` event. Same bus architecture, more sophisticated per-role thinking. Probably not worth it yet — Tier 2 with a critic-loop pattern works.
 
@@ -99,7 +99,7 @@ If you only have two roles, just do this. We had eight.
 
 ### 4. n8n / Zapier / visual workflow tools
 
-[n8n](https://n8n.io/) and similar visual workflow tools were on the list for one specific reason: leadership likes seeing the boxes-and-arrows. But the LLM nodes aren't first-class — you'd be wrapping every model call in HTTP, and the graph is in a database, not in code that's reviewable in a PR. Auditability and reproducibility are both worse than the LangGraph + bus path. (n8n is a great fit for non-LLM SOAR-style automations, just not for this.)
+[n8n](https://n8n.io/) and similar visual workflow tools were on the list for one specific reason: boxes-and-arrows are easy for anyone to read. But the LLM nodes aren't first-class — you'd be wrapping every model call in HTTP, and the graph is in a database, not in code that's reviewable in a PR. Auditability and reproducibility are both worse than the LangGraph + bus path. (n8n is a great fit for non-LLM SOAR-style automations, just not for this.)
 
 ### 5. Build-from-scratch asyncio + Redis Streams
 
@@ -129,16 +129,16 @@ The thing GPT-4 or Claude would buy us isn't *better* reasoning on any one role 
 
 ## The roles
 
-| Role | Driver | Trigger | Bus output | Real-system side effect |
+| Role | Driver | Trigger | Bus output | Outside side effect |
 |---|---|---|---|---|
-| **Sentinel (Tier 1)** | XSOAR poller | New tickets | `AlertTriaged` | XSOAR triage note |
-| **Tier 2 Analyst** | Long-running consumer | `alert.triaged` where TP-malicious or pri ≥ 7 | `Tier2Analysis`, `CaseEscalated` | Webex card on escalation |
-| **IR Lead** | Long-running consumer | `case.escalated → ir_lead` | `IRPlan`, `ActionProposed` | Webex card with HITL buttons, XSOAR plan note |
-| **Threat Intel** | Long-running consumer | `ir.plan` | `ThreatIntelReport` | Webex card, XSOAR attribution note |
-| **SOC Manager** | Timer 06/14/22 EST | calendar | `ShiftSummary` | Webex card |
-| **Detection Engineer** | Timer 09:00 EST M-F | calendar | `DetectionTuningReport` | Webex card |
-| **Threat Hunter** | Timer 06/18 EST | calendar | `HuntingReport` | Webex card |
-| **HITL Flask** | Browser button click | Approval link in Webex card | `ActionDecision` | Decision logged to sidecar SQLite |
+| **Sentinel (Tier 1)** | Case-system poller | New alerts | `AlertTriaged` | Triage note on the case |
+| **Tier 2 Analyst** | Long-running consumer | `alert.triaged` where TP-malicious or pri ≥ 7 | `Tier2Analysis`, `CaseEscalated` | Chat card on escalation |
+| **IR Lead** | Long-running consumer | `case.escalated → ir_lead` | `IRPlan`, `ActionProposed` | Chat card with HITL buttons, plan note on the case |
+| **Threat Intel** | Long-running consumer | `ir.plan` | `ThreatIntelReport` | Chat card, attribution note on the case |
+| **SOC Manager** | Timer, every 8 hours | calendar | `ShiftSummary` | Chat card |
+| **Detection Engineer** | Timer, weekday mornings | calendar | `DetectionTuningReport` | Chat card |
+| **Threat Hunter** | Timer, twice a day | calendar | `HuntingReport` | Chat card |
+| **HITL Flask** | Browser button click | Approval link in the chat card | `ActionDecision` | Decision logged to sidecar SQLite |
 
 Every role's verdict is also persisted to a `verdicts.sqlite` sidecar with `wall_time_ms`, `tool_calls_made`, and (in backtest mode) `ground_truth`, so we can compute agreement rates and latency distributions without instrumenting OpenTelemetry on day one.
 
@@ -152,14 +152,14 @@ We tried a few patterns. The one that works:
 sequenceDiagram
     participant IR as IR Lead<br/>(LLM agent)
     participant Bus as Redis Streams
-    participant Webex as Webex card<br/>(Pokedex bot)
+    participant Chat as Team-chat card<br/>(SOC bot)
     participant Human as Approver
     participant Flask as Flask HITL page
     participant SQLite as hitl.sqlite
 
     IR->>Bus: IRPlan + ActionProposed<br/>(approver_role="IR Lead On-Call")
-    IR->>Webex: Card with 2 buttons<br/>(Action.OpenUrl)
-    Webex->>Human: Banner: "🎯 Action required from: IR Lead On-Call"
+    IR->>Chat: Card with 2 buttons<br/>(Action.OpenUrl)
+    Chat->>Human: Banner: "🎯 Action required from: IR Lead On-Call"
     Human->>Flask: Click Approve or Reject
     Flask->>Human: Confirmation page<br/>(login_required, DEMO MODE banner)
     Human->>Flask: Submit decision
@@ -171,18 +171,18 @@ sequenceDiagram
 Three details matter:
 
 1. **The approver is addressed.** The card banner says "Action required from: IR Lead On-Call" — not "click here to approve." The team knows whose mailbox each card is in.
-2. **The Flask confirmation page sits between the click and the recorded decision.** Single-click approve from a Webex card was tempting but wrong — accidental clicks would auto-execute. The two-step (click button → see page → click submit) is the friction we want.
-3. **v1 doesn't actually execute.** The decision is logged, an `ActionDecision` event is published, and the demo wraps up there. v2 — an executor agent that consumes `action.decision[approved]` and calls CrowdStrike RTR / Zscaler / Tanium — is straightforward to add once leadership trusts the loop. Trust is earned in v1, not asserted by skipping the gate.
+2. **The Flask confirmation page sits between the click and the recorded decision.** Single-click approve from a chat card was tempting but wrong — accidental clicks would auto-execute. The two-step (click button → see page → click submit) is the friction we want.
+3. **v1 doesn't actually execute.** The decision is logged, an `ActionDecision` event is published, and the demo wraps up there. v2 — an executor agent that consumes `action.decision[approved]` and calls EDR / proxy / endpoint tools — is straightforward to add once the humans trust the loop. Trust is earned in v1, not asserted by skipping the gate.
 
 ## Putting numbers on it: the backtest harness
 
 The hardest sell to a SOC director isn't "we built it." It's "how do we know it works before we put it on real alerts?"
 
-We have an XSOAR timeline database with 32K+ historical CrowdStrike tickets, each with an `escalation_state` field that tells us whether a human Tier 1 closed it or a human Tier 2/Tier 3 picked it up. That's our ground truth — analyst-curated, no extra labelling required.
+Closed EDR alerts already carry the answer key: an `escalation_state` field that tells us whether a human Tier 1 closed it or a human Tier 2/Tier 3 picked it up. That's our ground truth — analyst-curated, no extra labelling required.
 
-The backtest harness samples N closed tickets stratified 50/50 between human-escalated and human-closed, then replays each through the agent cascade with all side effects neutered: bus publishes captured in-memory, Webex sends no-op'd, XSOAR writes no-op'd, HITL store stubbed.
+The backtest harness samples N closed alerts stratified 50/50 between human-escalated and human-closed, then replays each through the agent cascade with all side effects neutered: bus publishes captured in-memory, chat sends no-op'd, case-note writes no-op'd, HITL store stubbed.
 
-For each ticket we record:
+For each alert we record:
 
 - Sentinel's verdict + priority
 - Whether Tier 2 engaged, and what it decided (escalate / close / needs human review)
@@ -199,7 +199,7 @@ FP  human closed     BUT  Tier 2 escalated → IR Lead
 TN  human closed     AND  Tier 2 closed
 ```
 
-Precision and recall on TP/FP/FN give us the numbers leadership wants — *"how often does the AI escalate when humans actually would, and how often does it cry wolf?"* The summary lands in a JSON file that the dashboard panel reads, so the question gets a number, not a vibe.
+Precision and recall on TP/FP/FN answer the question anyone deciding whether to trust it will ask — *"how often does the AI escalate when humans actually would, and how often does it cry wolf?"* The summary lands in a JSON file that the dashboard panel reads, so the question gets a number, not a vibe.
 
 The harness also has a `--dry-run` mode that swaps the LLM for a canned-JSON stub, so we can validate the plumbing end-to-end in under 2 seconds without burning a single token — and that same harness drives the real-LLM run against a full stratified sample when we want actual agreement numbers rather than a smoke test.
 
@@ -213,14 +213,12 @@ Three things, in order of how much they changed the design:
 
 ## Try it / What's next
 
-The full module lives at [`src/components/soc_in_box/`](https://github.com/vinayvobbili/security-ops-platform) — agents, schemas, bus wrapper, verdict store, HITL store, web routes, systemd units, README.
-
 > **📦 New — we open-sourced the kernel.** The reusable heart of this — the event contract, the bus, case memory, and the role-agent framework — is now a standalone, vendor-neutral package on PyPI: [`aisoc`](https://pypi.org/project/aisoc/). `pip install "aisoc[agent]"`, bring your own LLM, alert source, and tools, and you get the same event-sourced multi-agent SOC this post describes: a stdlib-only in-memory bus (or Redis Streams for the durable path), a role team that works a case over the shared log, memory as a read model, human-in-the-loop gating, and a replayable audit you can backtest against. The non-obvious part it gets right: three **injection seams** — chat model, alert source, tools — mean nothing in the kernel knows about any one vendor. The SOC-in-a-Box you just read about is literally *this package* with my environment plugged into those seams. Source, tests, and runnable examples ship in the package. 🚀
 
 What's not in v1 and what we'll work on next:
 
-- **HITL v2 executor.** Real write path — consume `action.decision[approved]` events, call CrowdStrike RTR / Tanium / Zscaler via MCP, log the result back on the bus. The hard parts (audit, approval, identity) are done; only the executor itself is missing.
-- **Red Team agent.** Once we have AttackIQ wired into the lab, a Red Team role can post `attack.executed` events that the rest of the cascade has to detect. Closes the loop on "did the SOC actually catch what the Red Team threw?"
+- **HITL v2 executor.** Real write path — consume `action.decision[approved]` events, call EDR / proxy / endpoint tools via MCP, log the result back on the bus. The hard parts (audit, approval, identity) are done; only the executor itself is missing.
+- **Red Team agent.** Once a breach-and-attack simulation tool is wired into the lab, a Red Team role can post `attack.executed` events that the rest of the cascade has to detect. Closes the loop on "did the SOC actually catch what the Red Team threw?"
 - **Backtest as a CI gate.** Once we're confident on a baseline, promote the harness to a nightly run with regression thresholds — "if Tier 2 escalation precision drops more than 5% from last week's baseline, fail the build."
 
 The code is BSD-licensed in the public mirror. If you're building something similar, the most useful thing to copy isn't any one agent — it's the **bus shape**, the **schema-per-event** discipline, the **audit-stream-as-truth** pattern, and the **HITL handoff that addresses a human by role**. Those four ideas are what turned eight separate LLM-with-tools experiments into one thing a SOC team would actually run.

@@ -48,7 +48,7 @@ anything destructive. Those cards are the heartbeat of the system. You glance at
 the room and you know it's alive.
 
 The first sign something was wrong wasn't an alert. It was the *absence* of one.
-A colleague asked, almost in passing, whether the bot was "having a slow day."
+Someone asked, almost in passing, whether the bot was "having a slow day."
 It hadn't posted in a while. I checked: no cards for the better part of an hour.
 
 Here's the part that makes silent failures so nasty: **every dashboard was
@@ -92,9 +92,8 @@ the SOC hadn't errored out, because it was *designed* not to.
 SOC-in-a-Box doesn't call a single model. It calls a `FailoverChatModel`: a
 thin wrapper around a primary and a backup chat model that serves from the
 primary, transparently falls back to the secondary on connection errors, and
-flips back when the primary recovers. (I later
-[extracted that wrapper into an OSS package](https://pypi.org/project/langchain-failover/) —
-it came directly out of this system.)
+flips back when the primary recovers. (The same pattern is available as an
+open-source package, [langchain-failover](https://pypi.org/project/langchain-failover/).)
 
 The failover did its job *flawlessly*. The primary refused connections, so every
 agent's LLM call quietly routed to the backup — a second Mac running a different
@@ -240,7 +239,7 @@ A few things I carry out of this one:
 The whole thing came back the moment the primary came back online — which is its
 own trap, because a bug that self-heals is a bug that comes back. Now it fails
 loud, retries on the backup, escalates if both come up empty, and a canary
-watches the silence. The failover wrapper that started all this is on PyPI as
+watches the silence. The failover pattern at the center of all this is on PyPI as
 [langchain-failover](https://pypi.org/project/langchain-failover/) if you want
 the primary/secondary-with-recovery pattern; just remember it can only see the
 failures that throw. The ones that come back `200 OK` and empty are yours to

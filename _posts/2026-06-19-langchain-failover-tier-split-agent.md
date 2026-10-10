@@ -21,7 +21,7 @@ accent: indigo
 <div class="tldr-card"><span class="tldr-num">0 new deps</span><span class="tldr-sub">still <code>langchain-core</code> only; the tiers compose with failover</span></div>
 </div>
 
-The headline result from the production SOC this came out of: on a contended local GPU, the agent's final turn went from **multiple minutes to a couple of seconds** — without changing a single tool. ⚡
+The headline result: on a contended local GPU, the agent's final turn went from **multiple minutes to a couple of seconds** — without changing a single tool. ⚡
 
 ## The itch 🪤
 
@@ -94,11 +94,11 @@ And if you already run your own agent loop, you don't need the whole class — `
 
 Same lesson as [iocflow](/posts/iocflow-agentic-ioc-lifecycle/) and [detflow](/posts/detflow-detection-engineering-copilot/): the junior move is *one big model does everything*. The deployable move is to **put each token on the right model** — cheap reasoning where it's cheap, strong generation where it pays off — with a structural guard so the optimization can't quietly produce a wrong answer.
 
-v0.1 of this package shipped because a local SOC LLM needed a backup mid-incident. v0.2 ships because that same local LLM was too slow to *write* under load — and the fix wasn't a bigger local model, it was not making the local model write at all. Two ways to run more than one model, one tiny interface.
+v0.1 of this package gave a local LLM a backup for when it goes down. v0.2 is for when that local LLM is up but too slow to *write* under load — and the fix wasn't a bigger local model, it was not making the local model write at all. Two ways to run more than one model, one tiny interface.
 
 - 📦 PyPI: [`pip install langchain-failover`](https://pypi.org/project/langchain-failover/) (`>=0.2.0`)
 - 🛠️ Source: [github.com/vinayvobbili/langchain-failover](https://github.com/vinayvobbili/langchain-failover)
-- 🏗️ The AI SOC it came out of: [SOC-in-a-Box: One LLM, Eight Hats](/posts/building-soc-in-a-box/)
+- 🏗️ Related: [SOC-in-a-Box: One LLM, Eight Hats](/posts/building-soc-in-a-box/)
 - 🧩 Sibling OSS: [iocflow](/posts/iocflow-agentic-ioc-lifecycle/) · [detflow](/posts/detflow-detection-engineering-copilot/)
 
 If you run agents on local models, I'd love to hear what your gather/compose split looks like. 👋

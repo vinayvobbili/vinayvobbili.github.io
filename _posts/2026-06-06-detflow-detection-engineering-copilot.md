@@ -3,7 +3,7 @@ title: "detflow: A Detection-Engineering Copilot You Can pip install"
 image:
   path: /assets/img/posts/detflow-hero.png
   alt: "detflow — draft, lint, dedupe and review detections as Sigma or Cortex XQL"
-description: I kept rebuilding the same four things inside every detection-as-code pipeline — lint a rule, draft one from plain English, check it against what you already run, and review it like a senior engineer. So I extracted them into detflow, a vendor-neutral OSS Python package. Deterministic lint and overlap with no dependencies, model-agnostic drafting and review, and a never-raises contract so it degrades instead of breaking.
+description: Every detection-as-code pipeline needs the same four things — lint a rule, draft one from plain English, check it against what you already run, and review it like a senior engineer. detflow is a vendor-neutral OSS Python package that does all four. Deterministic lint and overlap with no dependencies, model-agnostic drafting and review, and a never-raises contract so it degrades instead of breaking.
 date: 2026-06-06 09:00:00 -0400
 categories: [Security, LLM]
 tags: [detection-engineering, sigma, cortex-xql, siem, detection-as-code, security-automation, open-source, langchain]
@@ -38,7 +38,7 @@ A detection-as-code pipeline — the kind that turns a rule into a reviewed, tes
 - Are we about to ship coverage we **already have**? (dedup against the catalog)
 - Would a senior engineer *approve* this, and what would they flag? (quality, false-positive risk, ATT&CK mapping, gaps)
 
-I'd written those four stages more than once. They're generic — the only vendor-specific parts of a real pipeline are *compiling* to your query language and *dry-running* against your tenant. So I carved the generic four out of a detection-as-code workbench I'd built and made them a clean, public library. 🧰
+Those four stages are generic — the only vendor-specific parts of a pipeline are *compiling* to your query language and *dry-running* against your tenant. detflow is the generic four as a clean, public library. 🧰
 
 ## What it looks like
 
@@ -117,7 +117,7 @@ model = LangChainModel(chain)
 detflow.review(rule, catalog=catalog, model=model)   # rides the failover chain
 ```
 
-That `FailoverChatModel` is [langchain-failover](https://pypi.org/project/langchain-failover/), another package I extracted and published — so a primary-model outage transparently falls back to a secondary mid-review. Three of my OSS packages quietly eating each other's dog food. 🐕
+That `FailoverChatModel` is [langchain-failover](https://pypi.org/project/langchain-failover/), another of my OSS packages — so a primary-model outage transparently falls back to a secondary mid-review. Three of my OSS packages quietly eating each other's dog food. 🐕
 
 ## Never-raises, deterministic floor
 

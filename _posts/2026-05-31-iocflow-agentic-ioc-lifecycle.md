@@ -1,9 +1,9 @@
 ---
-title: "iocflow: Turning a Production AI SOC into a Shippable OSS Library"
+title: "iocflow: The Whole IOC Lifecycle, and the LLM Never Gets the Final Say"
 image:
   path: /assets/img/posts/iocflow-hero.png
   alt: "iocflow — the whole IOC lifecycle (extract, enrich, hunt, block) in six pip-installable layers"
-description: After building SOC-in-a-Box — a multi-agent AI SOC where one local LLM wears every hat behind a human-in-the-loop gate — I distilled the durable lesson into iocflow, an open-source Python package for the whole IOC lifecycle. Deterministic primitives (extract → enrich → comment → hunt → block) as tools, a LangGraph multi-agent team on top, and three-layer authority so the LLM never gets the final say on a destructive action.
+description: iocflow is an open-source Python package for the whole IOC lifecycle. Deterministic primitives (extract → enrich → comment → hunt → block) as tools, a LangGraph multi-agent team on top, and three-layer authority so the LLM never gets the final say on a destructive action.
 date: 2026-05-31 09:00:00 -0400
 categories: [Security, LLM]
 tags: [ioc, threat-intelligence, ai-agents, langgraph, multi-agent, hitl, security-automation, dfir, open-source, langchain]
@@ -24,19 +24,19 @@ I shipped [**iocflow**](https://pypi.org/project/iocflow/) to PyPI — an open-s
 > ▶ **[Open the interactive version →](/iocflow/)** — a full-bleed page where you can walk an indicator through the lifecycle and watch the three-layer authority model in action: the benign `8.8.8.8` gets vetoed by the allowlist guard before the agent can ever propose it.
 {: .prompt-tip }
 
-This is the OSS sibling of [SOC-in-a-Box](/posts/building-soc-in-a-box/), the AI SOC I wrote about last week. SOC-in-a-Box proved the *pattern* against real systems; iocflow packages the *lesson* so anyone can pip-install it. 🧰
+It's a sibling of [SOC-in-a-Box](/posts/building-soc-in-a-box/), the AI SOC I wrote about last week: the same safety pattern, packaged so anyone can pip-install it. 🧰
 
 ![iocflow investigate() running the full IOC lifecycle with a human-in-the-loop approval gate](/assets/img/posts/iocflow-demo.gif)
 _One call: extract IOCs from a report → enrich → suggest hunts → propose blocks → wait for a human → block at the firewall. The benign `8.8.8.8` never even gets proposed._
 
-## The lesson I was carrying over
+## Two design commitments
 
-SOC-in-a-Box was eight analyst roles played by **one** local LLM over a message bus, read-only against production, with a human approving every containment action. The thing that actually made it trustworthy wasn't the agents — an LLM-with-tools loop is not novel. It was two architectural commitments:
+An LLM-with-tools loop is not novel. What makes one trustworthy is two architectural commitments, and iocflow is built on both:
 
 1. **The model orchestrates; it doesn't *do*.** The irreversible work — query a SIEM, write a denylist, isolate a host — is done by plain, deterministic code the model merely *calls*. The LLM picks *what* and *when*; the tool decides *how*, the same way every time.
 2. **No single authority for a destructive action.** The AI can propose containment all day long. A human clicks the button, and a dumb safety check sits underneath both of them refusing to touch anything on an allowlist.
 
-Those two ideas aren't SOC-specific. They're how you make *any* AI system that touches production safe enough to actually deploy. So I pulled them out of the SOC and built a clean, public library around them. 🧱
+Those two ideas aren't SOC-specific. They're how you make *any* AI system that touches production safe enough to actually deploy, and iocflow is a clean, public library built around them. 🧱
 
 ## Deterministic primitives first, agents last
 
@@ -82,7 +82,7 @@ for line in case.trace:                # the agents' reasoning, replayable
     print(" •", line)
 ```
 
-The model is **any** LangChain chat model. The bundled `default_agent_model()` builds a [`FailoverChatModel`](https://pypi.org/project/langchain-failover/) — primary with an automatic secondary — which is the *same* failover model I extracted from the SOC and published earlier. iocflow eating its own dog food. 🐕 And here's the part that makes it robust: **with no model configured at all, the graph runs the layers in a fixed deterministic order and still produces a complete `Case`.** The LLM is an enhancement, not a dependency.
+The model is **any** LangChain chat model. The bundled `default_agent_model()` builds a [`FailoverChatModel`](https://pypi.org/project/langchain-failover/) — primary with an automatic secondary — which is the same failover model as my langchain-failover package. iocflow eating its own dog food. 🐕 And here's the part that makes it robust: **with no model configured at all, the graph runs the layers in a fixed deterministic order and still produces a complete `Case`.** The LLM is an enhancement, not a dependency.
 
 ## Three-layer authority (the part that matters) 🔒
 
@@ -104,7 +104,7 @@ case = investigate(report_text, gate=gate)
 # ✅ from an allowlisted analyst authorizes the plan; ❌ or no reply = denied.
 ```
 
-It posts the proposed blocks to a channel and polls for a reaction from an **allowlisted** approver — ✅ approves the plan, ❌ or silence denies it, and a timeout defaults to *deny*. The whole thing is a `ChatApprovalGate` over a two-method `ChatTransport` (`post`, `reactions`), so the same flow drops onto Webex, Teams, or a web UI by writing two functions. The transport is a thin seam, which means the gate logic is unit-tested without a single network call.
+It posts the proposed blocks to a channel and polls for a reaction from an **allowlisted** approver — ✅ approves the plan, ❌ or silence denies it, and a timeout defaults to *deny*. The whole thing is a `ChatApprovalGate` over a two-method `ChatTransport` (`post`, `reactions`), so the same flow drops onto Teams, Discord, or a web UI by writing two functions. The transport is a thin seam, which means the gate logic is unit-tested without a single network call.
 
 ## Why build it this way
 
@@ -114,6 +114,6 @@ Everything but the agent layer runs on Python 3.9+; `import iocflow` stays depen
 
 - 📦 PyPI: [`pip install iocflow`](https://pypi.org/project/iocflow/)
 - 🛠️ Source: [github.com/vinayvobbili/iocflow](https://github.com/vinayvobbili/iocflow)
-- 🧠 The SOC it grew out of: [SOC-in-a-Box](/posts/building-soc-in-a-box/)
+- 🧠 Related: [SOC-in-a-Box](/posts/building-soc-in-a-box/)
 
 If you try it, I'd love to hear what control points you'd plug in. 👋

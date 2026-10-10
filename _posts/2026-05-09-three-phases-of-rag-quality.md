@@ -1,9 +1,9 @@
 ---
 title: "Teaching a Reranker the Language of Security Tickets (+41% MRR@10)"
-description: How we mined 24K analyst-curated training pairs from XSOAR close-notes, dodged a polynomial blow-up, filtered out same-rule near-duplicates, and lifted held-out MRR@10 from 0.598 to 0.846 — a 41% uplift over off-the-shelf bge-reranker-v2-m3.
+description: How I mined analyst-curated training pairs from case close-notes, dodged a polynomial blow-up, filtered out same-rule near-duplicates, and lifted held-out MRR@10 from 0.598 to 0.846 — a 41% uplift over off-the-shelf bge-reranker-v2-m3.
 date: 2026-05-09 09:00:00 -0400
 categories: [LLM, RAG]
-tags: [rag, reranker, fine-tuning, bge, sentence-transformers, security, xsoar]
+tags: [rag, reranker, fine-tuning, bge, sentence-transformers, security]
 mermaid: true
 image:
   path: /assets/img/posts/reranker-hero.png
@@ -13,30 +13,30 @@ accent: teal
 
 ## TL;DR
 
-Our SOC's RAG pipeline retrieves over 142,000 closed XSOAR security tickets to ground
-investigation answers. After exhausting the easy wins — chunking, top-k, reranker
-choice — we still saw the right historical ticket land at rank 5-10 too often, and
-the LLM grounding its answer in a near-miss neighbor.
+A security RAG pipeline grounds investigation answers in a large archive of closed
+cases. After exhausting the easy wins — chunking, top-k, reranker choice — I still
+saw the right historical case land at rank 5-10 too often, and the LLM grounding its
+answer in a near-miss neighbor.
 
-We fine-tuned the reranker on our own data. Held-out test set, time-based split:
+So I fine-tuned the reranker on domain data. Held-out test set, time-based split:
 
 |                              | MRR@10  |
 | ---------------------------- | ------- |
 | `BAAI/bge-reranker-v2-m3` (off-the-shelf) | 0.598   |
-| Fine-tuned on 24K XSOAR pairs              | **0.846** |
+| Fine-tuned on mined case pairs             | **0.846** |
 
 **+41% uplift.** No model architecture change, no embedding model swap. Just
 domain-specific fine-tuning of the same base reranker.
 
 <div class="tldr-cards">
 <div class="tldr-card"><span class="tldr-num">+41%</span><span class="tldr-sub">MRR@10 uplift on held-out time-split test set</span></div>
-<div class="tldr-card"><span class="tldr-num">24,213 + 10,848</span><span class="tldr-sub">positive pairs + clean hard negatives, mined from close-notes</span></div>
+<div class="tldr-card"><span class="tldr-num">33%</span><span class="tldr-sub">of "hard negative" candidates were same-rule near-duplicates — filtered out</span></div>
 <div class="tldr-card"><span class="tldr-num">0</span><span class="tldr-sub">explicit relevance labels collected — all signal mined from existing analyst text</span></div>
 </div>
 
-The interesting part isn't the result — it's where the training data came from. We
-never logged a single explicit relevance judgement. The 24K positive pairs were
-hiding in plain sight inside analyst close-notes that nobody asked anyone to write.
+The interesting part isn't the result — it's where the training data came from. I
+never logged a single explicit relevance judgement. The positive pairs were hiding in
+plain sight inside analyst close-notes that nobody asked anyone to write.
 
 ## The setup: embedder + reranker, the standard two-stage RAG
 
@@ -53,7 +53,7 @@ flowchart LR
 ```
 
 
-Our retrieval pipeline is the standard cascade:
+The retrieval pipeline is the standard cascade:
 
 - **Stage 1 — Embedder (bi-encoder).** `Qwen3-Embedding-8B-4bit-DWQ` served via
   vllm-mlx. Encodes the query independently, pulls top-50 candidates from ChromaDB
@@ -68,25 +68,22 @@ based on title similarity. The reranker is a careful reader who actually opens e
 one and re-orders by relevance to your specific question.
 
 Off-the-shelf rerankers like `bge-reranker-v2-m3` are trained on general English
-passage retrieval (MS MARCO and friends). They've never seen an XSOAR ticket. They
-don't know that *"&lt;hostname&gt;: ML via Cloud-based ML"* matters in a way that
+passage retrieval (MS MARCO and friends). They've never seen a security case. They
+don't know that the name of the detection rule that fired matters in a way that
 generic English semantic similarity cannot capture. Fine-tuning is how you teach
 them.
 
 ## Where the training data came from
 
-Cross-encoder training needs `(query, positive, negative)` triples. We had no
-explicit relevance labels — no clicks, no thumbs-up/down, nothing. So we mined
+Cross-encoder training needs `(query, positive, negative)` triples. I had no
+explicit relevance labels — no clicks, no thumbs-up/down, nothing. So I mined
 implicit ones from analyst close-notes.
 
-Buried in 142,000 closed tickets are sentences analysts type all the time:
+Analysts routinely write close-notes that cite another case by its ID — "see the
+earlier case", "same as the parent case", "confirmed in the linked case".
 
-- *"With reference to XSOAR #N, regional team confirmed..."*
-- *"Refer master ticket #N."*
-- *"Per XSOAR #N, user confirmed..."*
-
-Each one is a human-curated link between two tickets. Free relevance label. We just
-had to extract them.
+Each one is a human-curated link between two cases. Free relevance label. I just
+had to find them.
 
 > **Generalizable lesson.** Before paying for labels, look at what your users are
 > already typing. Free-form text in close-notes, comments, JIRA descriptions —
@@ -95,39 +92,34 @@ had to extract them.
 
 ### Filtering the noise: not all `#N` references are equal
 
-A regex over close-notes pulled 61,500 `#N` references. Most were useless:
+A regex over close-notes pulled every `#N` reference. Most were useless:
 
-| Pool | Lead-in phrase            | Count   | Signal quality                                                  |
-| ---- | ------------------------- | ------- | --------------------------------------------------------------- |
-| A    | *"Duplicate to #N"*       | 52,782  | Strong but trivial — same alert, different host. Embedder already gets these. |
-| B    | *"XSOAR #N · Per XSOAR…"* | ~3,000  | **Gold** — analyst-curated cross-references between distinct tickets.            |
-| —    | *"QRadar offense #N"*     | ~1,400  | Useless — references other systems, not XSOAR.                  |
+| Pool | What the reference meant              | Signal quality                                                  |
+| ---- | ------------------------------------- | --------------------------------------------------------------- |
+| A    | marked as a duplicate of another case | Strong but trivial — same alert, different host. Embedder already gets these. |
+| B    | cited a related case by its ID        | **Gold** — analyst-curated cross-references between distinct cases.            |
+| —    | an ID in some other system            | Useless — points outside the case archive.                      |
 
-Pool A is mostly the embedder's home turf already; the reranker doesn't need help
-with near-duplicates. Pool B is the interesting signal: *"these two tickets are
-related but not identical"* — exactly the case where a reranker earns its keep.
-After regex-filtering and verifying both endpoints existed in our DB, we had **4,260
-unique direct `(src → tgt)` pairs.**
+Pool A was by far the largest and is mostly the embedder's home turf already; the
+reranker doesn't need help with near-duplicates. Pool B is the interesting signal:
+*"these two cases are related but not identical"* — exactly the case where a reranker
+earns its keep. After regex-filtering and verifying both endpoints existed in the
+archive, I had a set of unique direct `(src → tgt)` pairs.
 
 ## Free positives via transitive siblings (and the polynomial-blow-up trap)
 
-When five tickets all cite the same master ticket, those five are also related to
-each other. That's a free `O(n²)` inflation of training pairs — *if* you cap the
+When five cases all cite the same parent case, those five are also related to each
+other. That's a free `O(n²)` inflation of training pairs — *if* you cap the
 explosion.
 
-We capped each master at 20 children before generating siblings. One particularly
-prolific master had 553 children; ungapped, it would have generated **~150,000
-trivial sibling pairs** and dominated the training distribution. Stratified sampling
-across distinct rules pushed cross-rule pairs to the front so the model learned
+I capped each parent at 20 children before generating siblings. One particularly
+prolific parent had hundreds of children; uncapped, its siblings alone would have
+swamped the training distribution with trivial pairs. Stratified sampling across
+distinct rules pushed cross-rule pairs to the front so the model learned
 *generalizable* relations, not within-rule sameness.
 
-| Source                                      | Count  |
-| ------------------------------------------- | ------ |
-| Direct `#N` references                      | 4,260  |
-| Transitive siblings (capped, stratified)    | 19,953 |
-| **Total positives (training-ready)**         | **24,213** |
-
-72% of the transitive pairs were cross-rule — a strong signal that our cap +
+The transitive siblings ended up outnumbering the direct references roughly
+five to one, and 72% of them were cross-rule — a strong signal that the cap +
 sampling worked.
 
 > **Generalizable lesson.** Any time you derive new training examples by
@@ -143,23 +135,17 @@ negatives are the ones that *look* similar to the embedder but aren't actually
 related. Those are the cases the embedder gets wrong, and they're exactly what the
 reranker needs to learn to push apart.
 
-The recipe: for each source ticket, query the existing embedding index for the
+The recipe: for each source case, query the existing embedding index for the
 top-50 nearest neighbors. Drop anything that's a known positive (direct, transitive,
-or shares a master). What's left is what the embedder thinks matches but the analyst
+or shares a parent). What's left is what the embedder thinks matches but the analyst
 never linked — *hard negatives*.
 
-We caught a subtle trap on the first run: **same-rule near-duplicates are not hard
-negatives.** Two tickets both fired by `<hostname>: ML via Cloud-based ML` with
-0.997 cosine similarity are sibling alerts of the same automated detection rule —
-they're related, just not via an analyst's `#N` reference. Training on them as
-negatives would teach the model to push apart things that are actually related.
-Filtering by rule before adding to the negatives pool dropped 33% of candidates.
-
-| Stage                                          | Count   |
-| ---------------------------------------------- | ------- |
-| Raw top-50 candidates from embedder            | 16,137  |
-| Same-rule contamination (filtered out)         | 5,289 (33%) |
-| **Clean cross-rule hard negatives**            | **10,848** |
+I caught a subtle trap on the first run: **same-rule near-duplicates are not hard
+negatives.** Two cases fired by the same automated detection rule, at 0.997 cosine
+similarity, are sibling alerts — they're related, just not via an analyst's `#N`
+reference. Training on them as negatives would teach the model to push apart things
+that are actually related. Filtering by rule before adding to the negatives pool
+dropped 33% of candidates.
 
 Median cosine similarity of the kept negatives: 0.955 — i.e. the embedder
 *strongly* believed these were relevant. They weren't. That's exactly the gap a
@@ -172,11 +158,9 @@ held-out quality. Any time your data has a time dimension — fraud, security, s
 forecasting, almost everything in production ML — split by time. In production the
 model can never look at the future, so neither should your evaluation.
 
-| Split | Date range              | Rows   | Pos / Neg     |
-| ----- | ----------------------- | ------ | ------------- |
-| Train | before 2025-09-01       | 27,604 | 18,745 / 8,859 |
-| Val   | 2025-09 to 2025-11      | 3,122  | 2,378 / 744   |
-| Test  | 2025-12 onward          | 4,335  | 3,090 / 1,245 |
+I used three consecutive date windows: roughly 80% of the pairs (the oldest) for
+training, the next ~9% for validation, and the most recent ~12% as the held-out test
+set.
 
 ## The part that's almost a one-liner: the training loop
 
@@ -214,7 +198,7 @@ A few details that mattered:
 - **BCE-with-logits loss** on `(query, passage, label ∈ {0, 1})`. Single-score output, binary cross-entropy.
 - **AdamW at `lr=2e-5`** — the standard learning rate for BERT-family fine-tunes. Don't overthink it.
 - **Linear warmup for the first 10%** of steps (LR ramps 0 → 2e-5), then linear decay back to 0. Prevents unstable updates early when the model is still learning the new label distribution.
-- **Periodic val evaluation** every ~862 steps. We tracked Average Precision to know when to stop.
+- **Periodic val evaluation** at regular step intervals. I tracked Average Precision to know when to stop.
 
 ## The payoff
 
@@ -224,11 +208,11 @@ A few details that mattered:
 | **Test (held-out time)** | **0.598**       | **0.846**         | **+41%** |
 
 MRR@10 is the standard ranking metric: for each query, find the rank of the first
-relevant result; if it's at rank *k*, score is *1/k*; average across queries. Our
-baseline 0.598 means the first relevant ticket lands at rank ~1.7 on average. Our
+relevant result; if it's at rank *k*, score is *1/k*; average across queries. The
+baseline 0.598 means the first relevant case lands at rank ~1.7 on average. The
 fine-tuned 0.846 means it lands at rank ~1.18 — almost always at the top.
 
-Translation: the LLM grounds its answer on the right historical ticket *almost every
+Translation: the LLM grounds its answer on the right historical case *almost every
 time* now. It's not a marginal improvement — it changes whether the agent's
 suggestion is *useful* or *plausible-but-wrong*.
 
@@ -236,23 +220,11 @@ suggestion is *useful* or *plausible-but-wrong*.
 
 A few things I had to fix while getting this to actually run:
 
-**Corp SSL.** The Mac running training had the corporate CA trusted at the system
-level (so `curl` and the OS Keychain were happy), but Python's `requests` /
-`urllib3` use `certifi`'s CA bundle, *not* the system store. So `pip install` and
-HuggingFace model downloads failed with `CERTIFICATE_VERIFY_FAILED`. The fix is to
-build a combined CA bundle and point both env vars at it (different libraries read
-different ones):
-
-```bash
-export REQUESTS_CA_BUNDLE=~/corp-ca-bundle.pem
-export SSL_CERT_FILE=~/corp-ca-bundle.pem
-```
-
 **Embedding model name enforcement.** vllm-mlx serves on a fixed model ID and
 422s any request with the wrong name. The default `text-embedding-ada-002` fallback
 in some libraries doesn't match. Set `EMBEDDING_MODEL` explicitly *before* the
-embedding function is imported — production systemd loads it via `EnvironmentFile`,
-ad-hoc scripts have to source `.env` themselves.
+embedding function is imported — a long-running service should load it from its
+environment file, and ad-hoc scripts have to source `.env` themselves.
 
 **MPS memory accounting.** PyTorch's MPS allocator counts macOS file cache and
 inactive pages as *"other allocations"* — even though those pages are reclaimable.
@@ -297,8 +269,8 @@ high-leverage; the training loop itself was almost incidental.
 
 **The held-out test MRR (0.846) was *higher* than the validation MRR (0.811).**
 That's backwards from the usual story where test is the hardest split. My read:
-detection rules in late 2025 / early 2026 are slightly clearer-cut than the
-mid-2025 rules in the val window, so the test queries were genuinely easier.
+the detection rules in the most recent window are slightly clearer-cut than the
+ones in the validation window, so the test queries were genuinely easier.
 Worth a deeper look, but it's also a useful sanity check — the model is
 generalizing forward in time, not memorizing.
 

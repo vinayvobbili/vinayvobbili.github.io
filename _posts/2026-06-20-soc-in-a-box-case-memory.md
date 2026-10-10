@@ -75,7 +75,7 @@ This is where most "we added memory to our agents" posts stop — at the demo wh
 
 Precedent injection is a hypothesis: *agents that see prior cases make better calls.* It is not self-evidently true. It could just as easily anchor an agent on a stale verdict, or teach it to over-escalate because last week's similar case escalated. The only honest way to ship it is to make it **measurable and reversible**.
 
-**Measurable.** Every agent verdict already carries a `ground_truth` field in backtest — sourced from the same analyst-curated escalation labels the [v1 backtest harness](/posts/building-soc-in-a-box/) used (32K+ historical tickets, each marked by whether a human actually escalated it). So per-role accuracy isn't a vibe: for each role we count verdicts that matched the human outcome over verdicts that had a ground-truth label, and render it as a card on the page — green when the role is pulling its weight, red when it isn't, honest "no labels yet → run the backtest" when we can't claim anything.
+**Measurable.** Every agent verdict already carries a `ground_truth` field in backtest — sourced from the same analyst-curated escalation labels the [v1 backtest harness](/posts/building-soc-in-a-box/) used (historical alerts, each marked by whether a human actually escalated it). So per-role accuracy isn't a vibe: for each role we count verdicts that matched the human outcome over verdicts that had a ground-truth label, and render it as a card on the page — green when the role is pulling its weight, red when it isn't, honest "no labels yet → run the backtest" when we can't claim anything.
 
 **Reversible.** Precedent recall sits behind a feature flag. Flip it off and the agents run baseline; flip it on and they get memory. Same harness, same tickets, two accuracy numbers. That's an A/B, not an assertion — and it means the answer to "did memory help the IR Lead?" is a delta we can read, including the delta being *negative* and us turning it back off.
 
@@ -86,19 +86,19 @@ Precedent injection is a hypothesis: *agents that see prior cases make better ca
 
 Now the capability I'm most proud of, because it's a genuine safety problem dressed as a UX feature.
 
-Leadership's most natural question about an autonomous system is *"why did it do that?"* — "why did the IR Lead propose containing that host on case 41872?" The naive implementation is to hand the ticket back to an LLM and ask it to explain. **That is the single most dangerous thing you can do.** A model asked to justify a past decision will produce a fluent, plausible, confident rationale — and it has every incentive to invent a *better* reason than the one the agent actually used at the time. You'd be replacing an audit trail with a generated alibi.
+A reviewer's most natural question about an autonomous system is *"why did it do that?"* — "why did the IR Lead propose containing that host on case #N?" The naive implementation is to hand the ticket back to an LLM and ask it to explain. **That is the single most dangerous thing you can do.** A model asked to justify a past decision will produce a fluent, plausible, confident rationale — and it has every incentive to invent a *better* reason than the one the agent actually used at the time. You'd be replacing an audit trail with a generated alibi.
 
 So Case Interrogation is built on a hard split:
 
-- **Recall is deterministic.** Looking up case 41872 returns the *recorded* trace — each role's actual verdict, the actual confidence, the actual evidence it cited, the actual human who approved the action and the actual reason they gave, on a real timeline. No model runs on that lookup. It's a database read rendered to the page. If it isn't in the record, it doesn't appear.
+- **Recall is deterministic.** Looking up a case returns the *recorded* trace — each role's actual verdict, the actual confidence, the actual evidence it cited, the actual human who approved the action and the actual reason they gave, on a real timeline. No model runs on that lookup. It's a database read rendered to the page. If it isn't in the record, it doesn't appear.
 - **Narration is grounded and constrained.** When you *do* want prose — the chat surface where you ask in natural language — the LLM is handed the recorded trace as authoritative context with one instruction: answer **only** from this record, cite the role and its recorded reason, and if the record doesn't say, say so. The model is a narrator of facts it's not allowed to add to, not an author of new ones.
 
 ```mermaid
 sequenceDiagram
-    participant User as Leadership question<br/>(why contain host X on 41872?)
+    participant User as Reviewer question<br/>(why contain host X on case N?)
     participant Mem as Case memory<br/>(deterministic)
     participant LLM as Narrator LLM<br/>(grounded)
-    User->>Mem: get_case_reasoning(41872)
+    User->>Mem: get_case_reasoning(case_id)
     Mem-->>User: Recorded trace, verdicts,<br/>evidence, HITL decision, timeline
     Note over Mem: Web panel stops here,<br/>pure render, no model
     User->>LLM: trace plus rule, answer ONLY from this record
@@ -116,9 +116,9 @@ Campaign Radar runs over the case index and clusters cases on shared strong indi
 
 This is memory paying a dividend the original analysts couldn't, structurally, ever collect — and it's the clearest example of why an AI SOC is worth building even when individual agents are no smarter than a good analyst. The agent's edge isn't IQ. It's that it can hold every case in the window in its head at once.
 
-## Outcome Trends: the rollup leadership actually asked for
+## Outcome Trends: the rollup people actually ask for
 
-Stitch the reads together over a window (7 / 30 / 90 days) and you get the leadership view: cases worked, the verdict/severity/disposition mix, the recurring actors and indicators across cases, the human approval rate, the per-role accuracy, and — the one nobody asks for until they see it — the **LLM token cost broken out per role**. The agents that cost the most tokens and the agents that score the highest accuracy are not always the same agents, and that gap is a roadmap.
+Stitch the reads together over a window (7 / 30 / 90 days) and you get the trend view: cases worked, the verdict/severity/disposition mix, the recurring actors and indicators across cases, the human approval rate, the per-role accuracy, and — the one nobody asks for until they see it — the **LLM token cost broken out per role**. The agents that cost the most tokens and the agents that score the highest accuracy are not always the same agents, and that gap is a roadmap.
 
 It's the difference between "we have an AI SOC" and "here's how the AI SOC did this month, per role, against ground truth, at this cost." One is a press release. The other is something you can run a program on.
 
@@ -132,8 +132,8 @@ If you're building agents that need a past tense, the transferable ideas aren't 
 - **Split recall from narration.** Deterministic lookup for what happened; grounded, citation-only LLM for explaining it. Never let an agent author a nicer reason than the one it used.
 - **Point similarity sideways.** The same case-matching that gives one agent precedent gives the whole SOC campaign detection — the cross-incident view that no single-ticket workflow can produce.
 
-The v1 post ended on "the bus shape is worth more than any one agent." A release later, the bus shape is what made memory a weekend instead of a rewrite. The code lives in the public mirror at [`src/components/soc_in_box/`](https://github.com/vinayvobbili/security-ops-platform) — case memory index, the read functions, the web panels, all of it — and the failover brain underneath is still the open-source [`langchain-failover`](https://pypi.org/project/langchain-failover/).
+The v1 post ended on "the bus shape is worth more than any one agent." A release later, the bus shape is what made memory a weekend instead of a rewrite. The failover brain underneath is still the open-source [`langchain-failover`](https://pypi.org/project/langchain-failover/).
 
-And the bus shape itself is now its own thing. The event contract, the in-memory/Redis bus, case memory as a read model, and the role-agent framework are extracted into a vendor-neutral package on PyPI: [`aisoc`](https://pypi.org/project/aisoc/). `pip install "aisoc[agent]"`, plug in your own LLM, alerts, and tools, and the kernel this whole series is built on is yours — memory included, because memory was just a query over the log the bus was already keeping. 🚀
+And the bus shape itself is now its own thing. The event contract, the in-memory/Redis bus, case memory as a read model, and the role-agent framework are published as a vendor-neutral package on PyPI: [`aisoc`](https://pypi.org/project/aisoc/). `pip install "aisoc[agent]"`, plug in your own LLM, alerts, and tools, and the kernel this whole series is built on is yours — memory included, because memory was just a query over the log the bus was already keeping. 🚀
 
 **What's next:** promote per-role accuracy to a regression gate so a precedent change that *drops* a role's accuracy fails the build, and feed confirmed campaigns back to the Threat Hunter as standing hunt hypotheses — closing the loop from "we noticed a campaign" to "we went and found the rest of it." Memory was the prerequisite. Now the agents get to use it.

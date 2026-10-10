@@ -201,7 +201,7 @@ h2{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,52px);lin
 .chip{font-family:var(--mono);font-size:13px;background:var(--surface);border:1px solid var(--line2);border-radius:999px;padding:8px 15px;color:var(--muted)}
 .chip b{color:var(--ink)}
 
-/* origin */
+/* design */
 .dogfood{margin-top:14px;font-size:17px;color:var(--muted);max-width:760px}
 .dogfood b{color:var(--ink)}
 
@@ -402,12 +402,12 @@ detflow.<span class="f">analyze</span>(advisory_text, model=model)        <span 
   </div>
 </section>
 
-<section id="origin" style="background:var(--bg2)">
+<section id="design" style="background:var(--bg2)">
   <div class="wrap">
-    <div class="eyebrow rv">where it came from</div>
-    <h2 class="rv">Carved out of a real detection-as-code workbench.</h2>
+    <div class="eyebrow rv">how it's built</div>
+    <h2 class="rv">Generic stages in the box, vendor-specific edges left to you.</h2>
     <p class="section-lede rv">detflow is the detection-side sibling of <a href="https://vinayvobbili.github.io/iocflow/" style="color:var(--blue-l)">iocflow</a> — iocflow handles the <em>indicator</em> lifecycle; detflow handles the <em>rule</em> lifecycle. Same design DNA.</p>
-    <p class="dogfood rv d1">I kept re-implementing the same generic stages inside every pipeline — lint a rule, draft one from English, dedupe against the catalog, review it, and translate an advisory into detection content. The only vendor-specific parts are <b>compiling to your query language</b> and <b>dry-running against your tenant</b> — so I left exactly those out, scrubbed the generic middle, and shipped it. It even eats its own dog food: the failover model is <a href="https://pypi.org/project/langchain-failover/" style="color:var(--blue-l)">langchain-failover</a>, another package extracted from the same work. <b>Deterministic primitives plus optional AI</b> — the boring parts are boring and tested, the model adds judgment where judgment helps, and nothing falls over when it's slow or absent.</p>
+    <p class="dogfood rv d1">Every detection-as-code pipeline needs the same generic stages — lint a rule, draft one from English, dedupe against the catalog, review it, and translate an advisory into detection content. The only vendor-specific parts are <b>compiling to your query language</b> and <b>dry-running against your tenant</b>, so detflow leaves exactly those out by design. It even eats its own dog food: the failover model is <a href="https://pypi.org/project/langchain-failover/" style="color:var(--blue-l)">langchain-failover</a>, a sibling package. <b>Deterministic primitives plus optional AI</b> — the boring parts are boring and tested, the model adds judgment where judgment helps, and nothing falls over when it's slow or absent.</p>
   </div>
 </section>
 

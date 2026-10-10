@@ -202,10 +202,6 @@ h2{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,52px);lin
 .chip{font-family:var(--mono);font-size:13px;background:var(--surface);border:1px solid var(--line2);border-radius:999px;padding:8px 15px;color:var(--muted)}
 .chip b{color:var(--ink)}
 
-/* two-col origin */
-.dogfood{margin-top:14px;font-size:17px;color:var(--muted);max-width:740px}
-.dogfood b{color:var(--ink)}
-
 /* final cta */
 .final{text-align:center;border-top:1px solid var(--line);background:
   radial-gradient(ellipse 60% 100% at 50% 0%,#5b21b622,transparent 70%)}
@@ -380,15 +376,6 @@ hunts   = <span class="f">suggest_hunts</span>(iocs)                 <span class
       <span class="chip"><b>[agent]</b> the LangGraph team</span>
       <span class="chip"><b>[all]</b> everything</span>
     </div>
-  </div>
-</section>
-
-<section id="origin">
-  <div class="wrap">
-    <div class="eyebrow rv">where it came from</div>
-    <h2 class="rv">Distilled from a production AI SOC.</h2>
-    <p class="section-lede rv">iocflow is the open-source sibling of <a href="https://vinayvobbili.github.io/posts/building-soc-in-a-box/" style="color:var(--blue-l)">SOC-in-a-Box</a> — an AVP-sponsored multi-agent SOC where one local LLM played eight analyst roles, read-only against production, with a human approving every containment action.</p>
-    <p class="dogfood rv d1">SOC-in-a-Box proved the <em>pattern</em> against real systems. Two commitments made it trustworthy: <b>the model orchestrates but never does the irreversible work itself</b>, and <b>no single authority can push a destructive action</b>. Those ideas aren't SOC-specific — they're how you make any AI system that touches production safe enough to deploy. So I pulled them out and built a clean, public library around them.</p>
   </div>
 </section>
 
