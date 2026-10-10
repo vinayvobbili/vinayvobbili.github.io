@@ -28,3 +28,6 @@ assets/js/dist
 
 # local Docker preview build (tools/preview.sh)
 .preview/
+
+# Python bytecode
+__pycache__/
