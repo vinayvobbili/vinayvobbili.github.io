@@ -9,11 +9,13 @@ each hit with its file, line and surrounding words; it doesn't change files.
     python tools/work_refs.py                      # every post and page
     python tools/work_refs.py _posts/2026-10-10-*.md
     python tools/work_refs.py --summary            # counts per file only
+    python tools/work_refs.py --repo ../attestq --ref origin/main   # another repo, as pushed
 
 Exit status is 1 when anything matched, so it can gate a pre-publish check.
 """
 import argparse
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -37,6 +39,31 @@ PATTERNS: list[tuple[str, str]] = [
 COMPILED = [(label, re.compile(rx, re.IGNORECASE)) for label, rx in PATTERNS]
 
 DEFAULT_GLOBS = ["_posts/*.md", "_tabs/*.md", "*/index.html"]
+
+# What --repo reads: prose, code, config and web files. Binaries and lockfiles are skipped.
+TEXT_SUFFIXES = {
+    ".md", ".markdown", ".rst", ".txt", ".html", ".htm", ".py", ".js", ".ts", ".json",
+    ".toml", ".yaml", ".yml", ".cfg", ".ini", ".sh", ".css", ".xml", ".csv",
+}
+SKIP_NAMES = {"package-lock.json", "uv.lock", "poetry.lock", "Gemfile.lock"}
+
+
+def repo_files(repo: Path, ref: str = "HEAD") -> list[tuple[str, str]]:
+    """(path, text) for every tracked text file at `ref`, exactly as committed."""
+    names = subprocess.run(
+        ["git", "-C", str(repo), "ls-tree", "-r", "--name-only", ref],
+        check=True, capture_output=True, text=True,
+    ).stdout.splitlines()
+    out = []
+    for name in names:
+        p = Path(name)
+        if p.suffix.lower() not in TEXT_SUFFIXES or p.name in SKIP_NAMES:
+            continue
+        blob = subprocess.run(
+            ["git", "-C", str(repo), "show", f"{ref}:{name}"], check=True, capture_output=True,
+        ).stdout
+        out.append((name, blob.decode("utf-8", errors="replace")))
+    return out
 
 
 def default_files(root: Path = ROOT) -> list[Path]:
@@ -62,16 +89,24 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("files", nargs="*", type=Path)
     ap.add_argument("--summary", action="store_true", help="only print hit counts per file")
+    ap.add_argument("--repo", type=Path, help="scan another git repo's tracked text files instead")
+    ap.add_argument("--ref", default="HEAD", help="with --repo: the commit or branch to read (default HEAD)")
     args = ap.parse_args(argv)
 
-    files = args.files or default_files()
+    if args.repo:
+        sources = repo_files(args.repo, args.ref)
+    else:
+        sources = []
+        for path in args.files or default_files():
+            rel = path.resolve().relative_to(ROOT) if path.resolve().is_relative_to(ROOT) else path
+            sources.append((str(rel), path.read_text(errors="replace")))
+
     total = 0
-    for path in files:
-        hits = scan(path.read_text(errors="replace"))
+    for rel, text in sources:
+        hits = scan(text)
         if not hits:
             continue
         total += len(hits)
-        rel = path.resolve().relative_to(ROOT) if path.resolve().is_relative_to(ROOT) else path
         if args.summary:
             print(f"{len(hits):4d}  {rel}")
             continue

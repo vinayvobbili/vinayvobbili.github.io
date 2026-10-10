@@ -40,6 +40,24 @@ def test_exit_status_gates_on_hits(tmp_path):
     assert work_refs.main([str(dirty), "--summary"]) == 1
 
 
+def test_repo_mode_reads_committed_text_files_only(tmp_path, capsys):
+    import subprocess
+
+    def git(*args):
+        subprocess.run(["git", "-C", str(tmp_path), *args], check=True, capture_output=True)
+
+    git("init", "-q")
+    (tmp_path / "README.md").write_text("Runs in production at work.\n")
+    (tmp_path / "logo.png").write_bytes(b"\x89PNG production")
+    git("add", ".")
+    git("-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-qm", "init")
+    (tmp_path / "README.md").write_text("clean now, but not committed\n")
+
+    assert [p for p, _ in work_refs.repo_files(tmp_path)] == ["README.md"]
+    assert work_refs.main(["--repo", str(tmp_path), "--summary"]) == 1
+    assert "README.md" in capsys.readouterr().out
+
+
 def test_default_files_cover_posts_tabs_and_pages():
     names = {p.relative_to(work_refs.ROOT).as_posix() for p in work_refs.default_files()}
     assert any(n.startswith("_posts/") for n in names)
