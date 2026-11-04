@@ -92,7 +92,7 @@ And if you already run your own agent loop, you don't need the whole class — `
 
 ## The bigger pattern
 
-Same lesson as [iocflow](/posts/iocflow-agentic-ioc-lifecycle/) and [detflow](/posts/detflow-detection-engineering-copilot/): the junior move is *one big model does everything*. The deployable move is to **put each token on the right model** — cheap reasoning where it's cheap, strong generation where it pays off — with a structural guard so the optimization can't quietly produce a wrong answer.
+Same lesson as [iocflow](/posts/iocflow-agentic-ioc-lifecycle/) and [detflow](/posts/detflow-detection-engineering-copilot/): the tempting move is *one big model does everything*. The deployable move is to **put each token on the right model** — cheap reasoning where it's cheap, strong generation where it pays off — with a structural guard so the optimization can't quietly produce a wrong answer.
 
 v0.1 of this package gave a local LLM a backup for when it goes down. v0.2 is for when that local LLM is up but too slow to *write* under load — and the fix wasn't a bigger local model, it was not making the local model write at all. Two ways to run more than one model, one tiny interface.
 

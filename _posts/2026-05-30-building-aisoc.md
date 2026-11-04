@@ -1,8 +1,8 @@
 ---
-title: "aisoc: One LLM, Eight Hats, A Production-Bar AI SOC on a Single GPU"
+title: "aisoc: One LLM, Eight Hats, An AI SOC on a Single GPU"
 image:
   path: /assets/img/posts/aisoc-hero.png
-  alt: "One local LLM playing eight analyst roles — a production-bar AI SOC on a single GPU"
+  alt: "One local LLM playing eight analyst roles — an AI SOC on a single GPU"
 description: A multi-agent SOC where one local LLM plays Sentinel, Tier 2, IR Lead, Threat Intel, SOC Manager, Detection Engineer, and Threat Hunter — coordinated over a Redis Streams bus with a human-in-the-loop approval gate before any real-system action. The framework choices, the architectural trade-offs, and the backtest harness that lets us put real numbers on agent quality before going live.
 date: 2026-05-30 09:00:00 -0400
 categories: [Security, LLM]
@@ -221,4 +221,4 @@ What's not in v1 and what we'll work on next:
 - **Red Team agent.** Once a breach-and-attack simulation tool is wired into the lab, a Red Team role can post `attack.executed` events that the rest of the cascade has to detect. Closes the loop on "did the SOC actually catch what the Red Team threw?"
 - **Backtest as a CI gate.** Once we're confident on a baseline, promote the harness to a nightly run with regression thresholds — "if Tier 2 escalation precision drops more than 5% from last week's baseline, fail the build."
 
-The code is BSD-licensed in the public mirror. If you're building something similar, the most useful thing to copy isn't any one agent — it's the **bus shape**, the **schema-per-event** discipline, the **audit-stream-as-truth** pattern, and the **HITL handoff that addresses a human by role**. Those four ideas are what turned eight separate LLM-with-tools experiments into one thing a SOC team would actually run.
+The kernel is [on PyPI](https://pypi.org/project/aisoc/) under the MIT license. If you're building something similar, the most useful thing to copy isn't any one agent — it's the **bus shape**, the **schema-per-event** discipline, the **audit-stream-as-truth** pattern, and the **HITL handoff that addresses a human by role**. Those four ideas are what turned eight separate LLM-with-tools experiments into one thing a SOC team would actually run.

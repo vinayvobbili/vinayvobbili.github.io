@@ -2,6 +2,7 @@
 title: "Teaching a Reranker the Language of Security Tickets (+41% MRR@10)"
 description: How I mined analyst-curated training pairs from case close-notes, dodged a polynomial blow-up, filtered out same-rule near-duplicates, and lifted held-out MRR@10 from 0.598 to 0.846 — a 41% uplift over off-the-shelf bge-reranker-v2-m3.
 date: 2026-05-09 09:00:00 -0400
+pin: true
 categories: [LLM, RAG]
 tags: [rag, reranker, fine-tuning, bge, sentence-transformers, security]
 mermaid: true

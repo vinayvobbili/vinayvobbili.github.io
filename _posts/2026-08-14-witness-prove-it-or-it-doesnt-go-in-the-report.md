@@ -5,6 +5,7 @@ image:
   alt: "witness — a DFIR agent whose findings are admitted by a deterministic field check, not by a second language model"
 description: "I entered the SANS FIND EVIL! hackathon with an agent that catches its own hallucinated indicators. It didn't win. Reading the entries that placed, the ones I looked at had reached for the same defence I had — check the first language model with a second language model. But a model can be argued out of a correct refutation. So I rebuilt the whole thing around an oracle that cannot be argued with: a finding is admitted only when pure Python re-reads the cited tool output and confirms the field really says what the claim says it says. 1,083 scored claims, 119 crafted attacks, one command to run it."
 date: 2026-08-14 10:00:00 -0400
+pin: true
 categories: [Security, LLM]
 tags: [dfir, forensics, ai-agents, hallucination, memory-forensics, volatility, provenance, reproducibility, sans, open-source]
 mermaid: true

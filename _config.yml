@@ -16,7 +16,7 @@ timezone: America/New_York
 
 title: Vinay Vobbilichetty # the main title
 
-tagline: Distributed systems, LLM platforms, security automation # it will display as the subtitle
+tagline: LLM agents that can only report what they can prove # it will display as the subtitle
 
 description: >- # used by seo meta and the atom feed
   Engineering notes on distributed LLM platforms, agentic AI, and security automation —

@@ -31,7 +31,7 @@ A new advisory drops. Before anyone writes a single rule, someone has to do the 
 - What would *catch* it? → draft the **detection content** — Sigma for portability, YARA when there's a payload, Suricata when there's network/C2.
 - How do we *share* it? → push it into the formats the rest of the shop speaks: **STIX** for the TIP, an **ATT&CK Navigator** layer for the coverage map, a plain-language **brief** for whoever's downstream.
 
-That's a generic pipeline. The only vendor-specific parts are *where the advisory comes from* and *where the rules get deployed* — and those are exactly the parts I left out of the library. So I carved the generic middle out of an internal threat-analysis workbench, scrubbed it, and shipped it. 🧰
+That's a generic pipeline. The only vendor-specific parts are *where the advisory comes from* and *where the rules get deployed* — and those are exactly the parts I left out of the library. So I wrote the generic middle as its own library. 🧰
 
 ## What it looks like
 
@@ -127,7 +127,7 @@ a = detflow.analyze(advisory, model=LangChainModel(chain))   # rides the failove
 
 ## The bigger pattern
 
-Same lesson as [v0.1](/posts/detflow-detection-engineering-copilot/) and the [IOC work](/posts/iocflow-agentic-ioc-lifecycle/): the junior move is to make the whole thing one big LLM call and hope. The deployable move is **deterministic scaffolding plus optional AI** — the linting, the STIX/Navigator serialization, the deterministic IDs, and the injection-hardening are boring and tested; the model supplies *judgment* (how would this be exploited, what catches it) where judgment actually helps; and nothing falls over when the model is slow or absent.
+Same lesson as [v0.1](/posts/detflow-detection-engineering-copilot/) and the [IOC work](/posts/iocflow-agentic-ioc-lifecycle/): the tempting move is to make the whole thing one big LLM call and hope. The deployable move is **deterministic scaffolding plus optional AI** — the linting, the STIX/Navigator serialization, the deterministic IDs, and the injection-hardening are boring and tested; the model supplies *judgment* (how would this be exploited, what catches it) where judgment actually helps; and nothing falls over when the model is slow or absent.
 
 detflow now spans the full loop: **analyze** intel → **draft** rules → **lint** → **review** → (you) merge. Each verb is independently useful, and they all ride the same model.
 

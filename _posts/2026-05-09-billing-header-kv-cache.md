@@ -2,6 +2,7 @@
 title: "Why Self-Hosted Claude Code Was 15× Slower Than It Should Be"
 description: A debugging story about a rotating billing header that quietly busted the prefix-KV cache, plus a SimpleEngine patch to actually carry KV state across turns. Two fixes together turned 108-second turns into 7-second turns.
 date: 2026-05-09 09:00:00 -0400
+pin: true
 categories: [LLM, Performance]
 tags: [vllm, mlx, claude-code, kv-cache, prefix-cache, prompt-cache, debugging]
 mermaid: true

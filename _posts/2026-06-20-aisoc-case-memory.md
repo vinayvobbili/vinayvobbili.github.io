@@ -3,7 +3,7 @@ title: "Giving an AI SOC a Memory: Precedent, Proof, and the Campaigns No Analys
 image:
   path: /assets/img/posts/aisoc-memory-hero.png
   alt: "An event-sourced case memory that lets a multi-agent SOC recall prior cases, score its own accuracy, and cluster cross-incident campaigns"
-description: "The first version of our AI SOC had eight roles and zero memory — every alert started from scratch. This post adds the layer that makes a SOC senior instead of just fast: an event-sourced case memory. Agents recall similar prior cases as precedent, every verdict is scored against ground truth so we can prove whether the agents are actually right, any past decision can be interrogated from the recorded trace instead of a hallucinated rationale, and cross-incident campaigns surface that no single analyst working one ticket would ever see. Plus the honest part — we flag-gated precedent so we can A/B whether memory actually helps."
+description: "The first version of aisoc had eight roles and zero memory — every alert started from scratch. This post adds the layer that makes a SOC senior instead of just fast: an event-sourced case memory. Agents recall similar prior cases as precedent, every verdict is scored against ground truth so we can prove whether the agents are actually right, any past decision can be interrogated from the recorded trace instead of a hallucinated rationale, and cross-incident campaigns surface that no single analyst working one ticket would ever see. Plus the honest part — we flag-gated precedent so we can A/B whether memory actually helps."
 date: 2026-06-20 09:00:00 -0400
 categories: [Security, LLM]
 tags: [soc, ai-agents, agentic-ai, event-sourcing, multi-agent, case-memory, ground-truth, hitl, security-automation, detection-engineering, redis-streams]
@@ -36,7 +36,7 @@ The gap is exactly the gap between a junior who is quick and a principal who is 
 
 ## The unlock: memory is a read model, not a new database
 
-Here's the part I'd want a hiring manager to notice, because it's the difference between a feature and an architecture.
+This is the difference between a feature and an architecture.
 
 We didn't add a memory system. The event-sourced design from v1 was *already recording everything we needed* — we just hadn't been reading it as memory. Every role already persisted its verdict to a `verdicts.sqlite` sidecar with the reason, confidence, evidence, tool calls, and wall time. Every human approval already landed in `hitl.sqlite` with who decided and why. The `soc.audit` stream already mirrored every event for replay.
 

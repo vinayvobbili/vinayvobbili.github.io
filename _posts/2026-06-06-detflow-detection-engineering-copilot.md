@@ -135,7 +135,7 @@ Sigma is the portable, reviewable, vendor-neutral standard — it lints cleanly 
 
 ## The bigger pattern
 
-This is the same lesson as the IOC work: when you want to *show* AI in your engineering, the junior move is to make everything an LLM call. The stronger, more deployable story is **deterministic primitives plus optional AI** — the schema checks and dedup are boring and tested, the model writes and reviews where judgment helps, and nothing falls over when the model is slow or absent.
+This is the same lesson as the IOC work: when you want to *show* AI in your engineering, the tempting move is to make everything an LLM call. The stronger, more deployable story is **deterministic primitives plus optional AI** — the schema checks and dedup are boring and tested, the model writes and reviews where judgment helps, and nothing falls over when the model is slow or absent.
 
 detflow runs on Python 3.9+, keeps `import detflow` dependency-light (the LLM client is an extra), ships `py.typed` for downstream type-checking, and every piece is independently useful.
 
