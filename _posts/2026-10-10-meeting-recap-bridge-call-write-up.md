@@ -1,4 +1,5 @@
 ---
+published: false
 title: "The Write-Up Nobody Has Time For: Turning Bridge Recordings into Action Lists"
 description: >-
   The person best placed to write up an incident bridge is the person who was

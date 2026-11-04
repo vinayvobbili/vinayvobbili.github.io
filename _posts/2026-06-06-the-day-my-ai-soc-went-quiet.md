@@ -1,4 +1,5 @@
 ---
+published: false
 title: "The Day My AI SOC Went Quiet"
 description: >-
   A multi-agent AI SOC stopped posting verdicts — no errors, no crash, no
