@@ -1,5 +1,5 @@
 ---
-title: "detflow: A Detection-Engineering Copilot You Can pip install"
+title: "detflow: A Detection-Engineering Copilot"
 image:
   path: /assets/img/posts/detflow-hero.png
   alt: "detflow — draft, lint, dedupe and review detections as Sigma or Cortex XQL"

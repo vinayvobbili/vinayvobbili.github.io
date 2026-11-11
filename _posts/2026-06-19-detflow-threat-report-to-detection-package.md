@@ -131,7 +131,7 @@ Same lesson as [v0.1](/posts/detflow-detection-engineering-copilot/) and the [IO
 
 detflow now spans the full loop: **analyze** intel → **draft** rules → **lint** → **review** → (you) merge. Each verb is independently useful, and they all ride the same model.
 
-- 📓 The v0.1 launch (draft / lint / overlap / review): [detflow: A Detection-Engineering Copilot You Can pip install](/posts/detflow-detection-engineering-copilot/)
+- 📓 The v0.1 launch (draft / lint / overlap / review): [detflow: A Detection-Engineering Copilot](/posts/detflow-detection-engineering-copilot/)
 - 🧩 Its indicator-side sibling: [iocflow](/posts/iocflow-agentic-ioc-lifecycle/)
 
 If you run threat intel into a TIP, I'd love to hear which export you'd want next — OpenIOC? A SIEM-native pack? 👋
