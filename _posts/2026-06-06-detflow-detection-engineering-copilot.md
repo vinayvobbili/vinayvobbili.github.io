@@ -16,16 +16,13 @@ accent: forest
 
 ## TL;DR 🚀
 
-I shipped [**detflow**](https://pypi.org/project/detflow/) to PyPI — an open-source, **vendor-neutral detection-engineering copilot**. It does the four things I found myself re-implementing inside every detection-as-code workflow: **draft** a detection from plain English (as **Sigma** or **Cortex XSIAM XQL**), **lint** it offline, **find overlaps** against the rules you already run, and **review** it like a senior detection engineer. 🛡️
+I built **detflow** — a **vendor-neutral detection-engineering copilot**. It does the four things I found myself re-implementing inside every detection-as-code workflow: **draft** a detection from plain English (as **Sigma** or **Cortex XSIAM XQL**), **lint** it offline, **find overlaps** against the rules you already run, and **review** it like a senior detection engineer. 🛡️
 
 <div class="tldr-cards">
 <div class="tldr-card"><span class="tldr-num">2 formats</span><span class="tldr-sub">draft &amp; review in <strong>Sigma</strong> or <strong>Cortex XQL</strong> — one portable, one native</span></div>
 <div class="tldr-card"><span class="tldr-num">1 protocol</span><span class="tldr-sub">bring any model: an OpenAI-compatible endpoint or a LangChain failover chain</span></div>
 <div class="tldr-card"><span class="tldr-num">0 crashes</span><span class="tldr-sub">lint &amp; overlap need no model; review degrades to a deterministic floor</span></div>
 </div>
-
-> ▶ **[Open the interactive version →](/detflow/)** — a full-bleed page where you can pick a verb, pull the model out from under it, and watch what still works: lint and overlap don't move, review drops to a deterministic floor, and nothing ever raises.
-{: .prompt-tip }
 
 This is the detection-side sibling of [iocflow](/posts/iocflow-agentic-ioc-lifecycle/). iocflow handles the *indicator* lifecycle; detflow handles the *rule* lifecycle. Same design DNA: **deterministic primitives first, the LLM as an enhancement that can fail without taking the tool down with it.** 🧱
 
@@ -139,8 +136,6 @@ This is the same lesson as the IOC work: when you want to *show* AI in your engi
 
 detflow runs on Python 3.9+, keeps `import detflow` dependency-light (the LLM client is an extra), ships `py.typed` for downstream type-checking, and every piece is independently useful.
 
-- 📦 PyPI: [`pip install detflow`](https://pypi.org/project/detflow/)
-- 🛠️ Source: [github.com/vinayvobbili/detflow](https://github.com/vinayvobbili/detflow)
 - 🧩 Its indicator-side sibling: [iocflow](/posts/iocflow-agentic-ioc-lifecycle/)
 
 If you run a detection-as-code pipeline, I'd love to know which query language you'd want next. 👋

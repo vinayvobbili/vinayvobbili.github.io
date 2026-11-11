@@ -13,7 +13,7 @@ accent: moss
 
 ## TL;DR 🚀
 
-[**detflow**](https://pypi.org/project/detflow/) `0.2.0` is out, and it now works in **both directions**. v0.1 took you from plain English to a detection rule. v0.2 adds the reverse: hand it a **raw threat report** — a CVE advisory, a CTI writeup, an IOC/TTP dump — and `analyze()` gives you back a grounded **detection package**. 🛡️
+**detflow** `0.2.0` is done, and it now works in **both directions**. v0.1 took you from plain English to a detection rule. v0.2 adds the reverse: hand it a **raw threat report** — a CVE advisory, a CTI writeup, an IOC/TTP dump — and `analyze()` gives you back a grounded **detection package**. 🛡️
 
 <div class="tldr-cards">
 <div class="tldr-card"><span class="tldr-num">1 verb</span><span class="tldr-sub"><code>analyze(report)</code> → ATT&amp;CK + rules + brief, tactic-ordered and grounded</span></div>
@@ -131,8 +131,6 @@ Same lesson as [v0.1](/posts/detflow-detection-engineering-copilot/) and the [IO
 
 detflow now spans the full loop: **analyze** intel → **draft** rules → **lint** → **review** → (you) merge. Each verb is independently useful, and they all ride the same model.
 
-- 📦 PyPI: [`pip install detflow`](https://pypi.org/project/detflow/) (`>=0.2.0`)
-- 🛠️ Source: [github.com/vinayvobbili/detflow](https://github.com/vinayvobbili/detflow)
 - 📓 The v0.1 launch (draft / lint / overlap / review): [detflow: A Detection-Engineering Copilot You Can pip install](/posts/detflow-detection-engineering-copilot/)
 - 🧩 Its indicator-side sibling: [iocflow](/posts/iocflow-agentic-ioc-lifecycle/)
 

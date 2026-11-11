@@ -16,7 +16,7 @@ accent: magma
 
 ## TL;DR 🔎
 
-I built [**find-evil**](https://github.com/vinayvobbili/find-evil) for the SANS **FIND EVIL!** hackathon. [Protocol SIFT](https://github.com/teamdfir/protocol-sift) is a sharp idea — put a Claude Code agent in front of the SANS SIFT Workstation's 200+ forensic tools so a responder can investigate at machine speed. It works. But the brief says the quiet part out loud: *"it also hallucinates more than we'd like."* find-evil bolts my open-source [`iocflow`](https://github.com/vinayvobbili/iocflow) IOC lifecycle onto it as a **custom MCP server plus one skill**, so the agent stops eyeballing huge dumps and instead **reconciles its own findings against a deterministic, false-positive-defended extractor** — catching its hallucinations before they reach the report.
+I built [**find-evil**](https://github.com/vinayvobbili/find-evil) for the SANS **FIND EVIL!** hackathon. [Protocol SIFT](https://github.com/teamdfir/protocol-sift) is a sharp idea — put a Claude Code agent in front of the SANS SIFT Workstation's 200+ forensic tools so a responder can investigate at machine speed. It works. But the brief says the quiet part out loud: *"it also hallucinates more than we'd like."* find-evil bolts my `iocflow` IOC lifecycle onto it as a **custom MCP server plus one skill**, so the agent stops eyeballing huge dumps and instead **reconciles its own findings against a deterministic, false-positive-defended extractor** — catching its hallucinations before they reach the report.
 
 <div class="tldr-cards">
 <div class="tldr-card"><span class="tldr-num">1 skill</span><span class="tldr-sub">extract → reconcile / self-correct → hunt, instead of asserting by eye</span></div>
@@ -100,7 +100,7 @@ The strongest guardrail isn't a better prompt — it's an **architecture where t
 It's MIT-licensed and bolts onto any Protocol SIFT box in one script:
 
 - **Repo:** [github.com/vinayvobbili/find-evil](https://github.com/vinayvobbili/find-evil)
-- **Built on:** [`iocflow`](https://github.com/vinayvobbili/iocflow) (the IOC lifecycle) and [`domainflow`](https://github.com/vinayvobbili/domainflow) (the campaign-clustering pivot)
+- **Built on:** `iocflow` (the IOC lifecycle) and `domainflow` (the campaign-clustering pivot)
 - **Demo:** [the live investigation above](https://youtu.be/8ufHSoOfc5Q)
 
 ```bash

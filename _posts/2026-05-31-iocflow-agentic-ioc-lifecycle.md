@@ -13,16 +13,13 @@ accent: violet
 
 ## TL;DR 🚀
 
-I shipped [**iocflow**](https://pypi.org/project/iocflow/) to PyPI — an open-source Python library for the **entire indicator-of-compromise lifecycle**, built as six independently-useful layers behind pip extras. The headline isn't "another IOC parser." It's the *shape*: every layer is a deterministic, boring, testable primitive — and the top layer is a small **LangGraph multi-agent team** that orchestrates those primitives, with a **human-in-the-loop gate** standing between the AI and anything destructive.
+I built **iocflow** — a Python library for the **entire indicator-of-compromise lifecycle**, built as six independently-useful layers behind pip extras. The headline isn't "another IOC parser." It's the *shape*: every layer is a deterministic, boring, testable primitive — and the top layer is a small **LangGraph multi-agent team** that orchestrates those primitives, with a **human-in-the-loop gate** standing between the AI and anything destructive.
 
 <div class="tldr-cards">
 <div class="tldr-card"><span class="tldr-num">6 layers</span><span class="tldr-sub">extract &middot; enrich &middot; comment &middot; hunt &middot; block &middot; agent — each its own pip extra</span></div>
 <div class="tldr-card"><span class="tldr-num">1 import</span><span class="tldr-sub"><em>investigate(text)</em> runs the whole chain as a multi-agent team</span></div>
 <div class="tldr-card"><span class="tldr-num">0 rogue blocks</span><span class="tldr-sub">LLM <em>proposes</em> &middot; human <em>authorizes</em> &middot; a guard <em>vetoes</em></span></div>
 </div>
-
-> ▶ **[Open the interactive version →](/iocflow/)** — a full-bleed page where you can walk an indicator through the lifecycle and watch the three-layer authority model in action: the benign `8.8.8.8` gets vetoed by the allowlist guard before the agent can ever propose it.
-{: .prompt-tip }
 
 It's a sibling of [aisoc](/posts/building-aisoc/), the AI SOC I wrote about last week: the same safety pattern, packaged so anyone can pip-install it. 🧰
 
@@ -112,8 +109,6 @@ The temptation, when you want to "show AI in your work," is to make *everything*
 
 Everything but the agent layer runs on Python 3.9+; `import iocflow` stays dependency-light; every layer is independently useful; and the whole agent runs offline in tests because the enrichers, blockers, and model are all injectable.
 
-- 📦 PyPI: [`pip install iocflow`](https://pypi.org/project/iocflow/)
-- 🛠️ Source: [github.com/vinayvobbili/iocflow](https://github.com/vinayvobbili/iocflow)
 - 🧠 Related: [aisoc](/posts/building-aisoc/)
 
 If you try it, I'd love to hear what control points you'd plug in. 👋

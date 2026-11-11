@@ -3,7 +3,7 @@ title: "attestq: When \"We Don't Have Evidence for That\" Is the Feature"
 image:
   path: /assets/img/posts/attestq-hero.png
   alt: "attestq — a model-agnostic RAG kernel that answers security questionnaires from your own evidence, and refuses to guess when the evidence isn't there"
-description: "Every security and GRC team rebuilds the same pipeline one-off: chunk the SOC 2s and policies, embed them, retrieve per question, prompt an LLM, paste into the form. Done naively it hallucinates confident answers with no supporting evidence — the single worst failure mode in compliance. attestq is a small, model-/embedder-/store-agnostic kernel that bakes in the two fixes that actually matter: a confidence gate that answers \"insufficient evidence\" without ever calling the LLM, and a wide rerank window so the one document that had the answer doesn't get dropped. pip install attestq."
+description: "Every security and GRC team rebuilds the same pipeline one-off: chunk the SOC 2s and policies, embed them, retrieve per question, prompt an LLM, paste into the form. Done naively it hallucinates confident answers with no supporting evidence — the single worst failure mode in compliance. attestq is a small, model-/embedder-/store-agnostic kernel that bakes in the two fixes that actually matter: a confidence gate that answers \"insufficient evidence\" without ever calling the LLM, and a wide rerank window so the one document that had the answer doesn't get dropped."
 date: 2026-06-26 09:00:00 -0400
 categories: [Security, LLM]
 tags: [rag, grc, compliance, questionnaires, vendor-risk, security-automation, llm, retrieval, open-source, ai-agents, attestations]
@@ -12,16 +12,13 @@ mermaid: true
 
 ## TL;DR 🚀
 
-I shipped [**attestq**](https://pypi.org/project/attestq/) to PyPI — a small, model-agnostic RAG kernel for a problem every security and GRC program has: you hold a **questionnaire** (a vendor security review, a SIG/CAIQ response, an audit-evidence request, a due-diligence form, the security section of an RFP) and a **pile of evidence** (SOC 2 reports, policies, standards, prior questionnaires). attestq retrieves the relevant evidence per question and drafts a grounded, **cited** answer — and, crucially, tells you plainly when the evidence isn't there instead of inventing one. 🧾
+I built **attestq** — a small, model-agnostic RAG kernel for a problem every security and GRC program has: you hold a **questionnaire** (a vendor security review, a SIG/CAIQ response, an audit-evidence request, a due-diligence form, the security section of an RFP) and a **pile of evidence** (SOC 2 reports, policies, standards, prior questionnaires). attestq retrieves the relevant evidence per question and drafts a grounded, **cited** answer — and, crucially, tells you plainly when the evidence isn't there instead of inventing one. 🧾
 
 <div class="tldr-cards">
 <div class="tldr-card"><span class="tldr-num">0 deps</span><span class="tldr-sub">pure-stdlib core — bring your own model, embedder, store</span></div>
 <div class="tldr-card"><span class="tldr-num">1 gate</span><span class="tldr-sub">weak evidence &rarr; <em>insufficient evidence</em>, no LLM call</span></div>
 <div class="tldr-card"><span class="tldr-num">1 namespace</span><span class="tldr-sub">per vendor — one vendor's evidence never answers for another</span></div>
 </div>
-
-> ▶ **[Open the interactive version →](/attestq/)** — a full-bleed page where you can drag the retrieval score across the confidence threshold and watch the kernel flip between a cited answer and "insufficient evidence."
-{: .prompt-tip }
 
 This is the GRC sibling of my earlier OSS work — [iocflow](/posts/iocflow-agentic-ioc-lifecycle/) for the IOC lifecycle and [detflow](/posts/detflow-detection-engineering-copilot/) for detection engineering. Same instinct: a pattern every team keeps hand-rolling deserves one clean, generic, boring, testable version on PyPI. 🧰
 
@@ -100,32 +97,19 @@ for c in ans.citations:
     print(c.source, "->", c.snippet)
 ```
 
-Heavier capabilities ride on opt-in extras, each lazily imported so a missing one fails with a friendly "pip install attestq[x]" rather than an import error halfway through a run:
+Heavier capabilities are opt-in, each lazily imported so a missing one fails with a friendly message rather than an import error halfway through a run:
 
-- `attestq[chroma]` — a persistent Chroma vector store over an existing collection
-- `attestq[openai]` — an OpenAI-compatible chat + embedding adapter (any `base_url`)
-- `attestq[ollama]` — local Ollama embeddings and chat, nothing leaves the host
-- `attestq[rerank]` — a cross-encoder reranker (score-normalized so the gate stays valid)
-- `attestq[loaders]` — pdf / docx / xlsx → ingestible chunks
-- `attestq[all]` — everything
+- a persistent Chroma vector store over an existing collection
+- an OpenAI-compatible chat + embedding adapter (any `base_url`)
+- local Ollama embeddings and chat, nothing leaves the host
+- a cross-encoder reranker (score-normalized so the gate stays valid)
+- pdf / docx / xlsx loaders that produce ingestible chunks
 
 The `namespace` argument is the GRC-specific bit: vendor questionnaires need **per-vendor evidence isolation**, not one shared corpus. Each vendor's docs live under their own namespace, and retrieval filters on it — so Acme's SOC 2 can never bleed into Helios's answers.
 
-## Try it in ten seconds, no model required
+## No model required to start
 
-A built-in `HashEmbedder` needs no model and no service, so you can watch the retrieval pipeline and the confidence gate work the instant you install — then swap in a real provider when you're ready.
-
-```bash
-pip install attestq
-attestq demo -o report.md          # runs a bundled fictional sample end-to-end
-```
-
-Point it at your own questionnaire and evidence folder, with any provider resolved from flags or environment:
-
-```bash
-attestq run -q questionnaire.yaml -e ./vendor-evidence -n acme -o report.docx
-attestq demo --provider ollama     # local, no key, nothing leaves the host
-```
+A built-in `HashEmbedder` needs no model and no service, so you can watch the retrieval pipeline and the confidence gate work from the first run — then swap in a real provider when you're ready.
 
 ## Why build it this way
 
@@ -133,7 +117,4 @@ If you've read my [three phases of RAG quality](/posts/three-phases-of-rag-quali
 
 The honest lesson across iocflow, detflow, and now attestq is the same: **the valuable, durable part of an AI system is usually the boring scaffolding around the model, not the model call itself.** Here that scaffolding is one decision — *don't let the LLM answer a question your evidence can't support* — turned into a default you can't forget to apply.
 
-`pip install attestq`, bring your own model, and let it tell you when you don't have the evidence. 🔍
-
-- **PyPI:** [pypi.org/project/attestq](https://pypi.org/project/attestq/)
-- **Source:** [github.com/vinayvobbili/attestq](https://github.com/vinayvobbili/attestq)
+Bring your own model, and let it tell you when you don't have the evidence. 🔍

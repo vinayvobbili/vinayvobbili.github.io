@@ -21,9 +21,6 @@ A real SOC runs 24×7 with eight or nine distinct roles — alert triage, deeper
 <div class="tldr-card"><span class="tldr-num">0 writes</span><span class="tldr-sub">to EDR, proxy or endpoint tools — agents <em>propose</em>, humans <em>execute</em></span></div>
 </div>
 
-> ▶ **[Open the interactive version →](/aisoc/)** — a full-bleed page where you can drop an alert onto the bus and watch it move through the org chart, one LLM wearing a different hat at each stop, until everything stops at the human-in-the-loop gate. The benign one gets closed by Tier 2 and never reaches it.
-{: .prompt-tip }
-
 The interesting parts aren't the agents themselves — there's nothing novel about an LLM-with-tools loop. The interesting parts are: (1) the architectural choices that let one local LLM serve a whole SOC org chart without melting, (2) the human-in-the-loop gate that makes "AI does containment" a real thing a security team will actually trust, and (3) a backtest harness that lets us put hard numbers on agent quality against historical alerts before anyone has to take it on faith.
 
 ## The shape of the problem
@@ -213,7 +210,7 @@ Three things, in order of how much they changed the design:
 
 ## Try it / What's next
 
-> **📦 Try it.** aisoc is a vendor-neutral package on PyPI: [`aisoc`](https://pypi.org/project/aisoc/) — the event contract, the bus, case memory, and the role-agent framework. `pip install "aisoc[agent]"`, bring your own LLM, alert source, and tools, and you get the event-sourced multi-agent SOC this post describes: a stdlib-only in-memory bus (or Redis Streams for the durable path), a role team that works a case over the shared log, memory as a read model, human-in-the-loop gating, and a replayable audit you can backtest against. The non-obvious part it gets right: three **injection seams** — chat model, alert source, tools — mean nothing in the kernel knows about any one vendor. Source, tests, and runnable examples ship in the package. 🚀
+> **The shape.** aisoc is vendor-neutral by design: the event contract, the bus, case memory, and the role-agent framework. Bring your own LLM, alert source, and tools, and you get the event-sourced multi-agent SOC this post describes: a stdlib-only in-memory bus (or Redis Streams for the durable path), a role team that works a case over the shared log, memory as a read model, human-in-the-loop gating, and a replayable audit you can backtest against. The non-obvious part it gets right: three **injection seams** — chat model, alert source, tools — mean nothing in the kernel knows about any one vendor. 🚀
 
 What's not in v1 and what we'll work on next:
 
@@ -221,4 +218,4 @@ What's not in v1 and what we'll work on next:
 - **Red Team agent.** Once a breach-and-attack simulation tool is wired into the lab, a Red Team role can post `attack.executed` events that the rest of the cascade has to detect. Closes the loop on "did the SOC actually catch what the Red Team threw?"
 - **Backtest as a CI gate.** Once we're confident on a baseline, promote the harness to a nightly run with regression thresholds — "if Tier 2 escalation precision drops more than 5% from last week's baseline, fail the build."
 
-The kernel is [on PyPI](https://pypi.org/project/aisoc/) under the MIT license. If you're building something similar, the most useful thing to copy isn't any one agent — it's the **bus shape**, the **schema-per-event** discipline, the **audit-stream-as-truth** pattern, and the **HITL handoff that addresses a human by role**. Those four ideas are what turned eight separate LLM-with-tools experiments into one thing a SOC team would actually run.
+If you're building something similar, the most useful thing to copy isn't any one agent — it's the **bus shape**, the **schema-per-event** discipline, the **audit-stream-as-truth** pattern, and the **HITL handoff that addresses a human by role**. Those four ideas are what turned eight separate LLM-with-tools experiments into one thing a SOC team would actually run.

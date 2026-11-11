@@ -134,6 +134,6 @@ If you're building agents that need a past tense, the transferable ideas aren't 
 
 The v1 post ended on "the bus shape is worth more than any one agent." A release later, the bus shape is what made memory a weekend instead of a rewrite. The failover brain underneath is still the open-source [`langchain-failover`](https://pypi.org/project/langchain-failover/).
 
-All of it — the event contract, the in-memory/Redis bus, case memory as a read model, and the role-agent framework — is in the vendor-neutral [`aisoc`](https://pypi.org/project/aisoc/) package on PyPI. `pip install "aisoc[agent]"`, plug in your own LLM, alerts, and tools, and you get memory too, because memory was just a query over the log the bus was already keeping. 🚀
+All of it — the event contract, the in-memory/Redis bus, case memory as a read model, and the role-agent framework — is vendor-neutral by design: plug in your own LLM, alerts, and tools, and you get memory too, because memory was just a query over the log the bus was already keeping. 🚀
 
 **What's next:** promote per-role accuracy to a regression gate so a precedent change that *drops* a role's accuracy fails the build, and feed confirmed campaigns back to the Threat Hunter as standing hunt hypotheses — closing the loop from "we noticed a campaign" to "we went and found the rest of it." Memory was the prerequisite. Now the agents get to use it.
