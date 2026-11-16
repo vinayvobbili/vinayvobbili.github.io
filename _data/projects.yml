@@ -15,6 +15,9 @@
   site: https://vinayvobbili.github.io/taxtrace/
   repo: https://github.com/vinayvobbili/taxtrace
   pypi: https://pypi.org/project/taxtrace/
+  posts:
+    - label: Local redaction
+      url: /posts/taxtrace-local-redaction/
 - name: witness
   summary: A DFIR agent that can only report what it can prove a tool said.
   site: https://vinayvobbili.github.io/witness/

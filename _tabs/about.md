@@ -18,6 +18,7 @@ don't fit in a commit message.
 - [Teaching a Reranker the Language of Security Tickets](/posts/three-phases-of-rag-quality/): fine-tuning a reranker on case close-notes lifted held-out MRR@10 by 41%.
 - [Why Self-Hosted Claude Code Was 15× Slower Than It Should Be](/posts/billing-header-kv-cache/): a rotating billing header broke the KV cache; 108-second turns became 7.
 - [Scoring Job Fit on a Laptop: A 29-Verdict Check Instead of a Benchmark](/posts/jobwatch-local-fit-scores/): choosing a local model for job-fit scoring with a small, honest measurement.
+- [Show the Model the Shape of a Return, Not the Numbers](/posts/taxtrace-local-redaction/): taxtrace masks digits and unlisted words, so an AI sees the layout, never the values.
 
 **Tools I've built**
 
