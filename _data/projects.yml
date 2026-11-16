@@ -1,0 +1,33 @@
+# Public projects shown on the Projects tab (_tabs/projects.md).
+# Only public repos belong here. Each link opens in a new tab.
+- name: jobwatch
+  summary: Watches company job boards, ranks new matches into a daily digest and tracks every application, and never auto-applies.
+  site: https://vinayvobbili.github.io/jobwatch/
+  repo: https://github.com/vinayvobbili/jobwatch
+  pypi: https://pypi.org/project/jobwatch/
+- name: taxtrace
+  summary: Prepares a US federal and state return from your own documents on your own machine, with every number traced to the page it came from.
+  site: https://vinayvobbili.github.io/taxtrace/
+  repo: https://github.com/vinayvobbili/taxtrace
+  pypi: https://pypi.org/project/taxtrace/
+- name: witness
+  summary: A DFIR agent that can only report what it can prove a tool said.
+  site: https://vinayvobbili.github.io/witness/
+  repo: https://github.com/vinayvobbili/witness
+  pypi: https://pypi.org/project/witness-cli/
+  post: /posts/witness-prove-it-or-it-doesnt-go-in-the-report/
+- name: hubtriage
+  summary: Triages AWS Security Hub findings with an LLM that can only say what the AWS APIs said.
+  repo: https://github.com/vinayvobbili/hubtriage
+- name: posturekit
+  summary: Ingests large, messy data-security exports into DuckDB and scores them for risk, as a model-agnostic DSPM kernel.
+  repo: https://github.com/vinayvobbili/posturekit
+  pypi: https://pypi.org/project/posturekit/
+- name: find-evil
+  summary: An IOC-lifecycle layer for Protocol SIFT that stops the agent hallucinating indicators.
+  repo: https://github.com/vinayvobbili/find-evil
+  post: /posts/find-evil-self-correcting-dfir-agent/
+- name: langchain-failover
+  summary: Primary/secondary failover and tier-split orchestration for LangChain chat models, with tool-calling preserved.
+  repo: https://github.com/vinayvobbili/langchain-failover
+  pypi: https://pypi.org/project/langchain-failover/

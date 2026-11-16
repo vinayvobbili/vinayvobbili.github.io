@@ -1,0 +1,14 @@
+<div class="project-grid">
+{%- for p in site.data.projects %}
+  <article class="project-card">
+    <h2 class="project-card__name">{{ p.name }}</h2>
+    <p class="project-card__summary">{{ p.summary }}</p>
+    <p class="project-card__links">
+      {%- if p.site %}<a href="{{ p.site }}" target="_blank" rel="noopener"><i class="fas fa-globe"></i> Home page</a>{% endif -%}
+      {%- if p.repo %}<a href="{{ p.repo }}" target="_blank" rel="noopener"><i class="fab fa-github"></i> GitHub</a>{% endif -%}
+      {%- if p.pypi %}<a href="{{ p.pypi }}" target="_blank" rel="noopener"><i class="fab fa-python"></i> PyPI</a>{% endif -%}
+      {%- if p.post %}<a href="{{ p.post | relative_url }}" target="_blank" rel="noopener"><i class="fas fa-pen-nib"></i> Write-up</a>{% endif -%}
+    </p>
+  </article>
+{%- endfor %}
+</div>
