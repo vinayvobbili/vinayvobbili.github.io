@@ -7,6 +7,7 @@
       {%- if p.site %}<a href="{{ p.site }}" target="_blank" rel="noopener"><i class="fas fa-globe"></i> Home page</a>{% endif -%}
       {%- if p.repo %}<a href="{{ p.repo }}" target="_blank" rel="noopener"><i class="fab fa-github"></i> GitHub</a>{% endif -%}
       {%- if p.pypi %}<a href="{{ p.pypi }}" target="_blank" rel="noopener"><i class="fab fa-python"></i> PyPI</a>{% endif -%}
+      {%- for q in p.posts %}<a href="{{ q.url | relative_url }}" target="_blank" rel="noopener"><i class="fas fa-pen-nib"></i> Write-up: {{ q.label }}</a>{% endfor -%}
       {%- if p.post %}<a href="{{ p.post | relative_url }}" target="_blank" rel="noopener"><i class="fas fa-pen-nib"></i> Write-up</a>{% endif -%}
     </p>
   </article>

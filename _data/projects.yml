@@ -5,6 +5,11 @@
   site: https://vinayvobbili.github.io/jobwatch/
   repo: https://github.com/vinayvobbili/jobwatch
   pypi: https://pypi.org/project/jobwatch/
+  posts:
+    - label: Source rules
+      url: /posts/jobwatch-source-rules/
+    - label: Local fit scoring
+      url: /posts/jobwatch-local-fit-scores/
 - name: taxtrace
   summary: Prepares a US federal and state return from your own documents on your own machine, with every number traced to the page it came from.
   site: https://vinayvobbili.github.io/taxtrace/
@@ -16,6 +21,11 @@
   repo: https://github.com/vinayvobbili/witness
   pypi: https://pypi.org/project/witness-cli/
   post: /posts/witness-prove-it-or-it-doesnt-go-in-the-report/
+- name: slidecast
+  summary: Turn a list of HTML slides and narration into a narrated MP4, with pluggable text-to-speech and ffmpeg stitching.
+  repo: https://github.com/vinayvobbili/slidecast
+  pypi: https://pypi.org/project/slidecast/
+  post: /posts/slidecast-narrated-videos-from-a-script/
 - name: hubtriage
   summary: Triages AWS Security Hub findings with an LLM that can only say what the AWS APIs said.
   repo: https://github.com/vinayvobbili/hubtriage
