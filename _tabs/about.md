@@ -17,6 +17,17 @@ don't fit in a commit message.
 - [Prove It, or It Doesn't Go in the Report](/posts/witness-prove-it-or-it-doesnt-go-in-the-report/)
 - [Why Self-Hosted Claude Code Was 15× Slower Than It Should Be](/posts/billing-header-kv-cache/)
 - [Teaching a Reranker the Language of Security Tickets](/posts/three-phases-of-rag-quality/)
+- [Rules a Job-Board Watcher Can't Configure Away](/posts/jobwatch-source-rules/)
+- [Scoring Job Fit on a Laptop: A 29-Verdict Check Instead of a Benchmark](/posts/jobwatch-local-fit-scores/)
+- [A Product Video You Can Rebuild with One Command](/posts/slidecast-narrated-videos-from-a-script/)
+
+**Tools I've built**
+
+More on the [Projects](/projects/) page.
+
+- [jobwatch](https://vinayvobbili.github.io/jobwatch/): watches company job boards, ranks new matches into a daily digest and tracks every application, and never auto-applies.
+- [taxtrace](https://vinayvobbili.github.io/taxtrace/): prepares a US federal and state return from your own documents on your own machine, with every number traced to the page it came from.
+- [witness](https://vinayvobbili.github.io/witness/): a DFIR agent that can only report what it can prove a tool said.
 
 **Background**
 - MS in Computer Science (Cybersecurity), NC State — 2025
