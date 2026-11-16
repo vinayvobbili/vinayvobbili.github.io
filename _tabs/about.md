@@ -14,12 +14,10 @@ fine-tuning rerankers on domain data, and the kind of debugging stories that
 don't fit in a commit message.
 
 **Start here**
-- [Prove It, or It Doesn't Go in the Report](/posts/witness-prove-it-or-it-doesnt-go-in-the-report/)
-- [Why Self-Hosted Claude Code Was 15× Slower Than It Should Be](/posts/billing-header-kv-cache/)
-- [Teaching a Reranker the Language of Security Tickets](/posts/three-phases-of-rag-quality/)
-- [Rules a Job-Board Watcher Can't Configure Away](/posts/jobwatch-source-rules/)
-- [Scoring Job Fit on a Laptop: A 29-Verdict Check Instead of a Benchmark](/posts/jobwatch-local-fit-scores/)
-- [A Product Video You Can Rebuild with One Command](/posts/slidecast-narrated-videos-from-a-script/)
+- [Prove It, or It Doesn't Go in the Report](/posts/witness-prove-it-or-it-doesnt-go-in-the-report/): a forensic agent whose findings pass a plain-Python field check, not a second model.
+- [Teaching a Reranker the Language of Security Tickets](/posts/three-phases-of-rag-quality/): fine-tuning a reranker on case close-notes lifted held-out MRR@10 by 41%.
+- [Why Self-Hosted Claude Code Was 15× Slower Than It Should Be](/posts/billing-header-kv-cache/): a rotating billing header broke the KV cache; 108-second turns became 7.
+- [Scoring Job Fit on a Laptop: A 29-Verdict Check Instead of a Benchmark](/posts/jobwatch-local-fit-scores/): choosing a local model for job-fit scoring with a small, honest measurement.
 
 **Tools I've built**
 
