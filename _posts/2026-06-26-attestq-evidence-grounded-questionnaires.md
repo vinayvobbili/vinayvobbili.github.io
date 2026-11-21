@@ -1,5 +1,5 @@
 ---
-title: "attestq: When \"We Don't Have Evidence for That\" Is the Feature"
+title: "When \"We Don't Have Evidence for That\" Is the Feature"
 image:
   path: /assets/img/posts/attestq-hero.png
   alt: "attestq — a model-agnostic RAG kernel that answers security questionnaires from your own evidence, and refuses to guess when the evidence isn't there"
