@@ -6,7 +6,7 @@ image:
 description: "Every security and GRC team rebuilds the same pipeline one-off: chunk the SOC 2s and policies, embed them, retrieve per question, prompt an LLM, paste into the form. Done naively it hallucinates confident answers with no supporting evidence — the single worst failure mode in compliance. attestq is a small, model-/embedder-/store-agnostic kernel that bakes in the two fixes that actually matter: a confidence gate that answers \"insufficient evidence\" without ever calling the LLM, and a wide rerank window so the one document that had the answer doesn't get dropped."
 date: 2026-06-26 09:00:00 -0400
 categories: [Security, LLM]
-tags: [rag, grc, compliance, questionnaires, vendor-risk, security-automation, llm, retrieval, open-source, ai-agents, attestations]
+tags: [rag, grc, compliance, questionnaires, vendor-risk, security-automation, llm, retrieval, ai-agents, attestations]
 mermaid: true
 ---
 
@@ -20,7 +20,7 @@ I built **attestq** — a small, model-agnostic RAG kernel for a problem every s
 <div class="tldr-card"><span class="tldr-num">1 namespace</span><span class="tldr-sub">per vendor — one vendor's evidence never answers for another</span></div>
 </div>
 
-This is the GRC sibling of my earlier OSS work — [iocflow](/posts/iocflow-agentic-ioc-lifecycle/) for the IOC lifecycle and [detflow](/posts/detflow-detection-engineering-copilot/) for detection engineering. Same instinct: a pattern every team keeps hand-rolling deserves one clean, generic, boring, testable version on PyPI. 🧰
+This is the GRC sibling of my earlier projects: [iocflow](/posts/iocflow-agentic-ioc-lifecycle/) for the IOC lifecycle and [detflow](/posts/detflow-detection-engineering-copilot/) for detection engineering. Same instinct: a pattern every team keeps hand-rolling deserves one clean, generic, boring, testable version. 🧰
 
 ## The failure mode nobody talks about
 
@@ -58,7 +58,7 @@ The other naive-RAG bug is subtler: you retrieve a handful of chunks, rerank, ke
 
 ## Bring your own everything
 
-attestq owns the *orchestration* — retrieve, gate, rerank, draft, cite. It owns **nothing** about which model, embedder, or vector store you use. You inject those as plain callables and protocols, so the core has zero third-party dependencies and the package never drags in a stack you didn't ask for.
+attestq owns the *orchestration* — retrieve, gate, rerank, draft, cite. It owns **nothing** about which model, embedder, or vector store you use. You inject those as plain callables and protocols, so the core has zero third-party dependencies and never drags in a stack you didn't ask for.
 
 ```python
 from attestq import Engine, Question
