@@ -3,7 +3,7 @@ title: "find-evil: Teaching a Forensic Agent to Catch Its Own Hallucinations"
 image:
   path: /assets/img/posts/find-evil-hero.png
   alt: "find-evil — bolting iocflow onto Protocol SIFT so the agent self-corrects hallucinated IOCs"
-description: My SANS FIND EVIL! hackathon entry. Protocol SIFT turns the SIFT Workstation into a Claude Code agent over 200+ forensic tools — and it hallucinates indicators because it eyeballs 50,000-line tool dumps. find-evil bolts my open-source iocflow onto it as an MCP server plus one skill, so the agent stops guessing and reconciles its own findings against a deterministic, FP-defended extractor. On the real SANS compromised image it found fileless PowerShell Empire C2, corrected its own "no external C2" read, and refused to invent attribution on the clean host.
+description: My SANS FIND EVIL! hackathon entry. Protocol SIFT turns the SIFT Workstation into a Claude Code agent over 200+ forensic tools — and it hallucinates indicators because it eyeballs 50,000-line tool dumps. find-evil bolts my iocflow onto it as an MCP server plus one skill, so the agent stops guessing and reconciles its own findings against a deterministic, FP-defended extractor. On the real SANS compromised image it found fileless PowerShell Empire C2, corrected its own "no external C2" read, and refused to invent attribution on the clean host.
 date: 2026-06-14 10:00:00 -0400
 categories: [Security, LLM]
 tags: [dfir, forensics, ai-agents, mcp, claude-code, ioc, threat-intelligence, hallucination, sans, open-source]
@@ -97,16 +97,10 @@ That's the property I care about most: it **found evil where it existed and refu
 
 The strongest guardrail isn't a better prompt — it's an **architecture where the dangerous action doesn't exist as a tool**, and the strongest anti-hallucination move is the same shape: don't ask the LLM to read more carefully, **hand the reading to a deterministic parser and make the LLM reconcile.** The agent's job becomes judgment over provenance, not transcription of a 50,000-line dump.
 
-It's MIT-licensed and bolts onto any Protocol SIFT box in one script:
+The find-evil repo is MIT-licensed:
 
 - **Repo:** [github.com/vinayvobbili/find-evil](https://github.com/vinayvobbili/find-evil)
-- **Built on:** `iocflow` (the IOC lifecycle) and `domainflow` (the campaign-clustering pivot)
+- **Built on:** `iocflow` (the IOC lifecycle) and `domainflow` (the campaign-clustering pivot), both private projects of mine
 - **Demo:** [the live investigation above](https://youtu.be/8ufHSoOfc5Q)
-
-```bash
-# on the SIFT Workstation, after protocol-sift's own installer
-curl -fsSL https://raw.githubusercontent.com/vinayvobbili/find-evil/main/install.sh | bash
-claude mcp list   # expect: iocflow
-```
 
 Next up: expose iocflow's ATT&CK coverage-gap check as an MCP tool so the agent also answers *"can we even detect this?"* inline, and publish a reconciliation benchmark — hallucination-rate with and without find-evil over labeled cases — as a community baseline. 🚀

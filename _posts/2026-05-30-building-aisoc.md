@@ -208,9 +208,9 @@ Three things, in order of how much they changed the design:
 2. **Timer-driven roles are underrated.** SOC Manager / Detection Engineer / Threat Hunter run on a calendar schedule, not on events. They get the same audit stream, so they see everything the reactive agents did, plus everything the audit stream caught that no reactive agent engaged on. Detection Engineer in particular finds tuning candidates a reactive role would never see — *"this rule fired 47 times this week and 41 were closed as benign by Tier 1."*
 3. **The right level of role granularity isn't obvious.** We went back and forth on whether Tier 2 + IR Lead should be one role or two. They're two. Tier 2's job is "is this real and how bad?"; IR Lead's job is "given it's real, what's the plan?" Conflating them puts SEV classification in the same prompt as evidence-gathering and the model loses focus. Same with Threat Intel — keeping attribution out of IR Lead's prompt makes both roles tighter.
 
-## Try it / What's next
+## What's next
 
-> **The shape.** aisoc is vendor-neutral by design: the event contract, the bus, case memory, and the role-agent framework. Bring your own LLM, alert source, and tools, and you get the event-sourced multi-agent SOC this post describes: a stdlib-only in-memory bus (or Redis Streams for the durable path), a role team that works a case over the shared log, memory as a read model, human-in-the-loop gating, and a replayable audit you can backtest against. The non-obvious part it gets right: three **injection seams** — chat model, alert source, tools — mean nothing in the kernel knows about any one vendor. 🚀
+> **The shape.** aisoc is vendor-neutral by design: the event contract, the bus, case memory, and the role-agent framework. The LLM, the alert source, and the tools are all swappable, and what's left is the event-sourced multi-agent SOC this post describes: a stdlib-only in-memory bus (or Redis Streams for the durable path), a role team that works a case over the shared log, memory as a read model, human-in-the-loop gating, and a replayable audit you can backtest against. The non-obvious part it gets right: three **injection seams** — chat model, alert source, tools — mean nothing in the kernel knows about any one vendor. 🚀
 
 What's not in v1 and what we'll work on next:
 

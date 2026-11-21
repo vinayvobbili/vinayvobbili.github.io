@@ -6,7 +6,7 @@ image:
 description: detflow could already go from plain English to a detection rule. v0.2 adds the reverse direction — paste a CVE advisory or a CTI writeup and get back tactic-ordered ATT&CK techniques, generated Sigma + YARA + Suricata (Sigma linted in place), and one-click STIX 2.1 / ATT&CK Navigator / Markdown-brief exports. Same never-raises, model-agnostic, untrusted-input-hardened design.
 date: 2026-06-19 22:00:00 -0400
 categories: [Security, LLM]
-tags: [detection-engineering, threat-intelligence, sigma, yara, suricata, mitre-attack, stix, detection-as-code, security-automation, open-source, langchain]
+tags: [detection-engineering, threat-intelligence, sigma, yara, suricata, mitre-attack, stix, detection-as-code, security-automation, langchain]
 mermaid: true
 accent: moss
 ---

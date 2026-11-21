@@ -2,11 +2,11 @@
 title: "iocflow: The Whole IOC Lifecycle, and the LLM Never Gets the Final Say"
 image:
   path: /assets/img/posts/iocflow-hero.png
-  alt: "iocflow — the whole IOC lifecycle (extract, enrich, hunt, block) in six pip-installable layers"
-description: iocflow is an open-source Python package for the whole IOC lifecycle. Deterministic primitives (extract → enrich → comment → hunt → block) as tools, a LangGraph multi-agent team on top, and three-layer authority so the LLM never gets the final say on a destructive action.
+  alt: "iocflow — the whole IOC lifecycle (extract, enrich, hunt, block) in six layers"
+description: iocflow is a Python package of my own for the whole IOC lifecycle. Deterministic primitives (extract → enrich → comment → hunt → block) as tools, a LangGraph multi-agent team on top, and three-layer authority so the LLM never gets the final say on a destructive action.
 date: 2026-05-31 09:00:00 -0400
 categories: [Security, LLM]
-tags: [ioc, threat-intelligence, ai-agents, langgraph, multi-agent, hitl, security-automation, dfir, open-source, langchain]
+tags: [ioc, threat-intelligence, ai-agents, langgraph, multi-agent, hitl, security-automation, dfir, langchain]
 mermaid: true
 accent: violet
 ---
@@ -21,7 +21,7 @@ I built **iocflow** — a Python library for the **entire indicator-of-compromis
 <div class="tldr-card"><span class="tldr-num">0 rogue blocks</span><span class="tldr-sub">LLM <em>proposes</em> &middot; human <em>authorizes</em> &middot; a guard <em>vetoes</em></span></div>
 </div>
 
-It's a sibling of [aisoc](/posts/building-aisoc/), the AI SOC I wrote about last week: the same safety pattern, packaged so anyone can pip-install it. 🧰
+It's a sibling of [aisoc](/posts/building-aisoc/), the AI SOC I wrote about last week: the same safety pattern, packaged as a standalone library. 🧰
 
 ![iocflow investigate() running the full IOC lifecycle with a human-in-the-loop approval gate](/assets/img/posts/iocflow-demo.gif)
 _One call: extract IOCs from a report → enrich → suggest hunts → propose blocks → wait for a human → block at the firewall. The benign `8.8.8.8` never even gets proposed._
@@ -33,7 +33,7 @@ An LLM-with-tools loop is not novel. What makes one trustworthy is two architect
 1. **The model orchestrates; it doesn't *do*.** The irreversible work — query a SIEM, write a denylist, isolate a host — is done by plain, deterministic code the model merely *calls*. The LLM picks *what* and *when*; the tool decides *how*, the same way every time.
 2. **No single authority for a destructive action.** The AI can propose containment all day long. A human clicks the button, and a dumb safety check sits underneath both of them refusing to touch anything on an allowlist.
 
-Those two ideas aren't SOC-specific. They're how you make *any* AI system that touches production safe enough to actually deploy, and iocflow is a clean, public library built around them. 🧱
+Those two ideas aren't SOC-specific. They're how you make *any* AI system that touches production safe enough to actually deploy, and iocflow is a clean, standalone library built around them. 🧱
 
 ## Deterministic primitives first, agents last
 
@@ -111,4 +111,4 @@ Everything but the agent layer runs on Python 3.9+; `import iocflow` stays depen
 
 - 🧠 Related: [aisoc](/posts/building-aisoc/)
 
-If you try it, I'd love to hear what control points you'd plug in. 👋
+If you build something like it, I'd love to hear what control points you'd plug in. 👋
