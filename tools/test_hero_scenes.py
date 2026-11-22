@@ -54,7 +54,8 @@ def png_size(path: Path) -> tuple[int, int]:
 GENERATED = [s for s in hs.SCENES if not s.external]
 FLOWS = [s for s in GENERATED if s.flow]
 PAGES = list(hs.PAGE_SCENES)
-CARDS = GENERATED + PAGES   # every card drawn here: posts first, then standalone pages
+REPOS = list(hs.REPO_SCENES)
+CARDS = GENERATED + PAGES + REPOS   # every card drawn here: posts first, then standalone pages and repository cards
 
 
 # --- coverage ---------------------------------------------------------------------
@@ -87,8 +88,26 @@ def test_page_scenes_point_at_an_existing_page_that_uses_their_png_as_og_and_twi
         assert f'<meta property="og:image:alt" content="{s.alt}">' in page
 
 
+def test_the_find_evil_repo_card_is_a_repo_link_card_built_from_its_readme():
+    [s] = REPOS
+    assert s.slug == "find-evil-repo" and s.repo == "github.com/vinayvobbili/find-evil"
+    assert not s.post and not s.page and not s.external and not s.flow and s.draw
+    assert hs.BY_SLUG[s.slug] is s and s.png.name == "find-evil-repo-hero.png"
+    drawing = s.draw(kit.Ctx())
+    # six of the README's eight tools are drawn by name; the caption counts all eight
+    for name in ("extract_iocs", "enrich_indicators", "assess_indicators", "suggest_hunts", "propose_blocks", "to_stix_bundle"):
+        assert name in drawing
+    for text in ("dry run only", "eight tools in all", "flagged, not in set", "Reconcile: claimed vs extracted"):
+        assert text in drawing
+    # the made-up values stay in the documentation ranges: RFC 5737 addresses and example.test
+    shown = re.findall(r"\b\d{1,3}(?:\.\d{1,3}){3}\b", drawing)
+    assert shown and all(ip.startswith("203.0.113.") for ip in shown), shown
+    assert set(re.findall(r"\b[\w-]+(?:\.[\w-]+)*\.test\b", drawing)) == {"c2.example.test"}
+    assert "text in" in s.subtitle and "dict out" in s.subtitle
+
+
 def test_slugs_are_unique_and_every_scene_has_a_drawing_or_is_external():
-    everything = hs.SCENES + hs.PAGE_SCENES
+    everything = hs.SCENES + hs.EXTRA_SCENES
     assert len({s.slug for s in everything}) == len(everything)
     for s in hs.SCENES:
         assert (s.draw is None) == s.external, s.slug
@@ -131,7 +150,7 @@ def hd_flow() -> Path:
 
 def test_every_scene_has_its_own_palette_in_accents_yml():
     seen = {}
-    for s in hs.SCENES + hs.PAGE_SCENES:
+    for s in hs.SCENES + hs.EXTRA_SCENES:
         p = hero.load_palette(s.palette)
         for field in ("cardfrom", "cardvia", "cardto", "glowa", "glowb", "glowc", "headto"):
             assert re.fullmatch(r"#[0-9a-f]{6}", p[field]), (s.palette, field)

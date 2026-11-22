@@ -392,6 +392,48 @@ def witness_page(ctx) -> str:
     return "".join(o)
 
 
+# --------------------------------------------------------------------------- find-evil repository card
+
+def _mini(x, y, w, h, grad, ico, title, sub) -> str:
+    """A small white tile: gradient disc with an icon, a tool name and a one-line note."""
+    cy = y + h / 2
+    return (panel(x, y, w, h, 16) + f'<circle cx="{x + 29}" cy="{cy:g}" r="17" fill="{g(grad)}"/>'
+            + icon(ico, x + 29 - 10, cy - 10, 20) + T(x + 54, cy - 2, title, 15, INK, maxw=w - 62)
+            + T(x + 54, cy + 17, sub, 13, MUTED, 400, maxw=w - 62))
+
+
+def find_evil_repo(ctx) -> str:
+    """The find-evil repository's link card: extract, reconcile the agent's claims, then the downstream tools.
+
+    Indicators are from the documentation ranges (203.0.113.0/24, example.test), never real hosts.
+    """
+    o = [header_panel(0, 6, 230, 206, "slate", "Tool output", "doc", size=18)]
+    o += [rect(16, 62, 150, 7, 3.5, "#e2e8f0"), rect(16, 78, 190, 7, 3.5, "#e2e8f0"),
+          rect(12, 94, 206, 24, 8, "#dcfce7"), T(22, 111, "conn 203.0.113.5:443", 13.5, INK, 400, maxw=190),
+          rect(16, 128, 120, 7, 3.5, "#e2e8f0"),
+          rect(12, 144, 206, 24, 8, "#dcfce7"), T(22, 161, "dns c2.example.test", 13.5, INK, 400, maxw=190),
+          rect(16, 178, 170, 7, 3.5, "#e2e8f0"), rect(16, 194, 90, 7, 3.5, "#e2e8f0")]
+    o += [arrow("M232 56 L286 56")]
+    o += [node(290, 6, 232, 96, "green", "search", "extract_iocs", "deterministic, offline"),
+          node(290, 116, 232, 96, "amber", "sparkle", "Agent's findings", "what it read by eye", tsize=19)]
+    o += [arrow("M524 54 C 550 54, 552 98, 576 98"), arrow("M524 164 C 550 164, 552 140, 576 140")]
+    o += [header_panel(580, 6, 520, 206, "teal", "Reconcile: claimed vs extracted", "compare", size=18)]
+    o += [rect(596, 58, 488, 46, 12, "#ecfdf5"), icon("check", 608, 69, 24, GREEN, 2.4),
+          T(644, 87, "c2.example.test", 17, INK, maxw=200), T(1072, 87, "in the extracted set", 14.5, "#166534", 400, "end", maxw=250)]
+    o += [rect(596, 112, 488, 90, 12, "#fffbeb", 'stroke="#f59e0b" stroke-width="2"'), icon("warn", 608, 124, 24, "#d97706", 2.4),
+          T(644, 142, "203.0.113.50", 17, "#92400e", maxw=190, deco="line-through"),
+          chip(900, 124, 172, 28, "flagged, not in set", "#fef3c7", "#f59e0b", "#92400e", 13.5),
+          T(644, 170, "The extractor found 203.0.113.5.", 14.5, MUTED, 400, maxw=420),
+          T(644, 190, "The invented indicator never reaches the report.", 14.5, MUTED, 400, maxw=420)]
+    o += [T(0, 252, "Then, downstream: eight tools in all, text in and dict out", 16, W, maxw=700)]
+    tiles = (("enrich_indicators", "VirusTotal, AbuseIPDB", "cyan", "db"), ("assess_indicators", "severity, findings", "indigo", "gauge"),
+             ("suggest_hunts", "Sigma, XQL, CQL", "teal", "filter"), ("propose_blocks", "dry run only", "orange", "lock"),
+             ("to_stix_bundle", "STIX 2.1 round trip", "violet", "box"))
+    for i, (name, sub, grad, ico) in enumerate(tiles):
+        o.append(_mini(i * 223, 264, 208, 62, grad, ico, name, sub))
+    return "".join(o)
+
+
 # --------------------------------------------------------------------------- jobwatch scoring
 
 def fit_scores(ctx) -> str:

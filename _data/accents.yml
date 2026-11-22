@@ -271,3 +271,12 @@ card-witness-page:
   glowb: "#22d3ee"
   glowc: "#fbbf24"
   headto: "#fbcfe8"
+
+card-findevil-repo:
+  cardfrom: "#022c22"
+  cardvia: "#0e7490"
+  cardto: "#22d3ee"
+  glowa: "#34d399"
+  glowb: "#fbbf24"
+  glowc: "#38bdf8"
+  headto: "#a5f3fc"

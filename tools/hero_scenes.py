@@ -19,7 +19,8 @@ the post is actually about (tools/hero_draw.py). A scene becomes
     python tools/hero_scenes.py --sheet /tmp/sheet    # a contact sheet page with every card and flow
 
 A standalone page outside _posts (the witness page) has its own card in PAGE_SCENES,
-named `<slug>-hero.png` like the rest and used as that page's og:image.
+named `<slug>-hero.png` like the rest and used as that page's og:image. A public repository's
+link card (the find-evil one for LinkedIn Featured) lives in REPO_SCENES and is uploaded where shown.
 
 The questionnaire post keeps its own drawing in tools/hero_diagram.py; it is listed here
 so the registry covers every published post. Private projects are never named on a card:
@@ -70,6 +71,7 @@ class Scene:
     flow: Flow | None = None
     external: bool = False          # drawn by tools/hero_diagram.py, not regenerated here
     page: str = ""                  # a standalone page (not a post) whose og:image this card is
+    repo: str = ""                  # a public repository this card is the link preview of
 
     @property
     def png(self) -> Path:
@@ -206,7 +208,18 @@ PAGE_SCENES: tuple[Scene, ...] = (
           dr.witness_page, page="witness/index.html"),
 )
 
-BY_SLUG = {s.slug: s for s in SCENES + PAGE_SCENES}
+# Link cards of the public GitHub repositories (LinkedIn Featured, a README): a repo has no page of its own
+# here, so the PNG is simply uploaded where it is shown. Every word comes from that repo's README.
+REPO_SCENES: tuple[Scene, ...] = (
+    Scene("find-evil-repo", "", "card-findevil-repo",
+          "Stop agents inventing indicators", "An IOC-lifecycle MCP layer for a DFIR agent: text in, dict out",
+          "A forensic agent's tool output goes through extract_iocs and the agent's own findings are reconciled against the extracted set, so an indicator that is not in it is flagged; enrich, assess, hunts, a dry-run block plan and STIX follow",
+          dr.find_evil_repo, hsize=60, repo="github.com/vinayvobbili/find-evil"),
+)
+
+EXTRA_SCENES = PAGE_SCENES + REPO_SCENES   # every card that is not a post's hero
+
+BY_SLUG = {s.slug: s for s in SCENES + EXTRA_SCENES}
 
 
 # --- the card -----------------------------------------------------------------
@@ -471,11 +484,11 @@ for (const seg of document.querySelectorAll('.seg')) {{
 
 
 def pick(only: str | None) -> list[Scene]:
-    scenes = [s for s in SCENES + PAGE_SCENES if not s.external]
+    scenes = [s for s in SCENES + EXTRA_SCENES if not s.external]
     if only:
         scenes = [s for s in scenes if only in s.slug]
         if not scenes:
-            raise SystemExit(f"no scene matches {only!r}; known: {', '.join(s.slug for s in SCENES + PAGE_SCENES)}")
+            raise SystemExit(f"no scene matches {only!r}; known: {', '.join(s.slug for s in SCENES + EXTRA_SCENES)}")
     return scenes
 
 
@@ -491,8 +504,8 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     if args.list:
-        for s in SCENES + PAGE_SCENES:
-            print(f"{s.slug:40} {s.palette:20} {'flow' if (s.flow or s.external) else '':5} {s.post or s.page}")
+        for s in SCENES + EXTRA_SCENES:
+            print(f"{s.slug:40} {s.palette:20} {'flow' if (s.flow or s.external) else '':5} {s.post or s.page or s.repo}")
         return 0
     if args.sheet:
         print(contact_sheet(args.sheet))
