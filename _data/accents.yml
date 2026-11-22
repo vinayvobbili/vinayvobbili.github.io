@@ -106,3 +106,159 @@ coral: # rose -> coral -> peach — meetings, voices, the human side
   tint: "rgba(194, 65, 45, 0.055)"
   glow: "rgba(245, 158, 107, 0.22)"
   shadow: "rgba(159, 29, 79, 0.28)"
+
+
+# --- Hero card palettes -------------------------------------------------------
+#
+# One vivid gradient per post for the 1200x630 hero card that tools/hero_scenes.py
+# draws (a post's `accent:` is not used for these, so no two cards look alike).
+# The page itself never reads these keys; they are only looked up by the card tool.
+#
+# Fields per card palette:
+#   cardfrom / cardvia / cardto - the three stops of the 125-degree background gradient
+#   glowa / glowb / glowc       - soft radial glows (bottom-left, bottom-right, mid-right)
+#   headto                      - where the headline's white-to-tint gradient ends
+
+card-questionnaire:
+  cardfrom: "#3730a3"
+  cardvia: "#6d28d9"
+  cardto: "#be185d"
+  glowa: "#06b6d4"
+  glowb: "#f59e0b"
+  glowc: "#ec4899"
+  headto: "#fde68a"
+
+card-kvcache:
+  cardfrom: "#9a3412"
+  cardvia: "#ea580c"
+  cardto: "#f59e0b"
+  glowa: "#fde047"
+  glowb: "#e11d48"
+  glowc: "#fb923c"
+  headto: "#fef08a"
+
+card-reranker:
+  cardfrom: "#115e59"
+  cardvia: "#0891b2"
+  cardto: "#2563eb"
+  glowa: "#34d399"
+  glowb: "#a78bfa"
+  glowc: "#22d3ee"
+  headto: "#a7f3d0"
+
+card-template:
+  cardfrom: "#4a044e"
+  cardvia: "#a21caf"
+  cardto: "#f43f5e"
+  glowa: "#fb923c"
+  glowb: "#38bdf8"
+  glowc: "#e879f9"
+  headto: "#fbcfe8"
+
+card-socroles:
+  cardfrom: "#172554"
+  cardvia: "#1d4ed8"
+  cardto: "#0891b2"
+  glowa: "#22d3ee"
+  glowb: "#8b5cf6"
+  glowc: "#3b82f6"
+  headto: "#bae6fd"
+
+card-iocgate:
+  cardfrom: "#3b0764"
+  cardvia: "#7e22ce"
+  cardto: "#0d9488"
+  glowa: "#2dd4bf"
+  glowb: "#f472b6"
+  glowc: "#a855f7"
+  headto: "#99f6e4"
+
+card-detcopilot:
+  cardfrom: "#064e3b"
+  cardvia: "#059669"
+  cardto: "#84cc16"
+  glowa: "#a3e635"
+  glowb: "#22d3ee"
+  glowc: "#34d399"
+  headto: "#d9f99d"
+
+card-forensic:
+  cardfrom: "#450a0a"
+  cardvia: "#b91c1c"
+  cardto: "#f43f5e"
+  glowa: "#fb923c"
+  glowb: "#7c3aed"
+  glowc: "#ef4444"
+  headto: "#fecdd3"
+
+card-threatrep:
+  cardfrom: "#365314"
+  cardvia: "#4d7c0f"
+  cardto: "#d97706"
+  glowa: "#facc15"
+  glowb: "#14b8a6"
+  glowc: "#a3e635"
+  headto: "#fef08a"
+
+card-tiersplit:
+  cardfrom: "#082f49"
+  cardvia: "#0369a1"
+  cardto: "#f59e0b"
+  glowa: "#38bdf8"
+  glowb: "#fb923c"
+  glowc: "#0ea5e9"
+  headto: "#fde68a"
+
+card-memory:
+  cardfrom: "#3b0764"
+  cardvia: "#9333ea"
+  cardto: "#fb923c"
+  glowa: "#f472b6"
+  glowb: "#38bdf8"
+  glowc: "#c084fc"
+  headto: "#fed7aa"
+
+card-gates:
+  cardfrom: "#0f172a"
+  cardvia: "#115e59"
+  cardto: "#10b981"
+  glowa: "#34d399"
+  glowb: "#6366f1"
+  glowc: "#22d3ee"
+  headto: "#a7f3d0"
+
+card-scoring:
+  cardfrom: "#312e81"
+  cardvia: "#4f46e5"
+  cardto: "#38bdf8"
+  glowa: "#67e8f9"
+  glowb: "#f472b6"
+  glowc: "#818cf8"
+  headto: "#e0e7ff"
+
+card-rules:
+  cardfrom: "#0f172a"
+  cardvia: "#1e40af"
+  cardto: "#06b6d4"
+  glowa: "#22d3ee"
+  glowb: "#fb7185"
+  glowc: "#60a5fa"
+  headto: "#cffafe"
+
+card-video:
+  cardfrom: "#9f1239"
+  cardvia: "#f43f5e"
+  cardto: "#fb923c"
+  glowa: "#fde68a"
+  glowb: "#6366f1"
+  glowc: "#fda4af"
+  headto: "#ffe4e6"
+
+card-redact:
+  cardfrom: "#042f2e"
+  cardvia: "#047857"
+  cardto: "#fbbf24"
+  glowa: "#2dd4bf"
+  glowb: "#f59e0b"
+  glowc: "#34d399"
+  headto: "#fef3c7"

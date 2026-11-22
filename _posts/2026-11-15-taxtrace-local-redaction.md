@@ -1,8 +1,8 @@
 ---
 title: "Show the Model the Shape of a Return, Not the Numbers"
 image:
-  path: /assets/img/posts/taxtrace-redaction-hero.png
-  alt: "taxtrace — documents read on your own machine, every number traced to its page, only masked text ever shown to an AI"
+  path: /assets/img/posts/mask-the-numbers-hero.png
+  alt: "Tax documents are read locally, then masked so digits become # and unfamiliar words become *; a cloud model only ever sees the masked text"
 description: >-
   A folder of tax PDFs is the last thing to paste into a chatbot. taxtrace reads
   W-2s, 1099s, K-1s and last year's return with plain code and local OCR, keeps the
@@ -34,6 +34,9 @@ carries the file, the page and the exact text it was&nbsp;read&nbsp;from.
 It never files anything. It writes an entry sheet to type into consumer tax
 software, and a list of questions for whatever the documents could not
 settle. MIT&nbsp;licensed.
+
+![Animated diagram: a PDF is read locally, a line of text is masked so digits become # and unfamiliar words become *, and only the masked version goes to a cloud model](/assets/img/posts/mask-the-numbers-flow.svg)
+_The mask in one pass: what stays on your machine, and the masked text a cloud model is allowed to see._
 
 Version 0.2.1 adds two screens to `taxtrace ui`, the local page. **Import** takes
 dropped files and shows the form, year and owner it recognises from the file name

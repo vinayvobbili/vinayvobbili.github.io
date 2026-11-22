@@ -14,6 +14,9 @@ def test_every_palette_in_accents_yml_loads():
     assert keys, "no palettes found"
     for key in keys:
         palette = hero.load_palette(key)
+        if key.startswith("card-"):  # hero-card palettes (tools/hero_scenes.py), not page accents
+            assert {"cardfrom", "cardvia", "cardto", "glowa", "glowb", "glowc", "headto"} <= palette.keys(), key
+            continue
         assert {"grad", "accent", "glow", "shadow"} <= palette.keys(), key
         assert hero.gradient_stops(palette["grad"]), key
 

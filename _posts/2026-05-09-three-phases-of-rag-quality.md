@@ -6,8 +6,8 @@ categories: [LLM, RAG]
 tags: [rag, reranker, fine-tuning, bge, sentence-transformers, security]
 mermaid: true
 image:
-  path: /assets/img/posts/reranker-hero.png
-  alt: "+41% MRR@10 uplift — fine-tuning a cross-encoder reranker on security-ticket pairs"
+  path: /assets/img/posts/reranker-mined-pairs-hero.png
+  alt: "Analyst close-notes that cite related cases become training pairs; the fine-tuned reranker lifts held-out MRR@10 from 0.598 to 0.846, a 41% uplift"
 accent: teal
 ---
 
@@ -37,6 +37,9 @@ domain-specific fine-tuning of the same base reranker.
 The interesting part isn't the result — it's where the training data came from. I
 never logged a single explicit relevance judgement. The positive pairs were hiding in
 plain sight inside analyst close-notes that nobody asked anyone to write.
+
+![Animated diagram: analyst close-notes become mined training pairs, a fine-tuned reranker is trained on them, and its held-out MRR@10 bar grows from 0.598 to 0.846, a 41% uplift](/assets/img/posts/reranker-mined-pairs-flow.svg)
+_Where the training pairs came from, and what they bought: close-notes in, +41% MRR@10 out._
 
 ## The setup: embedder + reranker, the standard two-stage RAG
 

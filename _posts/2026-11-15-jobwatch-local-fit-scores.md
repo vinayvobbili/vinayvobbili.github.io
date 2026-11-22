@@ -1,8 +1,8 @@
 ---
 title: "Scoring Job Fit on a Laptop: A 29-Verdict Check Instead of a Benchmark"
 image:
-  path: /assets/img/posts/jobwatch-local-scoring-hero.png
-  alt: "Three local models scored on 29 expected verdicts — 28, 27 and 29 agreed, so the smallest stayed"
+  path: /assets/img/posts/fit-scores-on-a-laptop-hero.png
+  alt: "Requirements are judged by a local model and the score is computed in code; three models agreed with 28, 27 and 29 of 29 expected verdicts, so the smallest and fastest stayed"
 description: >-
   jobwatch scores how well a job fits a resume with a 9-billion-parameter model
   running on the same Mac, by default. Choosing that model took a small, honest

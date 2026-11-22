@@ -1,8 +1,8 @@
 ---
 title: "detflow Goes Both Ways: From a Threat Report to a Detection Package"
 image:
-  path: /assets/img/posts/detflow-hero.png
-  alt: "detflow — turn a raw threat report into ATT&CK mappings, Sigma/YARA/Suricata, and STIX"
+  path: /assets/img/posts/threat-report-to-detections-hero.png
+  alt: "A raw threat report is mapped to ATT&CK techniques, then to Sigma, YARA and Suricata rules, then exported as STIX 2.1, an ATT&CK Navigator layer or a written brief"
 description: detflow could already go from plain English to a detection rule. v0.2 adds the reverse direction — paste a CVE advisory or a CTI writeup and get back tactic-ordered ATT&CK techniques, generated Sigma + YARA + Suricata (Sigma linted in place), and one-click STIX 2.1 / ATT&CK Navigator / Markdown-brief exports. Same never-raises, model-agnostic, untrusted-input-hardened design.
 date: 2026-06-19 22:00:00 -0400
 categories: [Security, LLM]

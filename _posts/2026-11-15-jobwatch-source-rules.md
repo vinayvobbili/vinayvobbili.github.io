@@ -1,8 +1,8 @@
 ---
 title: "Rules a Job-Board Watcher Can't Configure Away"
 image:
-  path: /assets/img/posts/jobwatch-rules-hero.png
-  alt: "jobwatch — reads public board feeds, follows robots.txt, never applies for you"
+  path: /assets/img/posts/watcher-that-never-applies-hero.png
+  alt: "Public board feeds pass through rules that live in code, an honest User-Agent, robots.txt and no LinkedIn or Indeed pages, into a ranked digest that you review and submit yourself"
 description: >-
   Auto-apply bots scrape what they shouldn't and submit what nobody reviewed.
   jobwatch is the opposite design: a watcher that reads the public JSON company

@@ -6,8 +6,8 @@ categories: [LLM, Performance]
 tags: [vllm, mlx, claude-code, kv-cache, prefix-cache, prompt-cache, debugging]
 mermaid: true
 image:
-  path: /assets/img/posts/kv-cache-hero.png
-  alt: "108-second turns to 7-second turns — fixing the prefix cache for self-hosted Claude Code"
+  path: /assets/img/posts/prefix-cache-billing-header-hero.png
+  alt: "Warm turns of a self-hosted Claude Code setup dropped from about 100 seconds to 7 to 8: strip a rotating 81-byte billing header, then cache the 23,000-token prefix"
 accent: ember
 ---
 

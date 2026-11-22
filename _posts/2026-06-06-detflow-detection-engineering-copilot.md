@@ -1,8 +1,8 @@
 ---
 title: "detflow: A Detection-Engineering Copilot"
 image:
-  path: /assets/img/posts/detflow-hero.png
-  alt: "detflow — draft, lint, dedupe and review detections as Sigma or Cortex XQL"
+  path: /assets/img/posts/detection-copilot-draft-lint-review-hero.png
+  alt: "A plain-English description is drafted into a Sigma or XQL rule, linted offline, checked against existing coverage, then reviewed for quality, false-positive risk and ATT&CK mapping"
 description: Every detection-as-code pipeline needs the same four things — lint a rule, draft one from plain English, check it against what you already run, and review it like a senior engineer. detflow is a vendor-neutral Python package that does all four. Deterministic lint and overlap with no dependencies, model-agnostic drafting and review, and a never-raises contract so it degrades instead of breaking.
 date: 2026-06-06 09:00:00 -0400
 categories: [Security, LLM]

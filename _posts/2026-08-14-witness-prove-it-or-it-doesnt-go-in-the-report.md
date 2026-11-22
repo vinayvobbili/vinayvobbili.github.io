@@ -1,8 +1,8 @@
 ---
 title: "Prove It, or It Doesn't Go in the Report"
 image:
-  path: /assets/img/posts/witness-hero.png
-  alt: "witness — a DFIR agent whose findings are admitted by a deterministic field check, not by a second language model"
+  path: /assets/img/posts/prove-it-gates-hero.png
+  alt: "A claim and its bindings pass two deterministic gates: does the record say that, and what would refute it; the result is admitted, held because a tool never ran, or refused with its reason"
 description: "I entered the SANS FIND EVIL! hackathon with an agent that catches its own hallucinated indicators. It didn't win. Reading the entries that placed, the ones I looked at had reached for the same defence I had — check the first language model with a second language model. But a model can be argued out of a correct refutation. So I rebuilt the whole thing around an oracle that cannot be argued with: a finding is admitted only when pure Python re-reads the cited tool output and confirms the field really says what the claim says it says. 1,083 scored claims, 119 crafted attacks, one command to run it."
 date: 2026-08-14 10:00:00 -0400
 categories: [Security, LLM]
@@ -27,6 +27,9 @@ _The whole tour, unedited, from a clone on a machine that had never seen it. Sev
 
 > ▶ **[Open the interactive version →](/witness/)** — a full-bleed page where you can edit the claimed PID one digit at a time and watch a finding flip between admitted and refused against the real `psscan` output, then switch to gate 2 and see why "nobody ran the tool" is not a pass.
 {: .prompt-tip }
+
+![Animated diagram: three claims pass through gate 1, does the record say that, and gate 2, what would refute it; one is admitted, one refused for a changed digit, one held because a tool never ran](/assets/img/posts/prove-it-gates-flow.svg)
+_Three claims through the same two gates: one admitted, one refused for a single changed digit, one held because the tool that could settle it never ran._
 
 ---
 

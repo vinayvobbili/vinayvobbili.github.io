@@ -6,8 +6,8 @@ categories: [LLM, Performance]
 tags: [llm, prompt-cache, prefix-cache, kv-cache, jinja2, chat-template, vllm, mlx, qwen]
 mermaid: true
 image:
-  path: /assets/img/posts/template-check-hero.png
-  alt: "3 patterns — Jinja2 chat-template traps that silently kill your prefix-KV cache"
+  path: /assets/img/posts/chat-template-cache-traps-hero.png
+  alt: "Three Jinja2 chat-template patterns rewrite finished turns, so the prefix hash changes every turn and the cache misses; a check passing means a cache hit and about 13 times faster warm turns"
 accent: crimson
 ---
 

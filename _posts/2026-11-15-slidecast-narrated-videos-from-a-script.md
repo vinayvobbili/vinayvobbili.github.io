@@ -1,8 +1,8 @@
 ---
 title: "A Product Video You Can Rebuild with One Command"
 image:
-  path: /assets/img/posts/slidecast-hero.png
-  alt: "slidecast — HTML slides, recorded clips and a script in, a narrated MP4 out"
+  path: /assets/img/posts/one-command-video-rebuild-hero.png
+  alt: "HTML slides, recorded clips and a narration script go through one build command that screenshots, speaks and stitches a narrated MP4, failing the build when a frame clips a button"
 description: >-
   Screen recordings go stale when the UI changes, and re-recording one by hand is
   tedious. slidecast turns slides, recorded clips and a narration script into

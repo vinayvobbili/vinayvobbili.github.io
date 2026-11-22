@@ -1,8 +1,8 @@
 ---
 title: "aisoc: One LLM, Eight Hats, An AI SOC on a Single GPU"
 image:
-  path: /assets/img/posts/aisoc-hero.png
-  alt: "One local LLM playing eight analyst roles — an AI SOC on a single GPU"
+  path: /assets/img/posts/eight-role-ai-soc-hero.png
+  alt: "An alert flows over an event bus through Sentinel, Tier 2, IR Lead and Threat Intel, all played by one local model, with a human approving every proposed action"
 description: A multi-agent SOC where one local LLM plays Sentinel, Tier 2, IR Lead, Threat Intel, SOC Manager, Detection Engineer, and Threat Hunter — coordinated over a Redis Streams bus with a human-in-the-loop approval gate before any real-system action. The framework choices, the architectural trade-offs, and the backtest harness that lets us put real numbers on agent quality before going live.
 date: 2026-05-30 09:00:00 -0400
 categories: [Security, LLM]
@@ -22,6 +22,9 @@ A real SOC runs 24×7 with eight or nine distinct roles — alert triage, deeper
 </div>
 
 The interesting parts aren't the agents themselves — there's nothing novel about an LLM-with-tools loop. The interesting parts are: (1) the architectural choices that let one local LLM serve a whole SOC org chart without melting, (2) the human-in-the-loop gate that makes "AI does containment" a real thing a security team will actually trust, and (3) a backtest harness that lets us put hard numbers on agent quality against historical alerts before anyone has to take it on faith.
+
+![Animated diagram: an alert travels along an event bus through Sentinel, Tier 2, IR Lead and Threat Intel, a human approves the proposed action, then timer roles replay the audit log](/assets/img/posts/eight-role-ai-soc-flow.svg)
+_One alert through the cascade: four reactive roles, a human gate before any action, and three timer roles reading the audit log._
 
 ## The shape of the problem
 

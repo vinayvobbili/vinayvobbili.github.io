@@ -1,8 +1,8 @@
 ---
 title: "langchain-failover Grows a Tier-Split: Gather Cheap, Compose Smart"
 image:
-  path: /assets/img/posts/langchain-failover-tiersplit-hero.png
-  alt: "langchain-failover tier-split — gather on a cheap/local model, compose the answer on a frontier model"
+  path: /assets/img/posts/gather-cheap-compose-smart-hero.png
+  alt: "A cheap local model gathers with tools in a loop, then a frontier model composes the final answer in seconds instead of minutes, behind a guard that stops it answering from zero data"
 description: A tool-calling agent burns almost all its wall-clock on the loop — decide a call, read the result, decide the next. Writing the final answer is the part that wants a strong model. They don't have to be the same model. langchain-failover 0.2 adds TieredChatAgent — run the gathering loop on a cheap/local model, compose the answer on a frontier one. On a contended local GPU that turned a multi-minute final turn into a couple of seconds.
 date: 2026-06-19 22:30:00 -0400
 categories: [LLM, Security]
@@ -22,6 +22,9 @@ accent: indigo
 </div>
 
 The headline result: on a contended local GPU, the agent's final turn went from **multiple minutes to a couple of seconds** — without changing a single tool. ⚡
+
+![Animated diagram: a request enters a cheap local gatherer that loops with its tools three times, a guard checks a tool was called, then a frontier composer writes the final answer](/assets/img/posts/gather-cheap-compose-smart-flow.svg)
+_Gather on the cheap model, compose on the strong one: the long final generation never lands on the busy local GPU._
 
 ## The itch 🪤
 
