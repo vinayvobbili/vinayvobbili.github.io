@@ -2,8 +2,8 @@
 title: "find-evil: Teaching a Forensic Agent to Catch Its Own Hallucinations"
 image:
   path: /assets/img/posts/find-evil-hero.png
-  alt: "find-evil — bolting iocflow onto Protocol SIFT so the agent self-corrects hallucinated IOCs"
-description: My SANS FIND EVIL! hackathon entry. Protocol SIFT turns the SIFT Workstation into a Claude Code agent over 200+ forensic tools — and it hallucinates indicators because it eyeballs 50,000-line tool dumps. find-evil bolts my iocflow onto it as an MCP server plus one skill, so the agent stops guessing and reconciles its own findings against a deterministic, FP-defended extractor. On the real SANS compromised image it found fileless PowerShell Empire C2, corrected its own "no external C2" read, and refused to invent attribution on the clean host.
+  alt: "find-evil — bolting an IOC lifecycle onto Protocol SIFT so the agent self-corrects hallucinated IOCs"
+description: My SANS FIND EVIL! hackathon entry. Protocol SIFT turns the SIFT Workstation into a Claude Code agent over 200+ forensic tools — and it hallucinates indicators because it eyeballs 50,000-line tool dumps. find-evil bolts an IOC lifecycle onto it as an MCP server plus one skill, so the agent stops guessing and reconciles its own findings against a deterministic, FP-defended extractor. On the real SANS compromised image it found fileless PowerShell Empire C2, corrected its own "no external C2" read, and refused to invent attribution on the clean host.
 date: 2026-06-14 10:00:00 -0400
 categories: [Security, LLM]
 tags: [dfir, forensics, ai-agents, mcp, claude-code, ioc, threat-intelligence, hallucination, sans, open-source]
@@ -14,9 +14,12 @@ accent: magma
 > **Update, August 2026.** This entry didn't win, and reading the ones that placed changed my mind about the approach. I rebuilt it from scratch as [**witness**](https://vinayvobbili.github.io/posts/witness-prove-it-or-it-doesnt-go-in-the-report/), around an oracle that isn't a language model at all. The post below stands as written — it's the entry I submitted.
 {: .prompt-info }
 
+> **Update, November 2026.** The version I submitted used a private toolkit for the MCP tools. The repo no longer depends on it: the tools are now written in the repo itself, it installs and runs on its own, and the state I submitted is tagged `hackathon-submission`. Where the post below describes the tools, the repo's version has the same tool names; its extractor checks hostnames against a built-in list of top-level domains rather than the full Public Suffix List.
+{: .prompt-info }
+
 ## TL;DR 🔎
 
-I built [**find-evil**](https://github.com/vinayvobbili/find-evil) for the SANS **FIND EVIL!** hackathon. [Protocol SIFT](https://github.com/teamdfir/protocol-sift) is a sharp idea — put a Claude Code agent in front of the SANS SIFT Workstation's 200+ forensic tools so a responder can investigate at machine speed. It works. But the brief says the quiet part out loud: *"it also hallucinates more than we'd like."* find-evil bolts my `iocflow` IOC lifecycle onto it as a **custom MCP server plus one skill**, so the agent stops eyeballing huge dumps and instead **reconciles its own findings against a deterministic, false-positive-defended extractor** — catching its hallucinations before they reach the report.
+I built [**find-evil**](https://github.com/vinayvobbili/find-evil) for the SANS **FIND EVIL!** hackathon. [Protocol SIFT](https://github.com/teamdfir/protocol-sift) is a sharp idea — put a Claude Code agent in front of the SANS SIFT Workstation's 200+ forensic tools so a responder can investigate at machine speed. It works. But the brief says the quiet part out loud: *"it also hallucinates more than we'd like."* find-evil bolts an IOC lifecycle onto it as a **custom MCP server plus one skill**, so the agent stops eyeballing huge dumps and instead **reconciles its own findings against a deterministic, false-positive-defended extractor** — catching its hallucinations before they reach the report.
 
 <div class="tldr-cards">
 <div class="tldr-card"><span class="tldr-num">1 skill</span><span class="tldr-sub">extract → reconcile / self-correct → hunt, instead of asserting by eye</span></div>
@@ -47,7 +50,7 @@ SIFT forensic tool (plaso / Volatility / YARA / Sleuth Kit)
         ▼
 Protocol SIFT agent (Claude Code)   ── calls instead of eyeballing ──┐
         ▲                                                            ▼
-        │  structured, re-fanged, PSL-validated IOCs   iocflow MCP server
+        │  structured, re-fanged, TLD-checked IOCs     find-evil MCP server
         └────────────────────────────────────────────────────────────┘
         │  reconcile eyeballed findings vs extractor ground truth
         ▼
@@ -60,8 +63,8 @@ Protocol SIFT, it turns out, **isn't an MCP framework — it *is* Claude Code** 
 flowchart LR
   TOOLS["SIFT forensic tools<br/>plaso · Volatility · YARA · Sleuth Kit"]
   AGENT["Protocol SIFT<br/>= Claude Code agent<br/>baseline: eyeballs dumps → hallucinates<br/>find-evil: calls MCP, then reconciles"]
-  subgraph MCP["iocflow MCP server (typed, stdio) — ARCHITECTURAL boundary"]
-    M1["extract_iocs — re-fang · PSL · dedup · LOLBin-aware"]
+  subgraph MCP["find-evil MCP server (typed, stdio) — ARCHITECTURAL boundary"]
+    M1["extract_iocs — re-fang · TLD check · dedup · LOLBin-aware"]
     M4["suggest_hunts — CQL · XQL · Sigma"]
     M5["propose_blocks — DRY-RUN only, no execute path"]
   end
@@ -91,7 +94,7 @@ Genuine, not staged. And it cut the other way too — **false-positive disciplin
 
 On the clean `base-wkstn-01`, four scary-looking artifacts each got *cleared with a tool*, not waved away: `malfind` empty (refutes injection), `subject_srv.exe` = an F-Response IR agent, and `Mnemosyne.sys` = F-Response's **signed acquisition driver**, not a rootkit. Zero confirmed evil, zero retained hallucinations.
 
-That's the property I care about most: it **found evil where it existed and refused to invent it where it didn't.** Every finding traces back to a specific `mcp__iocflow__*` tool call in the execution log — which, in a hackathon judged on "honesty over perfection," is the whole game.
+That's the property I care about most: it **found evil where it existed and refused to invent it where it didn't.** Every finding traces back to a specific MCP tool call in the execution log (kept at the `hackathon-submission` tag) — which, in a hackathon judged on "honesty over perfection," is the whole game.
 
 ## What I took away 📚
 
@@ -100,7 +103,7 @@ The strongest guardrail isn't a better prompt — it's an **architecture where t
 The find-evil repo is MIT-licensed:
 
 - **Repo:** [github.com/vinayvobbili/find-evil](https://github.com/vinayvobbili/find-evil)
-- **Built on:** `iocflow` (the IOC lifecycle) and `domainflow` (the campaign-clustering pivot), both private projects of mine
+- **Built with:** its own in-repo MCP tools (the submitted version used a private toolkit for them; that state is tagged `hackathon-submission`)
 - **Demo:** [the live investigation above](https://youtu.be/8ufHSoOfc5Q)
 
-Next up: expose iocflow's ATT&CK coverage-gap check as an MCP tool so the agent also answers *"can we even detect this?"* inline, and publish a reconciliation benchmark — hallucination-rate with and without find-evil over labeled cases — as a community baseline. 🚀
+Next up: expose an ATT&CK coverage-gap check as an MCP tool so the agent also answers *"can we even detect this?"* inline, and publish a reconciliation benchmark — hallucination-rate with and without find-evil over labeled cases — as a community baseline. 🚀
