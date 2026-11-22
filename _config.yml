@@ -29,8 +29,17 @@ url: "https://vinayvobbili.github.io"
 github:
   username: vinayvobbili
 
-twitter:
-  username: # add later if/when you create one
+# No `twitter:` block on purpose: jekyll-seo-tag renders <meta name="twitter:site" content="@">
+# whenever the key exists, even with an empty username. Add `twitter: username: <handle>` when there is one.
+
+# jekyll-seo-tag reads the post author from here: BlogPosting JSON-LD gets author (Person, name, url),
+# <meta name="author"> and, with `logo`, a publisher. Keep name and url in step with social.name and url below
+# (tools/test_structured_data.py checks it).
+author:
+  name: Vinay Vobbilichetty
+  url: https://vinayvobbili.github.io/about/
+
+logo: /assets/img/avatar.png
 
 social:
   # Change to your full name.

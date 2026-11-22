@@ -18,3 +18,19 @@
     }
   </style>
 {%- endif -%}
+
+<!-- Person schema on the About page, from _config.yml values only (name, the
+     social links, the avatar). Posts get their author and publisher from
+     jekyll-seo-tag's BlogPosting block, fed by `author:` and `logo:` there. -->
+{%- if page.url == '/about/' -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": {{ site.social.name | jsonify }},
+      "url": {{ page.url | absolute_url | jsonify }},
+      "image": {{ site.avatar | absolute_url | jsonify }},
+      "sameAs": {{ site.social.links | jsonify }}
+    }
+  </script>
+{%- endif -%}
