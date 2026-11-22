@@ -7,7 +7,6 @@ description: "Every security and GRC team rebuilds the same pipeline one-off: ch
 date: 2026-06-26 09:00:00 -0400
 categories: [Security, LLM]
 tags: [rag, grc, compliance, questionnaires, vendor-risk, security-automation, llm, retrieval, ai-agents, attestations]
-mermaid: true
 ---
 
 ## TL;DR 🚀
@@ -42,16 +41,8 @@ The fix isn't a better prompt. It's accepting that **absence of evidence is a va
 
 attestq retrieves first, scores the best-matching evidence, and **if that score is below `min_confidence`, it returns an "insufficient evidence" answer without ever calling the model.** No prompt, no token spend, no opportunity to hallucinate. The determination you get back is your configured "absence" outcome (e.g. `Not Met`), with a standardized note explaining the evidence wasn't found.
 
-```mermaid
-flowchart LR
-    Q([question]) --> EMB[embed question]
-    EMB --> RET[retrieve top-k<br/>from evidence store]
-    RET --> GATE{best score above<br/>min_confidence?}
-    GATE -->|no| INS[insufficient evidence<br/>NO LLM call]
-    GATE -->|yes| RR[rerank<br/>wide window]
-    RR --> LLM[LLM drafts a<br/>cited answer]
-    LLM --> ANS([determination +<br/>citations + confidence])
-```
+![Animated flowchart: a question is embedded and the top-k are retrieved from the evidence store; a diamond gate asks whether the best score is above min_confidence; the no path ends at insufficient evidence with no LLM call, and the yes path goes through rerank with a wide window and an LLM that drafts a cited answer, ending in a determination with citations and confidence](/assets/img/posts/questionnaire-confidence-gate-flow.svg)
+_The gate runs before the LLM: a weak best score ends at insufficient evidence with no LLM call; a strong one is reranked and drafted into a cited answer._
 
 The gate keys on the **retrieval** score — the raw cosine similarity from your embedder, before reranking — so the threshold stays calibrated to a stable scale no matter what reranker you bolt on. (A cross-encoder reorders relevance; it doesn't produce a comparable absolute confidence. Gating on the retrieval score keeps your one tuned number, `min_confidence`, meaningful.)
 
