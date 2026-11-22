@@ -4,7 +4,6 @@ description: Before swapping models on a prompt-caching LLM backend, three Jinja
 date: 2026-05-14 09:00:00 -0400
 categories: [LLM, Performance]
 tags: [llm, prompt-cache, prefix-cache, kv-cache, jinja2, chat-template, vllm, mlx, qwen]
-mermaid: true
 image:
   path: /assets/img/posts/chat-template-cache-traps-hero.png
   alt: "Three Jinja2 chat-template patterns rewrite finished turns, so the prefix hash changes every turn and the cache misses; a check passing means a cache hit and about 13 times faster warm turns"
@@ -29,15 +28,8 @@ Run the check below against any model's published `tokenizer_config.json` **befo
 
 A prefix-KV cache works like this:
 
-```mermaid
-flowchart LR
-    T1["Turn 1<br/>system + tools + user₁"] -->|prefill all tokens| KV1["KV state<br/>after system+tools"]
-    KV1 -->|snapshot| Cache[("Cache<br/>hash(system+tools) → KV")]
-    T2["Turn 2<br/>system + tools + user₁ + asst₁ + user₂"] -->|hash system+tools<br/>look up| Cache
-    Cache -->|HIT: restore snapshot| KV2["Skip system+tools prefill<br/>only prefill suffix"]
-    style Cache fill:#1e40af,color:#fff
-    style KV2 fill:#7c2d12,color:#fff
-```
+![Animated flowchart: turn 1 prefills all tokens into a KV state after system and tools, which is snapshotted into a cache keyed by a hash of system and tools; turn 2 hashes system and tools and looks it up, and a hit restores the snapshot so only the suffix is prefilled](/assets/img/posts/three-chat-template-patterns-prefix-cache-flow.svg)
+_The cache is keyed on the system and tools prefix: turn 2 restores the snapshot and prefills only what is new._
 
 The engine hashes the *bytes* of the rendered prompt up to some boundary (typically end-of-system or end-of-tools), looks the hash up, and on a hit restores the saved KV state and prefills only the new suffix.
 

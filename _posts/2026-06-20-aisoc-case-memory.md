@@ -7,7 +7,6 @@ description: "The first version of aisoc had eight roles and zero memory — eve
 date: 2026-06-20 09:00:00 -0400
 categories: [Security, LLM]
 tags: [soc, ai-agents, agentic-ai, event-sourcing, multi-agent, case-memory, ground-truth, hitl, security-automation, detection-engineering, redis-streams]
-mermaid: true
 accent: plum
 ---
 
@@ -45,21 +44,8 @@ We didn't add a memory system. The event-sourced design from v1 was *already rec
 
 So the memory layer is small and boring on purpose: an indexer that folds the audit stream into a per-case record, and a handful of read functions — `compute_trends`, `get_case_reasoning`, `find_campaign_clusters`, `recall_similar`. Everything below is built on those four reads.
 
-```mermaid
-flowchart LR
-    subgraph Log["Event log (already existed in v1)"]
-        V["verdicts.sqlite<br/>role, reason, evidence, confidence"]
-        H["hitl.sqlite<br/>who approved, why"]
-        A["soc.audit stream<br/>every event, replayable"]
-    end
-    Log --> IDX["Case index<br/>case_memory.sqlite"]
-    IDX --> R1["recall_similar<br/>precedent for an agent"]
-    IDX --> R2["compute_trends<br/>accuracy and cost rollup"]
-    IDX --> R3["get_case_reasoning<br/>full trace for one case"]
-    IDX --> R4["find_campaign_clusters<br/>cross-incident infra"]
-    style Log fill:#1e3a8a,color:#fff
-    style IDX fill:#7c2d12,color:#fff
-```
+![Animated flowchart: an event log of verdicts, human approvals and a replayable audit stream is indexed into a case index database, which serves four tools: recall_similar, compute_trends, get_case_reasoning and find_campaign_clusters](/assets/img/posts/ai-soc-case-memory-read-model-flow.svg)
+_One index over the existing event log, four ways to read it: precedent, trends, one case's reasoning, and campaign clusters._
 
 ## Recall: agents that cite precedent
 
@@ -93,18 +79,8 @@ So Case Interrogation is built on a hard split:
 - **Recall is deterministic.** Looking up a case returns the *recorded* trace — each role's actual verdict, the actual confidence, the actual evidence it cited, the actual human who approved the action and the actual reason they gave, on a real timeline. No model runs on that lookup. It's a database read rendered to the page. If it isn't in the record, it doesn't appear.
 - **Narration is grounded and constrained.** When you *do* want prose — the chat surface where you ask in natural language — the LLM is handed the recorded trace as authoritative context with one instruction: answer **only** from this record, cite the role and its recorded reason, and if the record doesn't say, say so. The model is a narrator of facts it's not allowed to add to, not an author of new ones.
 
-```mermaid
-sequenceDiagram
-    participant User as Reviewer question<br/>(why contain host X on case N?)
-    participant Mem as Case memory<br/>(deterministic)
-    participant LLM as Narrator LLM<br/>(grounded)
-    User->>Mem: get_case_reasoning(case_id)
-    Mem-->>User: Recorded trace, verdicts,<br/>evidence, HITL decision, timeline
-    Note over Mem: Web panel stops here,<br/>pure render, no model
-    User->>LLM: trace plus rule, answer ONLY from this record
-    LLM-->>User: Containment reason cited from the trace,<br/>with approver and time
-    Note over LLM: Cannot invent a reason<br/>that is not in the trace
-```
+![Animated sequence diagram: a reviewer question calls get_case_reasoning on a deterministic case memory, which returns the recorded trace and stops there for the web panel with no model; the trace and a rule to answer only from this record go to a grounded narrator LLM, which returns the containment reason cited from the trace, with approver and time, and cannot invent a reason that is not in the trace](/assets/img/posts/ai-soc-case-memory-interrogation-flow.svg)
+_Two ways to read a case: the deterministic trace alone, or a narrator that may only answer from that trace._
 
 The principle generalizes well beyond a SOC: **an agent explaining its own past behavior must never be allowed to sound smarter than it actually was.** Separate the retrieval of what happened (must be exact) from the explanation of it (may be fluent, must be grounded). Conflate them and your "explainability" feature is a confabulation engine.
 

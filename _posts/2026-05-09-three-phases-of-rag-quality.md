@@ -4,7 +4,6 @@ description: How I mined analyst-curated training pairs from case close-notes, d
 date: 2026-05-09 09:00:00 -0400
 categories: [LLM, RAG]
 tags: [rag, reranker, fine-tuning, bge, sentence-transformers, security]
-mermaid: true
 image:
   path: /assets/img/posts/reranker-mined-pairs-hero.png
   alt: "Analyst close-notes that cite related cases become training pairs; the fine-tuned reranker lifts held-out MRR@10 from 0.598 to 0.846, a 41% uplift"
@@ -43,17 +42,8 @@ _Where the training pairs came from, and what they bought: close-notes in, +41% 
 
 ## The setup: embedder + reranker, the standard two-stage RAG
 
-```mermaid
-flowchart LR
-    Q[User query] --> E[Embedder<br/>Qwen3-Embedding-8B<br/>4-bit DWQ]
-    E --> Top50[Top-50 by<br/>cosine similarity]
-    Top50 --> R[Reranker<br/>bge-reranker-v2-m3<br/><b>fine-tuned</b>]
-    R --> Top5[Top-5 ranked<br/>by joint scoring]
-    Top5 --> LLM[LLM grounds<br/>answer]
-    style R fill:#1e40af,color:#fff
-    style E fill:#0e7490,color:#fff
-    style LLM fill:#065f46,color:#fff
-```
+![Animated flowchart: a user query goes to an embedder, the top 50 by cosine similarity go to a fine-tuned reranker, the top 5 ranked by joint scoring go to an LLM that grounds the answer](/assets/img/posts/three-phases-of-rag-quality-setup-flow.svg)
+_Two stages before the LLM: the embedder keeps the top 50 by cosine similarity, and the fine-tuned reranker narrows them to the top 5._
 
 
 The retrieval pipeline is the standard cascade:

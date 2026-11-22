@@ -7,7 +7,6 @@ description: Every detection-as-code pipeline needs the same four things — lin
 date: 2026-06-06 09:00:00 -0400
 categories: [Security, LLM]
 tags: [detection-engineering, sigma, cortex-xql, siem, detection-as-code, security-automation, langchain]
-mermaid: true
 accent: forest
 ---
 
@@ -76,15 +75,8 @@ for o in result.overlaps:               # "you may already cover this"
 The whole flow, end to end:
 
 {% raw %}
-```mermaid
-flowchart LR
-    NL([plain English]) -->|draft| RULE[Sigma / XQL rule]
-    RULE -->|lint| LINT[schema + best-practice findings]
-    RULE -->|find_overlaps| OV[catalog dedup]
-    LINT --> REV{{review}}
-    OV --> REV
-    REV --> V([quality · FP risk · ATT&CK · verdict])
-```
+![Animated flowchart: plain English is drafted into a Sigma or XQL rule, which is linted for schema and best-practice findings and checked for catalog overlaps; both go to a review that gives quality, false-positive risk, ATT&CK and a verdict](/assets/img/posts/detection-copilot-draft-lint-review-flow.svg)
+_One rule, two checks: lint and catalog dedup both feed the review, which returns the verdict._
 {% endraw %}
 
 There's a CLI too, for the terminal-and-CI crowd:

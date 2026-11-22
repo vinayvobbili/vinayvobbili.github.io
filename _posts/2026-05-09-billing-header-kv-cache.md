@@ -4,7 +4,6 @@ description: A debugging story about a rotating billing header that quietly bust
 date: 2026-05-09 09:00:00 -0400
 categories: [LLM, Performance]
 tags: [vllm, mlx, claude-code, kv-cache, prefix-cache, prompt-cache, debugging]
-mermaid: true
 image:
   path: /assets/img/posts/prefix-cache-billing-header-hero.png
   alt: "Warm turns of a self-hosted Claude Code setup dropped from about 100 seconds to 7 to 8: strip a rotating 81-byte billing header, then cache the 23,000-token prefix"
@@ -76,16 +75,8 @@ same hardware, with the same model.
 
 ## The setup
 
-```mermaid
-flowchart LR
-    CC[Claude Code CLI] -->|/v1/messages<br/>system + tools + msgs<br/>+ rotating cch=...| CCR[claude-code-router]
-    CCR --> Shim["Shim<br/><b>(1) strips x-anthropic-billing-header</b><br/>(2) buffers tool-call streams"]
-    Shim -->|byte-stable<br/>system prefix| VLLM[vllm-mlx server]
-    VLLM --> SE["SimpleEngine<br/><b>(3) system-prefix KV cache</b><br/>HIT: skip prefill<br/>MISS: prefill + snapshot"]
-    SE -->|stream tokens| CC
-    style Shim fill:#1e40af,color:#fff
-    style SE fill:#7c2d12,color:#fff
-```
+![Animated flowchart: Claude Code CLI sends /v1/messages through claude-code-router to a shim that strips the billing header and buffers tool-call streams, then a byte-stable system prefix reaches the vllm-mlx server and its SimpleEngine system-prefix KV cache, which skips prefill on a hit and prefills and snapshots on a miss, and tokens stream back to the CLI](/assets/img/posts/billing-header-kv-cache-setup-flow.svg)
+_Three fixes on one path: the shim strips the rotating header and buffers tool calls, and the engine keeps the system-prefix cache._
 
 The three numbered points are where the speedup comes from. Strip (1) and (3)
 and you're back to 100+ second turns.

@@ -7,7 +7,6 @@ description: My SANS FIND EVIL! hackathon entry. Protocol SIFT turns the SIFT Wo
 date: 2026-06-14 10:00:00 -0400
 categories: [Security, LLM]
 tags: [dfir, forensics, ai-agents, mcp, claude-code, ioc, threat-intelligence, hallucination, sans, open-source]
-mermaid: true
 accent: magma
 ---
 
@@ -59,24 +58,8 @@ correct values · flag hallucinations · add misses → report + hunts + dry-run
 
 Protocol SIFT, it turns out, **isn't an MCP framework — it *is* Claude Code** configured on the SIFT box (`~/.claude/CLAUDE.md`, a permissions `settings.json`, and five `skills/*/SKILL.md`). That's a gift, because Claude Code natively loads MCP servers and skills. So the integration is small and first-class, not a hack — two supported patterns at once: **Direct Agent Extension** *and* **Custom MCP Server**.
 
-```mermaid
-flowchart LR
-  TOOLS["SIFT forensic tools<br/>plaso · Volatility · YARA · Sleuth Kit"]
-  AGENT["Protocol SIFT<br/>= Claude Code agent<br/>baseline: eyeballs dumps → hallucinates<br/>find-evil: calls MCP, then reconciles"]
-  subgraph MCP["find-evil MCP server (typed, stdio) — ARCHITECTURAL boundary"]
-    M1["extract_iocs — re-fang · TLD check · dedup · LOLBin-aware"]
-    M4["suggest_hunts — CQL · XQL · Sigma"]
-    M5["propose_blocks — DRY-RUN only, no execute path"]
-  end
-  RECON["Self-correction:<br/>reconcile eyeballed vs ground truth<br/>correct · flag hallucinations · add misses"]
-  OUT["Reconciled report + hunts + dry-run block plan"]
-  TOOLS --> AGENT
-  AGENT -- raw text --> MCP
-  MCP -- structured IOCs --> AGENT
-  AGENT --> RECON --> OUT
-  classDef arch fill:#eafaf1,stroke:#00A651,stroke-width:2px;
-  class MCP arch
-```
+![Animated flowchart: SIFT forensic tools feed an agent that sends raw text across a typed MCP server boundary and gets structured IOCs back; the server exposes extract_iocs, suggest_hunts and a dry-run-only propose_blocks; the agent then reconciles what it eyeballed against ground truth into a reconciled report, hunts and a dry-run block plan](/assets/img/posts/forensic-agent-self-correction-boundary-flow.svg)
+_The agent reads raw text only through typed tools, and the tool that proposes blocks has no execute path._
 
 The security boundary is **architectural, not prompt-based**. The MCP server exposes no `execute_shell`; `propose_blocks` is dry-run by construction and the block-execution path is deliberately not a tool. The agent can't spoliate evidence or push a block because those verbs *don't exist* — that turns "please be careful" (bypassable) into "you physically cannot."
 

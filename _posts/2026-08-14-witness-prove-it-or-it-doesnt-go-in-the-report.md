@@ -7,7 +7,6 @@ description: "I entered the SANS FIND EVIL! hackathon with an agent that catches
 date: 2026-08-14 10:00:00 -0400
 categories: [Security, LLM]
 tags: [dfir, forensics, ai-agents, hallucination, memory-forensics, volatility, provenance, reproducibility, sans, open-source]
-mermaid: true
 accent: steel
 ---
 
@@ -63,16 +62,8 @@ No flag overrides it. There is no `--force`, no confidence threshold, no "the mo
 Every claim carries **bindings** — *record R, field F, has value V*. Before anything is written, a pure-Python verifier re-reads R out of the store and compares F to V.
 
 {% raw %}
-```mermaid
-flowchart LR
-    E([memory<br/>image]) --> C[read-only<br/>collector] --> S[(hash-chained<br/>records)]
-    S --> F[claim<br/>+ bindings]
-    F --> G1{gate 1<br/>does the record<br/>say that?}
-    G1 -->|yes| G2{gate 2<br/>what would<br/>refute it?}
-    G2 -->|corroborated| L[ledger<br/>and report]
-    G1 -->|no| X[refused, and logged<br/>with the reason it died]
-    G2 -->|refuted or unavailable| X
-```
+![Animated flowchart: a memory image goes through a read-only collector into hash-chained records; a claim with bindings meets gate 1, does the record say that, then gate 2, what would refute it; corroborated claims reach the ledger and report, and the rest are refused and logged with the reason they died](/assets/img/posts/witness-two-gates-flow.svg)
+_Two gates between a claim and the report: the record must say it, and nothing that could refute it may stand._
 {% endraw %}
 
 The nearest published approach to this requires a finding to cite a real tool-call ID. That is a genuine improvement over nothing, and it passes an agent that cites a real `psscan` run and then misstates what row 12 said. Provenance is not accuracy. The citation being real does not make the quotation real.

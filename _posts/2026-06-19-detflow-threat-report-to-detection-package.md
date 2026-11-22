@@ -7,7 +7,6 @@ description: detflow could already go from plain English to a detection rule. v0
 date: 2026-06-19 22:00:00 -0400
 categories: [Security, LLM]
 tags: [detection-engineering, threat-intelligence, sigma, yara, suricata, mitre-attack, stix, detection-as-code, security-automation, langchain]
-mermaid: true
 accent: moss
 ---
 
@@ -80,17 +79,8 @@ detflow.to_brief_markdown(a)                       # a shareable Markdown brief 
 The whole flow:
 
 {% raw %}
-```mermaid
-flowchart LR
-    R([threat report]) -->|analyze| A[ATT&CK techniques + confidence]
-    A --> RULES[Sigma / YARA / Suricata]
-    RULES -->|lint_sigma| L[linted in place]
-    A --> EXP{{exports}}
-    L --> EXP
-    EXP --> STIX([STIX 2.1])
-    EXP --> NAV([Navigator layer])
-    EXP --> MD([Markdown brief])
-```
+![Animated flowchart: a threat report is analyzed into ATT&CK techniques with confidence, which become Sigma, YARA and Suricata rules that lint_sigma lints in place; the techniques and the linted rules feed the exports, STIX 2.1, a Navigator layer and a Markdown brief](/assets/img/posts/threat-report-to-detection-package-flow.svg)
+_The report becomes techniques and rules, and the exports fan out to STIX, a Navigator layer and a brief._
 {% endraw %}
 
 And the CLI, for CI and the terminal crowd:

@@ -7,7 +7,6 @@ description: iocflow is a Python package of my own for the whole IOC lifecycle. 
 date: 2026-05-31 09:00:00 -0400
 categories: [Security, LLM]
 tags: [ioc, threat-intelligence, ai-agents, langgraph, multi-agent, hitl, security-automation, dfir, langchain]
-mermaid: true
 accent: violet
 ---
 
@@ -53,21 +52,8 @@ Notice that L1–L5 have no idea an agent exists. They're just functions with st
 Layer 6 hands a report to a supervisor that routes to specialist agents — extractor, enricher, hunter, responder — each using L1–L5 as tools, then loops back until the case is done.
 
 {% raw %}
-```mermaid
-flowchart TB
-    START([report text]) --> SUP{supervisor<br/>routes next step}
-    SUP -->|extract| EX[extractor<br/>L1 entities]
-    SUP -->|enrich| EN[enricher<br/>L2 + L3 assessment]
-    SUP -->|hunt| HU[hunter<br/>L4 queries]
-    SUP -->|respond| RE[responder<br/>L5 dry-run → propose]
-    EX --> SUP
-    EN --> SUP
-    HU --> SUP
-    RE -.proposal.-> GATE{{ApprovalGate<br/>human authorizes}}
-    GATE -.approved.-> RE
-    RE -->|live block| SUP
-    SUP -->|all done| END([Case])
-```
+![Animated flowchart: report text enters a supervisor that routes to an extractor, an enricher, a hunter and a responder; the responder's dry-run proposal goes to an approval gate where a human authorizes it, the approved live block returns to the supervisor, and when all is done the result is a case](/assets/img/posts/ioc-lifecycle-multi-agent-team-flow.svg)
+_One supervisor, four specialists and a human gate: the responder only blocks live after an approval._
 {% endraw %}
 
 ```python

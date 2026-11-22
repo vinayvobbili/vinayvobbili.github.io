@@ -7,7 +7,6 @@ description: A tool-calling agent burns almost all its wall-clock on the loop �
 date: 2026-06-19 22:30:00 -0400
 categories: [LLM, Security]
 tags: [llm, agents, tool-calling, langchain, local-llm, latency, cost-optimization, multi-agent, open-source, security-automation]
-mermaid: true
 accent: indigo
 ---
 
@@ -52,14 +51,8 @@ print(agent.invoke("What changed in the incident overnight?").content)
 
 Under the hood: the gatherer is told to **gather, then stop** — call the tools the request needs, then signal done; *do not* write the prose answer. The agent executes each tool call (a tool that errors becomes its result text, never an exception, so the loop keeps going), and once gathering is done it hands the collected tool output to the composer to write the answer.
 
-```mermaid
-flowchart LR
-    Q([user request]) --> G[gatherer · cheap/local]
-    G -->|tool call| T[tools]
-    T -->|result| G
-    G -->|done gathering| C[composer · frontier]
-    C --> A([final answer])
-```
+![Animated flowchart: a user request goes to a cheap, local gatherer that calls tools and gets results back; when it is done gathering, a frontier composer writes the final answer](/assets/img/posts/langchain-failover-tier-split-flow.svg)
+_The gatherer loops with its tools on the cheap tier; once it is done gathering, the frontier composer writes the answer._
 
 The long generation runs on the fast model, off the busy box. The local model only ever emits short loop turns. That's the whole trick — and it's the difference between a multi-minute and a multi-second final turn. ⏱️
 

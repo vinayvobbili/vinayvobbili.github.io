@@ -7,7 +7,6 @@ description: A multi-agent SOC where one local LLM plays Sentinel, Tier 2, IR Le
 date: 2026-05-30 09:00:00 -0400
 categories: [Security, LLM]
 tags: [soc, ai-agents, langgraph, redis-streams, multi-agent, hitl, crewai, autogen, security-automation, vllm, mlx]
-mermaid: true
 accent: aqua
 ---
 
@@ -40,36 +39,8 @@ The architecture is a consequence of those constraints, not the other way around
 
 ## Architecture at a glance
 
-```mermaid
-flowchart TB
-    Feed[Alert feed] --> Sentinel
-    subgraph Bus["Redis Streams bus"]
-        direction LR
-        STRG[soc.triage]
-        SCAS[soc.cases]
-        SAUD[soc.audit]
-    end
-    Sentinel[Sentinel / Tier 1<br/>alert triage] --> STRG
-    STRG --> Tier2[Tier 2 Analyst<br/>deeper investigation]
-    Tier2 --> SCAS
-    SCAS --> IR[IR Lead<br/>SEV + containment plan]
-    IR --> SCAS
-    IR -.HITL action proposed.-> Flask[Flask HITL pages<br/>/soc-hitl/decide<br/>/soc-hitl/audit]
-    Chat[Chat card buttons] -.click.-> Flask
-    Flask --> SCAS
-    SCAS --> TI[Threat Intel<br/>actor + MITRE]
-    TI --> SCAS
-
-    SAUD -.replay.-> SOCMgr[SOC Manager<br/>shift summaries<br/>every 8 hours]
-    SAUD -.replay.-> DetEng[Detection Engineer<br/>rule tuning<br/>weekday mornings]
-    SAUD -.replay.-> Hunter[Threat Hunter<br/>pattern sweeps<br/>twice a day]
-    STRG -.mirror.-> SAUD
-    SCAS -.mirror.-> SAUD
-
-    style Bus fill:#1e3a8a,color:#fff
-    style Flask fill:#fef3c7,color:#92400e
-    style SAUD fill:#7c2d12,color:#fff
-```
+![Animated architecture flowchart: an alert feed goes to Sentinel, then through the soc.triage, soc.cases and soc.audit streams of a Redis Streams bus; Tier 2 Analyst, IR Lead and Threat Intel work on the cases stream, the IR Lead proposes an action to Flask approval pages that chat card buttons also reach, and the SOC Manager, Detection Engineer and Threat Hunter replay the audit stream](/assets/img/posts/eight-role-ai-soc-architecture-flow.svg)
+_Reactive roles hand work along the streams, a human approves any action, and three timer roles replay the audit log._
 
 Three reactive roles (Tier 2 / IR Lead / Threat Intel) are long-running consumers on the bus. Three periodic roles (SOC Manager / Detection Engineer / Threat Hunter) are systemd timer units that wake up on a calendar schedule, replay the audit stream, and emit a report. The HITL surface is a Flask blueprint sitting next to the existing IR web app.
 
@@ -148,25 +119,8 @@ The hardest design question wasn't "should the AI containment action?" — it's 
 
 We tried a few patterns. The one that works:
 
-```mermaid
-sequenceDiagram
-    participant IR as IR Lead<br/>(LLM agent)
-    participant Bus as Redis Streams
-    participant Chat as Team-chat card<br/>(SOC bot)
-    participant Human as Approver
-    participant Flask as Flask HITL page
-    participant SQLite as hitl.sqlite
-
-    IR->>Bus: IRPlan + ActionProposed<br/>(approver_role="IR Lead On-Call")
-    IR->>Chat: Card with 2 buttons<br/>(Action.OpenUrl)
-    Chat->>Human: Banner: "🎯 Action required from: IR Lead On-Call"
-    Human->>Flask: Click Approve or Reject
-    Flask->>Human: Confirmation page<br/>(login_required, DEMO MODE banner)
-    Human->>Flask: Submit decision
-    Flask->>SQLite: Persist decision
-    Flask->>Bus: ActionDecision (approved|rejected, dummy=True)
-    Note over Bus: v2 future: executor agent<br/>consumes approved decisions
-```
+![Animated sequence diagram: the IR Lead agent proposes an action on the bus and posts a chat card; the approver clicks Approve or Reject, confirms on a web page and submits; the decision is saved in a database and an ActionDecision returns to the bus, where a future executor agent will consume approved decisions](/assets/img/posts/eight-role-ai-soc-hitl-gate-flow.svg)
+_One approval, step by step: the card links to a page, the decision is stored, and only then does a decision event reach the bus._
 
 Three details matter:
 
