@@ -2,7 +2,7 @@
 title: "When \"We Don't Have Evidence for That\" Is the Feature"
 image:
   path: /assets/img/posts/evidence-grounded-questionnaires-hero.png
-  alt: "A small model-agnostic RAG kernel from my own questionnaire library that answers security questionnaires from your own evidence, and refuses to guess when the evidence isn't there"
+  alt: "attestq, a small model-agnostic RAG kernel that answers security questionnaires from your own evidence, and refuses to guess when the evidence isn't there"
 description: "A questionnaire RAG kernel says 'insufficient evidence' without calling the LLM when confidence is low, and reranks wide to keep the right document."
 date: 2026-06-26 09:00:00 -0400
 categories: [Security, LLM]
