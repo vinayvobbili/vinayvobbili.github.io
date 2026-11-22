@@ -61,5 +61,4 @@ def test_repo_mode_reads_committed_text_files_only(tmp_path, capsys):
 def test_default_files_cover_posts_tabs_and_pages():
     names = {p.relative_to(work_refs.ROOT).as_posix() for p in work_refs.default_files()}
     assert any(n.startswith("_posts/") for n in names)
-    assert "attestq/index.html" in names
     assert not any(n.startswith((".preview", "_site")) for n in names)

@@ -1,7 +1,7 @@
 ---
 title: "When \"We Don't Have Evidence for That\" Is the Feature"
 image:
-  path: /assets/img/posts/attestq-hero.png
+  path: /assets/img/posts/evidence-grounded-questionnaires-hero.png
   alt: "A small model-agnostic RAG kernel from my own questionnaire library that answers security questionnaires from your own evidence, and refuses to guess when the evidence isn't there"
 description: "Every security and GRC team rebuilds the same pipeline one-off: chunk the SOC 2s and policies, embed them, retrieve per question, prompt an LLM, paste into the form. Done naively it hallucinates confident answers with no supporting evidence, the single worst failure mode in compliance. My own questionnaire library is a small, model-/embedder-/store-agnostic RAG kernel that bakes in the two fixes that actually matter: a confidence gate that answers \"insufficient evidence\" without ever calling the LLM, and a wide rerank window so the one document that had the answer doesn't get dropped."
 date: 2026-06-26 09:00:00 -0400
@@ -21,6 +21,9 @@ I built **attestq** — a small, model-agnostic RAG kernel for a problem every s
 </div>
 
 This is the GRC sibling of my earlier projects: [iocflow](/posts/iocflow-agentic-ioc-lifecycle/) for the IOC lifecycle and [detflow](/posts/detflow-detection-engineering-copilot/) for detection engineering. Same instinct: a pattern every team keeps hand-rolling deserves one clean, generic, boring, testable version. 🧰
+
+![Animated diagram: evidence documents (a SOC 2 report, a policy, an audit report) feed a retrieval step, a confidence gate scores the match, and either an answer with a cited source or an "insufficient evidence" result lights up](/assets/img/posts/evidence-grounded-questionnaires-flow.svg)
+_Two questions through the same pipeline: strong evidence gives an answer with its citation; weak evidence gives "insufficient evidence", and the model is never asked to guess._
 
 ## The failure mode nobody talks about
 
