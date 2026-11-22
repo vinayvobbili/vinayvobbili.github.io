@@ -365,6 +365,33 @@ WIT_CAPTIONS = ((.2, 5.7, "Claim 1: the record says exactly that, and nothing re
                 (12.2, 17.5, "Claim 3: the tool that could settle it never ran. Held, never passed."))
 
 
+def _table_row(y, cells, fill) -> str:
+    return rect(16, y, 298, 34, 10, fill) + "".join(T(x, y + 23, c, 16, INK, 700, maxw=w) for x, c, w in cells)
+
+
+def witness_page(ctx) -> str:
+    """The standalone witness page: one digit changed in a finding, refused by a plain comparison."""
+    o = [header_panel(0, 10, 330, 150, "slate", "What the tool printed", "doc", size=18)]
+    o += [T(18, 78, "psscan.txt, trimmed to the columns in play", 13.5, MUTED, 400, maxw=300),
+          _table_row(88, ((28, "PID", 80), (110, "PPID", 80), (190, "ImageFileName", 120)), "#e2e8f0"),
+          _table_row(120, ((28, "3720", 80), (110, "1332", 80), (190, "rundll32.exe", 120)), "#dcfce7")]
+    o += [header_panel(0, 180, 330, 140, "orange", "The finding", "warn", size=18)]
+    o += [T(18, 246, "rundll32.exe (3720) was spawned", 16, INK, maxw=300), T(18, 270, "by powershell.exe", 16, INK, maxw=170),
+          chip(188, 253, 76, 26, "( 1233 )", "#fee2e2", RED, "#991b1b", 15),
+          T(18, 302, "bound: parent PID = 1233", 13.5, MUTED, 400, maxw=300)]
+    o += [arrow("M332 85 C 372 85, 372 150, 396 165"), arrow("M332 250 C 372 250, 372 190, 396 175")]
+    o += [T(480, 78, "Plain Python", 18, W, anchor="middle", maxw=150), T(480, 98, "compares the field", 13.5, W, 400, "middle", maxw=190),
+          diamond(480, 175, 62, "red", "search"), arrow("M544 175 L636 175", "red", 4, op=.9)]
+    o += [header_panel(640, 10, 460, 200, "red", "Refused", "x", size=20)]
+    o += [T(660, 86, "The record says parent PID 1332.", 18, INK, maxw=420), T(660, 114, "The finding says 1233.", 18, INK, maxw=420),
+          T(660, 150, "Two digits changed places on the way", 14.5, MUTED, 400, maxw=420),
+          T(660, 172, "to the sentence. The comparison notices.", 14.5, MUTED, 400, maxw=420),
+          T(660, 196, "Logged with the reason it died.", 14.5, MUTED, 400, maxw=420)]
+    o += [badge(640, 236, 460, 38, "0 language models in the gate", "green", 17),
+          badge(640, 282, 460, 38, "1,083 scored claims, one command", "indigo", 17)]
+    return "".join(o)
+
+
 # --------------------------------------------------------------------------- jobwatch scoring
 
 def fit_scores(ctx) -> str:

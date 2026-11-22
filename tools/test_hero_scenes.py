@@ -53,6 +53,8 @@ def png_size(path: Path) -> tuple[int, int]:
 
 GENERATED = [s for s in hs.SCENES if not s.external]
 FLOWS = [s for s in GENERATED if s.flow]
+PAGES = list(hs.PAGE_SCENES)
+CARDS = GENERATED + PAGES   # every card drawn here: posts first, then standalone pages
 
 
 # --- coverage ---------------------------------------------------------------------
@@ -74,8 +76,20 @@ def test_every_scene_belongs_to_a_published_post():
         assert any(p.match(s.post) for p in PUBLISHED), s.slug
 
 
+def test_page_scenes_point_at_an_existing_page_that_uses_their_png_as_og_and_twitter_image():
+    assert PAGES, "the witness page has its own card"
+    for s in PAGES:
+        assert not s.post and not s.external and s.draw
+        page = (hs.ROOT / s.page).read_text()
+        url = f"https://{hero.SITE}{s.hero_path}"
+        assert f'<meta property="og:image" content="{url}">' in page
+        assert f'<meta name="twitter:image" content="{url}">' in page
+        assert f'<meta property="og:image:alt" content="{s.alt}">' in page
+
+
 def test_slugs_are_unique_and_every_scene_has_a_drawing_or_is_external():
-    assert len({s.slug for s in hs.SCENES}) == len(hs.SCENES)
+    everything = hs.SCENES + hs.PAGE_SCENES
+    assert len({s.slug for s in everything}) == len(everything)
     for s in hs.SCENES:
         assert (s.draw is None) == s.external, s.slug
 
@@ -117,7 +131,7 @@ def hd_flow() -> Path:
 
 def test_every_scene_has_its_own_palette_in_accents_yml():
     seen = {}
-    for s in hs.SCENES:
+    for s in hs.SCENES + hs.PAGE_SCENES:
         p = hero.load_palette(s.palette)
         for field in ("cardfrom", "cardvia", "cardto", "glowa", "glowb", "glowc", "headto"):
             assert re.fullmatch(r"#[0-9a-f]{6}", p[field]), (s.palette, field)
@@ -128,7 +142,7 @@ def test_every_scene_has_its_own_palette_in_accents_yml():
 
 # --- the rules: no private names, no install talk, no dashes ----------------------
 
-@pytest.mark.parametrize("scene", GENERATED, ids=lambda s: s.slug)
+@pytest.mark.parametrize("scene", CARDS, ids=lambda s: s.slug)
 def test_card_has_no_forbidden_words_or_dashes(scene):
     text = visible(hs.card_html(scene))
     for word in FORBIDDEN:
@@ -137,7 +151,7 @@ def test_card_has_no_forbidden_words_or_dashes(scene):
     assert "<script" not in text and "file://" not in text and "fonts.googleapis" not in text
 
 
-@pytest.mark.parametrize("scene", GENERATED, ids=lambda s: s.slug)
+@pytest.mark.parametrize("scene", CARDS, ids=lambda s: s.slug)
 def test_scene_text_fields_are_clean(scene):
     fields = [scene.slug, scene.headline, scene.subtitle, scene.alt, scene.hero_path]
     if scene.flow:
@@ -150,7 +164,7 @@ def test_scene_text_fields_are_clean(scene):
         assert "—" not in text and "–" not in text, text
 
 
-@pytest.mark.parametrize("scene", GENERATED, ids=lambda s: s.slug)
+@pytest.mark.parametrize("scene", CARDS, ids=lambda s: s.slug)
 def test_card_footer_is_only_the_site_and_fonts_are_inlined(scene):
     markup = hs.card_html(scene)
     assert markup.count(hero.SITE) == 1
@@ -159,7 +173,7 @@ def test_card_footer_is_only_the_site_and_fonts_are_inlined(scene):
 
 
 def test_no_new_image_file_name_contains_a_private_project():
-    for s in GENERATED:
+    for s in CARDS:
         for name in (s.png.name, s.svg.name):
             assert not any(p in name for p in PRIVATE), name
 
@@ -172,7 +186,7 @@ def test_posts_use_the_new_images_not_the_old_private_named_ones():
         assert not any(w in front_matter(post)["alt"].lower() for w in EMPLOYER_ISH + PRIVATE)
 
 
-@pytest.mark.parametrize("scene", GENERATED, ids=lambda s: s.slug)
+@pytest.mark.parametrize("scene", CARDS, ids=lambda s: s.slug)
 def test_text_is_never_smaller_than_twelve_and_a_half_pixels(scene):
     for m in re.finditer(r'font-size="([\d.]+)"', scene.draw(kit.Ctx())):
         assert float(m.group(1)) >= 12.5, (scene.slug, m.group(0))
@@ -180,7 +194,7 @@ def test_text_is_never_smaller_than_twelve_and_a_half_pixels(scene):
 
 # --- the drawings -----------------------------------------------------------------
 
-@pytest.mark.parametrize("scene", GENERATED, ids=lambda s: s.slug)
+@pytest.mark.parametrize("scene", CARDS, ids=lambda s: s.slug)
 def test_static_drawing_is_well_formed_and_not_animated(scene):
     markup = scene.draw(kit.Ctx())
     assert "<animate" not in markup
@@ -234,7 +248,7 @@ def test_committed_flow_matches_the_generator(scene):
 def test_html_mode_writes_every_card_without_a_browser(tmp_path):
     assert hs.main(["--html-dir", str(tmp_path)]) == 0
     files = sorted(p.name for p in tmp_path.glob("*.html"))
-    assert files == sorted(f"{s.slug}.html" for s in GENERATED)
+    assert files == sorted(f"{s.slug}.html" for s in CARDS)
     assert all(p.read_text().startswith("<!doctype html>") for p in tmp_path.glob("*.html"))
 
 
@@ -285,7 +299,7 @@ def _need_browser():
     pytest.importorskip("playwright")
 
 
-@pytest.mark.parametrize("scene", GENERATED, ids=lambda s: s.slug)
+@pytest.mark.parametrize("scene", CARDS, ids=lambda s: s.slug)
 def test_committed_png_is_1200_by_630(scene):
     assert scene.png.exists(), "run: python tools/hero_scenes.py"
     assert png_size(scene.png) == (1200, 630)
@@ -299,7 +313,7 @@ def test_the_questionnaire_png_is_1200_by_630_too():
 def test_no_label_overflows_its_box_or_the_card():
     _need_browser()
     try:
-        problems = hs.find_overflow(GENERATED)
+        problems = hs.find_overflow(CARDS)
     except Exception as exc:  # browser binaries missing
         pytest.skip(f"no browser: {exc}")
     assert problems == {}

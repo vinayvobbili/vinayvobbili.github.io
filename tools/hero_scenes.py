@@ -18,6 +18,9 @@ the post is actually about (tools/hero_draw.py). A scene becomes
     python tools/hero_scenes.py --check               # render, and fail if any label overflows its box
     python tools/hero_scenes.py --sheet /tmp/sheet    # a contact sheet page with every card and flow
 
+A standalone page outside _posts (the witness page) has its own card in PAGE_SCENES,
+named `<slug>-hero.png` like the rest and used as that page's og:image.
+
 The questionnaire post keeps its own drawing in tools/hero_diagram.py; it is listed here
 so the registry covers every published post. Private projects are never named on a card:
 their posts keep their titles, but the image shows the mechanism only.
@@ -66,6 +69,7 @@ class Scene:
     hsize: int = 62
     flow: Flow | None = None
     external: bool = False          # drawn by tools/hero_diagram.py, not regenerated here
+    page: str = ""                  # a standalone page (not a post) whose og:image this card is
 
     @property
     def png(self) -> Path:
@@ -193,7 +197,16 @@ SCENES: tuple[Scene, ...] = (
               "_The mask in one pass: what stays on your machine, and the masked text a cloud model is allowed to see._")),
 )
 
-BY_SLUG = {s.slug: s for s in SCENES}
+# Standalone pages outside _posts that share the posts' card style: kept apart from SCENES so
+# the one-scene-per-post checks and the contact sheet stay about posts.
+PAGE_SCENES: tuple[Scene, ...] = (
+    Scene("witness-page", "", "card-witness-page",
+          "Change one digit", "A plain-Python comparison re-reads the tool output and refuses the claim",
+          "A finding says a process was spawned by PID 1233; the captured tool output says 1332; a plain comparison, with no language model in the gate, refuses the finding",
+          dr.witness_page, page="witness/index.html"),
+)
+
+BY_SLUG = {s.slug: s for s in SCENES + PAGE_SCENES}
 
 
 # --- the card -----------------------------------------------------------------
@@ -458,11 +471,11 @@ for (const seg of document.querySelectorAll('.seg')) {{
 
 
 def pick(only: str | None) -> list[Scene]:
-    scenes = [s for s in SCENES if not s.external]
+    scenes = [s for s in SCENES + PAGE_SCENES if not s.external]
     if only:
         scenes = [s for s in scenes if only in s.slug]
         if not scenes:
-            raise SystemExit(f"no scene matches {only!r}; known: {', '.join(s.slug for s in SCENES)}")
+            raise SystemExit(f"no scene matches {only!r}; known: {', '.join(s.slug for s in SCENES + PAGE_SCENES)}")
     return scenes
 
 
@@ -478,8 +491,8 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     if args.list:
-        for s in SCENES:
-            print(f"{s.slug:40} {s.palette:20} {'flow' if (s.flow or s.external) else '':5} {s.post}")
+        for s in SCENES + PAGE_SCENES:
+            print(f"{s.slug:40} {s.palette:20} {'flow' if (s.flow or s.external) else '':5} {s.post or s.page}")
         return 0
     if args.sheet:
         print(contact_sheet(args.sheet))

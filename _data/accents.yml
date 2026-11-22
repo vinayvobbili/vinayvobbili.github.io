@@ -262,3 +262,12 @@ card-redact:
   glowb: "#f59e0b"
   glowc: "#34d399"
   headto: "#fef3c7"
+
+card-witness-page:
+  cardfrom: "#1e1b4b"
+  cardvia: "#6d28d9"
+  cardto: "#db2777"
+  glowa: "#f0abfc"
+  glowb: "#22d3ee"
+  glowc: "#fbbf24"
+  headto: "#fbcfe8"
