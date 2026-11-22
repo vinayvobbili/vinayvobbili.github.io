@@ -18,6 +18,10 @@ $brand-mid: #0077c8;
 $brand-green: #00a651;
 $brand-grad: linear-gradient(135deg, #0046ad 0%, #0077c8 48%, #00a651 100%);
 $brand-grad-soft: linear-gradient(135deg, #0046ad22 0%, #00a65122 100%);
+/* Same blue to green identity, with the mid and green stops deepened so white
+   text on it stays at 4.5:1 or better (white on #00a651 is only 3.2:1).
+   Used wherever small white text sits on the gradient: sidebar and top bar. */
+$brand-grad-text: linear-gradient(135deg, #0046ad 0%, #006cba 48%, #007a4a 100%);
 
 /* ---- Fonts -------------------------------------------------------------- */
 :root {
@@ -50,7 +54,12 @@ code, pre, kbd, samp,
 }
 
 /* ---- Brand color-scheme overrides -------------------------------------- */
-/* Mirrors Chirpy's _sass/base/_base.scss scoping so these win the cascade.  */
+/* Chirpy 7 puts data-bs-theme="light|dark" on <html> (its System choice
+   resolves to the OS setting, so the attribute is always one of the two) and
+   scopes its palette as :root[data-bs-theme=...], specificity 0,2,0. These
+   rules use the same selectors and come later, so they win. They used to key
+   on an older attribute that Chirpy no longer sets, so the brand palette never
+   applied and the sidebar text fell back to Chirpy's gray.                  */
 
 @mixin brand-light {
   --main-bg: #f9f5ea; /* warm cream/ivory */
@@ -74,11 +83,12 @@ code, pre, kbd, samp,
 
   /* sidebar sits on the brand gradient → light-on-dark */
   --site-title-color: #ffffff;
-  --site-subtitle-color: #{rgba(#fff, 0.88)};
-  --sidebar-muted-color: #{rgba(#fff, 0.82)};
+  --site-subtitle-color: #{rgba(#fff, 0.95)};
+  --sidebar-muted-color: #{rgba(#fff, 0.95)};
   --sidebar-active-color: #ffffff;
-  --sidebar-hover-bg: #{rgba(#fff, 0.16)};
-  --sidebar-btn-bg: #{rgba(#fff, 0.18)};
+  --text-muted-color: #5b6270; /* 5.5:1 on the cream page (Chirpy's gray is 4.2:1) */
+  --sidebar-hover-bg: #{rgba(#000, 0.22)}; /* darkening, so white labels keep 4.5:1 */
+  --sidebar-btn-bg: #{rgba(#000, 0.2)};
   --sidebar-btn-color: #ffffff;
   --avatar-border-color: #{rgba(#fff, 0.7)};
 }
@@ -102,36 +112,34 @@ code, pre, kbd, samp,
 
   /* sidebar sits on the brand gradient → light-on-dark */
   --site-title-color: #ffffff;
-  --site-subtitle-color: #{rgba(#fff, 0.85)};
-  --sidebar-muted-color: #{rgba(#fff, 0.78)};
+  --site-subtitle-color: #{rgba(#fff, 0.95)};
+  --sidebar-muted-color: #{rgba(#fff, 0.95)};
   --sidebar-active-color: #ffffff;
-  --sidebar-hover-bg: #{rgba(#fff, 0.14)};
-  --sidebar-btn-bg: #{rgba(#fff, 0.16)};
+  --text-muted-color: #9aa4b2;
+  --sidebar-hover-bg: #{rgba(#000, 0.22)};
+  --sidebar-btn-bg: #{rgba(#000, 0.2)};
   --sidebar-btn-color: #ffffff;
   --avatar-border-color: #{rgba(#fff, 0.55)};
 }
 
-html {
-  @media (prefers-color-scheme: light) {
-    &:not([data-mode]),
-    &[data-mode='light'] {
-      @include brand-light;
-    }
+:root[data-bs-theme='light'] {
+  @include brand-light;
+}
 
-    &[data-mode='dark'] {
-      @include brand-dark;
-    }
+:root[data-bs-theme='dark'] {
+  @include brand-dark;
+}
+
+/* before theme.js runs (or with it blocked) Chirpy falls back to the OS setting */
+@media (prefers-color-scheme: light) {
+  :root:not([data-bs-theme]) {
+    @include brand-light;
   }
+}
 
-  @media (prefers-color-scheme: dark) {
-    &:not([data-mode]),
-    &[data-mode='dark'] {
-      @include brand-dark;
-    }
-
-    &[data-mode='light'] {
-      @include brand-light;
-    }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-bs-theme]) {
+    @include brand-dark;
   }
 }
 
@@ -165,35 +173,38 @@ html {
 
 /* ---- Sidebar: brand gradient ------------------------------------------- */
 #sidebar {
-  background: $brand-grad !important;
+  background: $brand-grad-text !important;
   border-right: 0;
 
+  /* in Chirpy 7 the title is the link itself, there is no inner <a> */
+  .site-title,
   .site-title a {
     color: #fff;
     text-shadow: 0 1px 10px rgba(0, 0, 0, 0.18);
   }
 
   .site-subtitle {
-    color: rgba(#fff, 0.85);
+    color: rgba(#fff, 0.95);
   }
 
   .nav-link {
-    color: rgba(#fff, 0.82);
+    color: rgba(#fff, 0.95);
     border-radius: 9px;
     transition: background 0.18s ease, color 0.18s ease;
 
     &:hover {
-      background: rgba(#fff, 0.16);
+      background: rgba(#000, 0.18);
       color: #fff;
     }
   }
 
+  /* a darkening overlay (not a lightening one) keeps the white label at 4.5:1 */
   .nav-item.active .nav-link,
   li.active .nav-link {
     color: #fff;
-    background: rgba(#fff, 0.22);
+    background: rgba(#000, 0.22);
     font-weight: 600;
-    box-shadow: inset 0 0 0 1px rgba(#fff, 0.25);
+    box-shadow: inset 0 0 0 1px rgba(#fff, 0.35);
   }
 
   #avatar {
@@ -204,7 +215,7 @@ html {
     a,
     .mode-toggle,
     .icon-border {
-      color: rgba(#fff, 0.92) !important;
+      color: rgba(#fff, 0.95) !important;
     }
 
     a:hover,
@@ -216,7 +227,7 @@ html {
 
 /* ---- Mobile topbar: brand gradient ------------------------------------- */
 #topbar-wrapper {
-  background: $brand-grad !important;
+  background: $brand-grad-text !important;
   box-shadow: 0 2px 14px rgba(0, 70, 173, 0.25);
 
   #breadcrumb,
@@ -650,7 +661,7 @@ article[data-toc] > header {
   }
 }
 
-html[data-mode='dark'] .content code:not([class*='language-']) {
+:root[data-bs-theme='dark'] .content code:not([class*='language-']) {
   color: #7ab8ff;
 }
 
