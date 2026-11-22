@@ -686,3 +686,196 @@ article[data-toc] > header {
   border-bottom: 3px solid transparent;
   border-image: $brand-grad 1;
 }
+
+/* ---- Click-to-play video (_includes/youtube-facade.html) ---------------- */
+/* A self-hosted thumbnail with a play button; the include's script swaps it
+   for a youtube-nocookie iframe on click. 16:9 at any width, brand (or
+   per-post accent) gradient on the button, and a glow ring that pulses until
+   the visitor has a reason to look elsewhere. Motion stops under
+   prefers-reduced-motion.                                                    */
+.content .yt-facade {
+  margin: 1.6rem 0 2.2rem;
+
+  .yt-facade__frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #0b2a4a;
+    box-shadow: 0 18px 38px -18px #{rgba($brand-blue, 0.55)},
+      0 0 0 1px var(--main-border-color);
+  }
+
+  iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  /* Chirpy underlines and borders every link in a post; this one is a picture */
+  a.yt-facade__play {
+    position: absolute;
+    inset: 0;
+    display: block;
+    border: 0;
+    text-decoration: none;
+    background: var(--yt-thumb) center / cover no-repeat;
+    cursor: pointer;
+
+    /* a soft darkening toward the bottom keeps the length badge readable */
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(4, 20, 40, 0.38), transparent 42%);
+      transition: opacity 0.25s ease;
+    }
+
+    &:hover::after {
+      opacity: 0.55;
+    }
+
+    &:focus-visible {
+      outline: 4px solid #fff;
+      outline-offset: -10px;
+      box-shadow: inset 0 0 0 3px #{rgba($brand-blue, 0.9)};
+    }
+  }
+
+  .yt-facade__btn {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    margin: auto;
+    display: grid;
+    place-items: center;
+    width: clamp(56px, 12%, 84px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    color: #fff;
+    background: var(--post-grad, #{$brand-grad-text});
+    box-shadow: 0 10px 26px -6px rgba(0, 20, 50, 0.65),
+      0 0 0 4px rgba(255, 255, 255, 0.85);
+    transition: transform 0.2s ease;
+    animation: yt-facade-ring 2.6s ease-out infinite;
+
+    svg {
+      width: 46%;
+      height: 46%;
+      margin-left: 6%;
+    }
+  }
+
+  .yt-facade__play:hover .yt-facade__btn,
+  .yt-facade__play:focus-visible .yt-facade__btn {
+    transform: scale(1.1);
+  }
+
+  .yt-facade__length {
+    position: absolute;
+    z-index: 1;
+    right: 0.7rem;
+    bottom: 0.65rem;
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #fff;
+    background: rgba(4, 20, 40, 0.78);
+  }
+
+  .yt-facade__caption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.7rem;
+    margin-top: 0.85rem;
+    font-size: 0.86rem;
+    font-style: normal;
+    color: var(--text-muted-color, #5a6273);
+  }
+
+  .yt-facade__label {
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 0.74rem;
+  }
+
+  ul.yt-facade__chapters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      margin: 0;
+      padding: 0;
+    }
+
+    a {
+      display: inline-flex;
+      gap: 0.4rem;
+      padding: 0.2rem 0.75rem;
+      border: 1px solid var(--main-border-color);
+      border-radius: 999px;
+      text-decoration: none;
+      color: var(--text-color);
+      background: var(--card-bg);
+      transition: background 0.15s ease, transform 0.15s ease;
+
+      &:hover {
+        background: var(--card-hover-bg);
+        transform: translateY(-1px);
+      }
+
+      &:focus-visible {
+        outline: 3px solid var(--link-color);
+        outline-offset: 2px;
+      }
+    }
+  }
+
+  .yt-facade__time {
+    font-weight: 700;
+    color: var(--link-color);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@keyframes yt-facade-ring {
+  0% {
+    box-shadow: 0 10px 26px -6px rgba(0, 20, 50, 0.65),
+      0 0 0 4px rgba(255, 255, 255, 0.85), 0 0 0 4px rgba(255, 255, 255, 0.5);
+  }
+  70%,
+  100% {
+    box-shadow: 0 10px 26px -6px rgba(0, 20, 50, 0.65),
+      0 0 0 4px rgba(255, 255, 255, 0.85), 0 0 0 26px rgba(255, 255, 255, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content .yt-facade {
+    .yt-facade__btn {
+      animation: none;
+    }
+
+    a.yt-facade__play::after,
+    .yt-facade__btn,
+    ul.yt-facade__chapters a {
+      transition: none;
+    }
+
+    .yt-facade__play:hover .yt-facade__btn,
+    .yt-facade__play:focus-visible .yt-facade__btn,
+    ul.yt-facade__chapters a:hover {
+      transform: none;
+    }
+  }
+}

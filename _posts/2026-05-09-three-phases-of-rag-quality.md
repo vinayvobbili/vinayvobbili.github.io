@@ -40,6 +40,18 @@ plain sight inside analyst close-notes that nobody asked anyone to write.
 ![Animated diagram: analyst close-notes become mined training pairs, a fine-tuned reranker is trained on them, and its held-out MRR@10 bar grows from 0.598 to 0.846, a 41% uplift](/assets/img/posts/reranker-mined-pairs-flow.svg)
 _Where the training pairs came from, and what they bought: close-notes in, +41% MRR@10 out._
 
+_Prefer to watch? The three-minute version:_
+
+{% include youtube-facade.html
+   id="lWVfuME1Kaw"
+   title="Free labels, +41% MRR@10: fine-tuning a reranker for security RAG"
+   thumb="/assets/img/posts/reranker-finetune-video-thumb.webp"
+   length="3:01"
+   chapters="0:00 The problem|0:34 What I did|1:16 The result|1:52 How I knew it was real|2:21 How I work"
+   description="Fine-tuning a reranker on pairs mined from analyst close-notes lifted held-out MRR@10 from 0.598 to 0.846, 41% over bge-reranker-v2-m3."
+   upload_date="2026-11-21"
+   duration="PT3M1S" %}
+
 ## The setup: embedder + reranker, the standard two-stage RAG
 
 ![Animated flowchart: a user query goes to an embedder, the top 50 by cosine similarity go to a fine-tuned reranker, the top 5 ranked by joint scoring go to an LLM that grounds the answer](/assets/img/posts/three-phases-of-rag-quality-setup-flow.svg)

@@ -1,0 +1,72 @@
+{%- comment -%}
+  Click-to-play YouTube video that loads nothing from YouTube until it is clicked.
+
+    {% include youtube-facade.html
+       id="lWVfuME1Kaw"
+       title="Free labels, +41% MRR@10: fine-tuning a reranker for security RAG"
+       thumb="/assets/img/posts/reranker-finetune-video-thumb.webp"
+       length="3:01"
+       chapters="0:00 The problem|0:34 What I did|1:16 The result"
+       description="One sentence for search engines."
+       upload_date="2026-11-21"
+       duration="PT3M1S" %}
+
+  Required: id, title, thumb (a self-hosted image, 16:9). Without any of them nothing renders.
+  Optional: length (badge on the thumbnail), chapters ("m:ss Label" joined by |, each becomes a
+  link that opens the video at that time), and description + upload_date + duration, which together
+  add a VideoObject block for search engines (thumbnailUrl and embedUrl, no contentUrl).
+
+  Before the click the page holds a plain link to https://youtu.be/<id> (it works without JS) over
+  a self-hosted thumbnail: no iframe, no YouTube script, no request to YouTube. The inline script
+  swaps the link for an iframe on https://www.youtube-nocookie.com/embed/<id> on click. Styles:
+  .yt-facade in assets/css/jekyll-theme-chirpy.scss. The thumbnail is a CSS background, not an
+  img tag, so Chirpy's image rewriting (popup link, shimmer) leaves it alone.
+  Output has no blank lines and no indented lines so kramdown keeps it as one HTML block.
+{%- endcomment -%}
+{%- if include.id and include.title and include.thumb -%}
+{%- assign yt_title = include.title | escape -%}
+<figure class="yt-facade" data-yt-id="{{ include.id | escape }}" data-yt-title="{{ yt_title }}">
+<div class="yt-facade__frame">
+<a class="yt-facade__play" href="https://youtu.be/{{ include.id | escape }}" data-yt-start="0" target="_blank" rel="noopener noreferrer" aria-label="Play video: {{ yt_title }}" style="--yt-thumb: url('{{ include.thumb | relative_url }}')">
+{%- if include.length -%}<span class="yt-facade__length" aria-hidden="true">{{ include.length | escape }}</span>{%- endif -%}
+<span class="yt-facade__btn" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" fill="currentColor"/></svg></span>
+</a>
+</div>
+{%- if include.chapters -%}
+{%- assign yt_chapters = include.chapters | split: '|' -%}
+<figcaption class="yt-facade__caption"><span class="yt-facade__label">Chapters</span><ul class="yt-facade__chapters">
+{%- for chapter in yt_chapters -%}
+{%- assign stamp = chapter | strip | split: ' ' | first -%}
+{%- assign label = chapter | strip | remove_first: stamp | strip -%}
+{%- assign parts = stamp | split: ':' -%}
+{%- assign seconds = parts[0] | times: 60 | plus: parts[1] -%}
+<li><a href="https://youtu.be/{{ include.id | escape }}?t={{ seconds }}" data-yt-start="{{ seconds }}" target="_blank" rel="noopener noreferrer"><span class="yt-facade__time">{{ stamp | escape }}</span> {{ label | escape }}</a></li>
+{%- endfor -%}
+</ul></figcaption>
+{%- endif -%}
+<script>
+(function(){if(window.ytFacade)return;window.ytFacade=1;
+document.addEventListener('click',function(e){
+if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||!e.target.closest)return;
+var a=e.target.closest('a[data-yt-start]');if(!a)return;
+var fig=a.closest('.yt-facade');if(!fig)return;
+e.preventDefault();
+var start=parseInt(a.getAttribute('data-yt-start'),10)||0;
+var f=document.createElement('iframe');
+f.src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(fig.getAttribute('data-yt-id'))+'?autoplay=1&rel=0'+(start?'&start='+start:'');
+f.title=fig.getAttribute('data-yt-title')||'Video';
+f.allow='accelerometer; autoplay; encrypted-media; picture-in-picture';
+f.allowFullscreen=true;f.referrerPolicy='strict-origin-when-cross-origin';f.loading='lazy';
+var frame=fig.querySelector('.yt-facade__frame');
+frame.replaceChildren(f);
+fig.classList.add('is-playing');
+f.focus();
+if(frame.scrollIntoView)frame.scrollIntoView({block:'nearest'});
+});
+})();
+</script>
+</figure>
+{%- if include.description and include.upload_date and include.duration -%}
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoObject","name":{{ include.title | jsonify }},"description":{{ include.description | jsonify }},"thumbnailUrl":{{ include.thumb | absolute_url | jsonify }},"uploadDate":{{ include.upload_date | jsonify }},"duration":{{ include.duration | jsonify }},"embedUrl":"https://www.youtube-nocookie.com/embed/{{ include.id | escape }}"}</script>
+{%- endif -%}
+{%- endif -%}

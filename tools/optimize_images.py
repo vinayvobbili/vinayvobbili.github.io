@@ -11,6 +11,7 @@
 
     python tools/optimize_images.py            # squeeze new heroes, rebuild thumbnails and the avatar
     python tools/optimize_images.py --check    # change nothing; exit 1 if anything is over budget
+    python tools/optimize_images.py --video-thumb SRC.png NAME   # make assets/img/posts/NAME-video-thumb.webp
 
 Run it after hero_scenes.py makes a new or changed hero. Needs pngquant and cwebp
 (`brew install pngquant webp`) and Pillow.
@@ -36,6 +37,8 @@ THUMB_WIDTH = 640        # the list card shows the image about 290 px wide, so t
 THUMB_BUDGET = 40_000
 AVATAR_SIZE = 224
 AVATAR_BUDGET = 15_000
+VIDEO_THUMB_WIDTH = 960  # the click-to-play facade (_includes/youtube-facade.html) fills the post column, 16:9
+VIDEO_THUMB_BUDGET = 60_000
 
 
 def is_palette_png(path: Path) -> bool:
@@ -81,6 +84,14 @@ def thumb_path(hero: Path) -> Path:
     return hero.with_name(hero.stem + f"-{THUMB_WIDTH}.webp")
 
 
+def video_thumb_path(name: str) -> Path:
+    return POSTS_IMG / f"{name}-video-thumb.webp"
+
+
+def video_thumbs() -> list[Path]:
+    return sorted(POSTS_IMG.glob("*-video-thumb.webp"))
+
+
 def post_heroes() -> list[Path]:
     """The hero PNG each post names as its image."""
     found = []
@@ -110,6 +121,9 @@ def problems() -> list[str]:
             out.append(f"{thumb.name} is missing")
         elif thumb.stat().st_size > THUMB_BUDGET:
             out.append(f"{thumb.name} is {thumb.stat().st_size // 1000} KB (budget {THUMB_BUDGET // 1000})")
+    for thumb in video_thumbs():
+        if thumb.stat().st_size > VIDEO_THUMB_BUDGET:
+            out.append(f"{thumb.name} is {thumb.stat().st_size // 1000} KB (budget {VIDEO_THUMB_BUDGET // 1000})")
     if not AVATAR_WEBP.is_file():
         out.append(f"{AVATAR_WEBP.name} is missing")
     elif AVATAR_WEBP.stat().st_size > AVATAR_BUDGET:
@@ -120,7 +134,17 @@ def problems() -> list[str]:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--check", action="store_true", help="change nothing; exit 1 if anything is over budget")
+    ap.add_argument("--video-thumb", nargs=2, metavar=("SRC", "NAME"),
+                    help="make assets/img/posts/NAME-video-thumb.webp (960 px wide) from a 16:9 image")
     args = ap.parse_args(argv)
+
+    if args.video_thumb:
+        if not shutil.which("cwebp"):
+            sys.exit("cwebp not found: brew install webp")
+        out = video_thumb_path(args.video_thumb[1])
+        make_webp(Path(args.video_thumb[0]), out, VIDEO_THUMB_WIDTH)
+        print(f"{out.name}: {out.stat().st_size // 1000} KB")
+        return 1 if out.stat().st_size > VIDEO_THUMB_BUDGET else 0
 
     if args.check:
         issues = problems()
