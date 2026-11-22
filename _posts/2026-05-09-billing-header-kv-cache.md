@@ -11,35 +11,6 @@ image:
 accent: ember
 ---
 
-> **Update (2026-05-14).** The SimpleEngine prefix-cache patch described in
-> Finding #2 is now upstream as
-> [vllm-mlx PR #523](https://github.com/waybarrios/vllm-mlx/pull/523), merged.
-> If you're on a recent vllm-mlx build, the fix is already there — no local
-> patching required. The walk-through below is still useful for understanding
-> what the patch does and why it was needed.
-{: .prompt-info }
-
-> **Update (2026-05-18) — two more sharp edges if you're running this for real:**
->
-> 1. **Don't use strict `json_schema` response_format against sparse-MoE Coder
->    models.** If you also run LangChain (or any OpenAI-compatible client) with
->    structured outputs against the same vllm-mlx instance, prefer
->    `with_structured_output(schema, method="json_mode")` over the LangChain
->    default `"json_schema"`. The strict path triggers grammar-constrained
->    decoding which has hung on Qwen3-Coder-30B-A3B for 5+ minutes per call —
->    and a wedged decoder starves every queued request, including your Claude
->    Code session, until the server restarts. Filed upstream as
->    [vllm-mlx#546](https://github.com/waybarrios/vllm-mlx/issues/546).
->
-> 2. **PR #523 fixes the single-slot system-KV cache. You probably also want a
->    multi-slot variant.** Claude Code sub-agents (Explore, Plan,
->    general-purpose) carry different tool sets, so each one's system prefix
->    differs from the main agent's. With a single-slot snapshot, every
->    sub-agent dispatch evicts the main agent's cache and vice versa, and you
->    pay the full ~28K-token cold prefill every turn. The multi-slot LRU
->    follow-up is local for now — upstream PR pending.
-{: .prompt-warning }
-
 ## TL;DR
 
 I run [Claude Code](https://docs.anthropic.com/claude/docs/claude-code) against a
@@ -68,6 +39,40 @@ same hardware, with the same model.
 <div class="tldr-card"><span class="tldr-num">13-15×</span><span class="tldr-sub">follow-up speedup, same hardware + model</span></div>
 <div class="tldr-card"><span class="tldr-num">81 bytes</span><span class="tldr-sub">of rotating header text that was costing 100+s/turn</span></div>
 </div>
+
+> **Update (2026-05-14).** The SimpleEngine prefix-cache patch described in
+> Finding #2 is now upstream as
+> [vllm-mlx PR #523](https://github.com/waybarrios/vllm-mlx/pull/523), merged.
+> If you're on a recent vllm-mlx build, the fix is already there — no local
+> patching required. The walk-through below is still useful for understanding
+> what the patch does and why it was needed.
+{: .prompt-info }
+
+> **Update (2026-05-18) — two more sharp edges if you're running this for real:**
+>
+> 1. **Don't use strict `json_schema` response_format against sparse-MoE Coder
+>    models.** If you also run LangChain (or any OpenAI-compatible client) with
+>    structured outputs against the same vllm-mlx instance, prefer
+>    `with_structured_output(schema, method="json_mode")` over the LangChain
+>    default `"json_schema"`. The strict path triggers grammar-constrained
+>    decoding which has hung on Qwen3-Coder-30B-A3B for 5+ minutes per call —
+>    and a wedged decoder starves every queued request, including your Claude
+>    Code session, until the server restarts. Filed upstream as
+>    [vllm-mlx#546](https://github.com/waybarrios/vllm-mlx/issues/546), now
+>    closed: fixed by
+>    [vllm-mlx PR #548](https://github.com/waybarrios/vllm-mlx/pull/548),
+>    merged 2026-06-11.
+>
+> 2. **PR #523 fixes the single-slot system-KV cache. You probably also want a
+>    multi-slot variant.** Claude Code sub-agents (Explore, Plan,
+>    general-purpose) carry different tool sets, so each one's system prefix
+>    differs from the main agent's. With a single-slot snapshot, every
+>    sub-agent dispatch evicts the main agent's cache and vice versa, and you
+>    pay the full ~28K-token cold prefill every turn. The multi-slot LRU
+>    follow-up is now upstream as
+>    [vllm-mlx PR #541](https://github.com/waybarrios/vllm-mlx/pull/541),
+>    merged 2026-05-28.
+{: .prompt-warning }
 
 ## The setup
 
