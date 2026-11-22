@@ -69,6 +69,9 @@ def test_no_image_in_assets_img_posts_is_unreferenced():
     texts = tracked_text()
     orphans = []
     for img in sorted(p for p in POSTS_IMG.iterdir() if p.is_file()):
+        # a home-list thumbnail is named after its hero (tools/optimize_images.py), not written in any text
+        if img.name.endswith("-hero-640.webp") and (img.parent / img.name.replace("-640.webp", ".png")).is_file():
+            continue
         if not any(img.name in text for name, text in texts.items() if name != str(img.relative_to(ROOT))):
             orphans.append(img.name)
     assert orphans == [], f"unreferenced images (delete them or use them): {orphans}"

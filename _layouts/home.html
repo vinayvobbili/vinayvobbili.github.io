@@ -113,8 +113,14 @@ layout: default
 
           {% assign alt = post.image.alt | xml_escape | default: 'Preview Image' %}
 
+          <!-- the list card is about 290 px wide: serve the 640 px WebP next to each hero, not the 1200 px PNG -->
+          {% assign thumb = src %}
+          {% if src contains '-hero.png' %}
+            {% assign thumb = src | replace: '-hero.png', '-hero-640.webp' %}
+          {% endif %}
+
           <div class="col-md-5">
-            <img src="{{ src }}" alt="{{ alt }}" {{ lqip_attr }}>
+            <img src="{{ thumb }}" alt="{{ alt }}" {{ lqip_attr }}>
           </div>
 
           {% assign card_body_col = '7' %}
