@@ -3,12 +3,7 @@ title: "Show the Model the Shape of a Return, Not the Numbers"
 image:
   path: /assets/img/posts/mask-the-numbers-hero.png
   alt: "Tax documents are read locally, then masked so digits become # and unfamiliar words become *; a cloud model only ever sees the masked text"
-description: >-
-  A folder of tax PDFs is the last thing to paste into a chatbot. taxtrace reads
-  W-2s, 1099s, K-1s and last year's return with plain code and local OCR, keeps the
-  file, page and exact text behind every value, and lets an AI assistant see only
-  masked output: digits become #, and words the IRS never prints become *. Here is
-  how that rule is built, what a cloud model is sent, and where it stops.
+description: "taxtrace lets an AI assistant see only masked tax text: digits become # and words the IRS never prints become *. Local OCR reads the files."
 date: 2026-11-15 11:00:00 -0500
 categories: [Open Source, Python]
 tags: [taxtrace, taxes, privacy, redaction, mcp, local-llm, mlx, open-source, python, human-in-the-loop]

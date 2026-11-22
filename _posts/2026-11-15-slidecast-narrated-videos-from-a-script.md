@@ -3,12 +3,7 @@ title: "A Product Video You Can Rebuild with One Command"
 image:
   path: /assets/img/posts/one-command-video-rebuild-hero.png
   alt: "HTML slides, recorded clips and a narration script go through one build command that screenshots, speaks and stitches a narrated MP4, failing the build when a frame clips a button"
-description: >-
-  Screen recordings go stale when the UI changes, and re-recording one by hand is
-  tedious. slidecast turns slides, recorded clips and a narration script into
-  a narrated MP4, with a drivable recorder that moves a visible cursor and fails
-  the build when the frame slices a button in half. The 1.5-minute jobwatch tour is
-  built with it, on made-up data, and rebuilt with one command when the UI moves.
+description: "slidecast turns slides, clips and a script into a narrated MP4 and fails the build if a frame slices a button in half. One command rebuilds it."
 date: 2026-11-15 10:00:00 -0500
 categories: [Open Source, Python]
 tags: [slidecast, video, text-to-speech, kokoro, playwright, ffmpeg, mlx, open-source, python, demo]

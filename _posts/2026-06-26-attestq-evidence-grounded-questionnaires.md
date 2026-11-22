@@ -3,7 +3,7 @@ title: "When \"We Don't Have Evidence for That\" Is the Feature"
 image:
   path: /assets/img/posts/evidence-grounded-questionnaires-hero.png
   alt: "A small model-agnostic RAG kernel from my own questionnaire library that answers security questionnaires from your own evidence, and refuses to guess when the evidence isn't there"
-description: "Every security and GRC team rebuilds the same pipeline one-off: chunk the SOC 2s and policies, embed them, retrieve per question, prompt an LLM, paste into the form. Done naively it hallucinates confident answers with no supporting evidence, the single worst failure mode in compliance. My own questionnaire library is a small, model-/embedder-/store-agnostic RAG kernel that bakes in the two fixes that actually matter: a confidence gate that answers \"insufficient evidence\" without ever calling the LLM, and a wide rerank window so the one document that had the answer doesn't get dropped."
+description: "A questionnaire RAG kernel says 'insufficient evidence' without calling the LLM when confidence is low, and reranks wide to keep the right document."
 date: 2026-06-26 09:00:00 -0400
 categories: [Security, LLM]
 tags: [rag, grc, compliance, questionnaires, vendor-risk, security-automation, llm, retrieval, ai-agents, attestations]

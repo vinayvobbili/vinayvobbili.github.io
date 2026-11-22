@@ -1,6 +1,6 @@
 ---
 title: "Three Chat Template Patterns That Silently Kill Your Prompt Cache"
-description: Before swapping models on a prompt-caching LLM backend, three Jinja2 patterns in the chat template will quietly break your cache hit rate. A 5-minute check against the published tokenizer config catches all three — no GPU, no weights, no inference required.
+description: "Three Jinja patterns in a chat template silently break prompt-cache hits when you swap models. A 5-minute check, no GPU or weights, finds all three."
 date: 2026-05-14 09:00:00 -0400
 categories: [LLM, Performance]
 tags: [llm, prompt-cache, prefix-cache, kv-cache, jinja2, chat-template, vllm, mlx, qwen]

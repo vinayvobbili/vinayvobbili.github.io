@@ -3,7 +3,7 @@ title: "aisoc: One LLM, Eight Hats, An AI SOC on a Single GPU"
 image:
   path: /assets/img/posts/eight-role-ai-soc-hero.png
   alt: "An alert flows over an event bus through Sentinel, Tier 2, IR Lead and Threat Intel, all played by one local model, with a human approving every proposed action"
-description: A multi-agent SOC where one local LLM plays Sentinel, Tier 2, IR Lead, Threat Intel, SOC Manager, Detection Engineer, and Threat Hunter — coordinated over a Redis Streams bus with a human-in-the-loop approval gate before any real-system action. The framework choices, the architectural trade-offs, and the backtest harness that lets us put real numbers on agent quality before going live.
+description: "aisoc runs one local LLM as eight SOC roles on a single GPU, over a Redis Streams bus, with a human approval gate and a backtest harness."
 date: 2026-05-30 09:00:00 -0400
 categories: [Security, LLM]
 tags: [soc, ai-agents, langgraph, redis-streams, multi-agent, hitl, crewai, autogen, security-automation, vllm, mlx]

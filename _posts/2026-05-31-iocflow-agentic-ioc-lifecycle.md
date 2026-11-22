@@ -3,7 +3,7 @@ title: "iocflow: The Whole IOC Lifecycle, and the LLM Never Gets the Final Say"
 image:
   path: /assets/img/posts/ioc-lifecycle-human-gate-hero.png
   alt: "Five deterministic layers (extract, enrich, comment, hunt, block) with an agent team on top, and three layers of authority: the agent proposes, a human authorizes, a guard vetoes"
-description: iocflow is a Python package of my own for the whole IOC lifecycle. Deterministic primitives (extract → enrich → comment → hunt → block) as tools, a LangGraph multi-agent team on top, and three-layer authority so the LLM never gets the final say on a destructive action.
+description: "iocflow covers the IOC lifecycle with deterministic tools, a LangGraph agent team and three-layer authority, so the LLM never has the final say."
 date: 2026-05-31 09:00:00 -0400
 categories: [Security, LLM]
 tags: [ioc, threat-intelligence, ai-agents, langgraph, multi-agent, hitl, security-automation, dfir, langchain]

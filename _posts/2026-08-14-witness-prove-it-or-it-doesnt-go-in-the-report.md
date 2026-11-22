@@ -3,7 +3,7 @@ title: "Prove It, or It Doesn't Go in the Report"
 image:
   path: /assets/img/posts/prove-it-gates-hero.png
   alt: "A claim and its bindings pass two deterministic gates: does the record say that, and what would refute it; the result is admitted, held because a tool never ran, or refused with its reason"
-description: "I entered the SANS FIND EVIL! hackathon with an agent that catches its own hallucinated indicators. It didn't win. Reading the entries that placed, the ones I looked at had reached for the same defence I had — check the first language model with a second language model. But a model can be argued out of a correct refutation. So I rebuilt the whole thing around an oracle that cannot be argued with: a finding is admitted only when pure Python re-reads the cited tool output and confirms the field really says what the claim says it says. 1,083 scored claims, 119 crafted attacks, one command to run it."
+description: "My FIND EVIL! agent now admits a finding only when plain Python re-reads the cited tool output: 1,083 scored claims, 119 crafted attacks."
 date: 2026-08-14 10:00:00 -0400
 categories: [Security, LLM]
 tags: [dfir, forensics, ai-agents, hallucination, memory-forensics, volatility, provenance, reproducibility, sans, open-source]

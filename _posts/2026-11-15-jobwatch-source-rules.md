@@ -3,13 +3,7 @@ title: "Rules a Job-Board Watcher Can't Configure Away"
 image:
   path: /assets/img/posts/watcher-that-never-applies-hero.png
   alt: "Public board feeds pass through rules that live in code, an honest User-Agent, robots.txt and no LinkedIn or Indeed pages, into a ranked digest that you review and submit yourself"
-description: >-
-  Auto-apply bots scrape what they shouldn't and submit what nobody reviewed.
-  jobwatch is the opposite design: a watcher that reads the public JSON company
-  boards already publish, introduces itself honestly, treats an unreadable
-  robots.txt as a no, never opens LinkedIn or Indeed job pages, and never applies
-  to anything. The interesting part is where those rules live: in code and
-  tests, not in a settings file.
+description: "jobwatch reads only public board JSON, treats an unreadable robots.txt as a no, skips LinkedIn and Indeed, never applies, and keeps its rules in code."
 date: 2026-11-15 08:00:00 -0500
 categories: [Open Source, Python]
 tags: [jobwatch, robots-txt, web-scraping, mcp, open-source, python, job-boards, human-in-the-loop]

@@ -3,7 +3,7 @@ title: "find-evil: Teaching a Forensic Agent to Catch Its Own Hallucinations"
 image:
   path: /assets/img/posts/forensic-agent-self-correction-hero.png
   alt: "A forensic agent hands 50,000-line tool output to an MCP extractor and reconciles what it eyeballed against the extracted indicators, ending with one confirmed C2 and 14 unverified domains"
-description: My SANS FIND EVIL! hackathon entry. Protocol SIFT turns the SIFT Workstation into a Claude Code agent over 200+ forensic tools — and it hallucinates indicators because it eyeballs 50,000-line tool dumps. find-evil bolts an IOC lifecycle onto it as an MCP server plus one skill, so the agent stops guessing and reconciles its own findings against a deterministic, FP-defended extractor. On the real SANS compromised image it found fileless PowerShell Empire C2, corrected its own "no external C2" read, and refused to invent attribution on the clean host.
+description: "My SANS FIND EVIL! entry adds an MCP IOC extractor to a forensic agent, so it reconciles its own findings and corrected a wrong 'no external C2' read."
 date: 2026-06-14 10:00:00 -0400
 categories: [Security, LLM]
 tags: [dfir, forensics, ai-agents, mcp, claude-code, ioc, threat-intelligence, hallucination, sans, open-source]

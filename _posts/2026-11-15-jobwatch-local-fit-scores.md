@@ -3,13 +3,7 @@ title: "Scoring Job Fit on a Laptop: A 29-Verdict Check Instead of a Benchmark"
 image:
   path: /assets/img/posts/fit-scores-on-a-laptop-hero.png
   alt: "Requirements are judged by a local model and the score is computed in code; three models agreed with 28, 27 and 29 of 29 expected verdicts, so the smallest and fastest stayed"
-description: >-
-  jobwatch scores how well a job fits a resume with a 9-billion-parameter model
-  running on the same Mac, by default. Choosing that model took a small, honest
-  measurement: three models, ten synthetic candidates, 29 expected requirement
-  verdicts. They agreed on 28, 27 and 29, a spread inside the noise, so the
-  fastest and smallest one stayed. Then came the less glamorous half: making a
-  resident model polite enough to leave on all day.
+description: "jobwatch scores job fit with a 9B model on the same Mac. Three models agreed on 28, 27 and 29 of 29 verdicts, so the smallest and fastest stayed."
 date: 2026-11-15 09:00:00 -0500
 categories: [Open Source, LLM]
 tags: [jobwatch, local-llm, mlx, evaluation, fit-scoring, qwen, gemma, open-source, python, apple-silicon]
