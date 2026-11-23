@@ -10,6 +10,9 @@ tags: [detection-engineering, sigma, cortex-xql, siem, detection-as-code, securi
 accent: forest
 ---
 
+> **Update:** detflow is no longer published on PyPI and its repository is private. This write-up stays as the design record; the code below describes the package as it was.
+{: .prompt-info }
+
 > **Update (v0.2):** detflow now goes the *other* direction too — paste a threat report and get back ATT&CK mappings, generated Sigma/YARA/Suricata, and STIX/Navigator/brief exports. See [detflow Goes Both Ways: From a Threat Report to a Detection Package](/posts/detflow-threat-report-to-detection-package/).
 {: .prompt-tip }
 

@@ -9,6 +9,9 @@ categories: [Security, LLM]
 tags: [rag, grc, compliance, questionnaires, vendor-risk, security-automation, llm, retrieval, ai-agents, attestations]
 ---
 
+> **Update:** attestq is no longer published on PyPI and its repository is private. This write-up stays as the design record; the code below describes the package as it was.
+{: .prompt-info }
+
 ## TL;DR 🚀
 
 I built **attestq** — a small, model-agnostic RAG kernel for a problem every security and GRC program has: you hold a **questionnaire** (a vendor security review, a SIG/CAIQ response, an audit-evidence request, a due-diligence form, the security section of an RFP) and a **pile of evidence** (SOC 2 reports, policies, standards, prior questionnaires). attestq retrieves the relevant evidence per question and drafts a grounded, **cited** answer — and, crucially, tells you plainly when the evidence isn't there instead of inventing one. 🧾

@@ -10,6 +10,9 @@ tags: [ioc, threat-intelligence, ai-agents, langgraph, multi-agent, hitl, securi
 accent: violet
 ---
 
+> **Update:** iocflow is no longer published on PyPI and its repository is private. This write-up stays as the design record; the extras and code below describe the package as it was.
+{: .prompt-info }
+
 ## TL;DR 🚀
 
 I built **iocflow** — a Python library for the **entire indicator-of-compromise lifecycle**, built as six independently-useful layers behind pip extras. The headline isn't "another IOC parser." It's the *shape*: every layer is a deterministic, boring, testable primitive — and the top layer is a small **LangGraph multi-agent team** that orchestrates those primitives, with a **human-in-the-loop gate** standing between the AI and anything destructive.

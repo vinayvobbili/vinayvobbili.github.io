@@ -10,6 +10,9 @@ tags: [detection-engineering, threat-intelligence, sigma, yara, suricata, mitre-
 accent: moss
 ---
 
+> **Update:** detflow is no longer published on PyPI and its repository is private. This write-up stays as the design record; the code below describes the package as it was.
+{: .prompt-info }
+
 ## TL;DR 🚀
 
 **detflow** `0.2.0` is done, and it now works in **both directions**. v0.1 took you from plain English to a detection rule. v0.2 adds the reverse: hand it a **raw threat report** — a CVE advisory, a CTI writeup, an IOC/TTP dump — and `analyze()` gives you back a grounded **detection package**. 🛡️
