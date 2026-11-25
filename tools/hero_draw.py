@@ -68,7 +68,7 @@ def reranker(ctx) -> str:
           ctx.grow(472, 180, 423, 36, "green", 7.4, 9.0, SPAN_END),
           t(T(881, 205, "0.846", 20, W, anchor="end", maxw=100), (9.0, SPAN_END)),
           t(badge(915, 176, 150, 44, "+41%", "green", 24), (9.4, SPAN_END)),
-          t(T(472, 252, "The first right case lands near rank 1.7 before, 1.18 after.", 15, MUTED, 400, maxw=600), (9.8, SPAN_END)),
+          t(T(472, 252, "More right cases near the top, fewer in the tail.", 15, MUTED, 400, maxw=600), (9.8, SPAN_END)),
           chip(472, 268, 250, 30, "0 explicit labels collected", "#fef3c7", "#d97706", "#92400e")]
     return "".join(o)
 

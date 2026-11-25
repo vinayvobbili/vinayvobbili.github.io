@@ -213,12 +213,15 @@ A few details that mattered:
 | **Test (held-out time)** | **0.598**       | **0.846**         | **+41%** |
 
 MRR@10 is the standard ranking metric: for each query, find the rank of the first
-relevant result; if it's at rank *k*, score is *1/k*; average across queries. The
-baseline 0.598 means the first relevant case lands at rank ~1.7 on average. The
-fine-tuned 0.846 means it lands at rank ~1.18 — almost always at the top.
+relevant result; if it's at rank *k*, score is *1/k*, and zero if nothing relevant is
+in the top 10; average across queries. That is an average of 1/rank, not an average
+rank, so it says little about where a typical right case sits. What pulls it down is
+the tail: right cases at rank 3 or lower, and cases missing from the top 10, which
+score zero. The lift from 0.598 to 0.846 means more right cases near the top and
+fewer in the tail.
 
-Translation: the LLM grounds its answer on the right historical case *almost every
-time* now. It's not a marginal improvement — it changes whether the agent's
+Translation: the LLM gets handed the right historical case more often, and higher up
+the list. That's not a marginal improvement; it changes whether the agent's
 suggestion is *useful* or *plausible-but-wrong*.
 
 ## Battle scars (the gotchas nobody documents)
