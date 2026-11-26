@@ -43,14 +43,14 @@ _Where the training pairs came from, and what they bought: close-notes in, +41% 
 _Prefer to watch? The three-minute version:_
 
 {% include youtube-facade.html
-   id="lWVfuME1Kaw"
+   id="R2MhJ9K28jo"
    title="Free labels, +41% MRR@10: fine-tuning a reranker for security RAG"
    thumb="/assets/img/posts/reranker-finetune-video-thumb.webp"
-   length="3:01"
-   chapters="0:00 The problem|0:34 What I did|1:16 The result|1:52 How I knew it was real|2:21 How I work"
+   length="3:08"
+   chapters="0:00 The problem|0:34 What I did|1:16 The result|1:59 How I knew it was real|2:29 How I work"
    description="Fine-tuning a reranker on pairs mined from analyst close-notes lifted held-out MRR@10 from 0.598 to 0.846, 41% over bge-reranker-v2-m3."
-   upload_date="2026-11-21"
-   duration="PT3M1S" %}
+   upload_date="2026-11-25"
+   duration="PT3M8S" %}
 
 ## The setup: embedder + reranker, the standard two-stage RAG
 
