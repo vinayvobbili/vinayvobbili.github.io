@@ -18,7 +18,7 @@ accent: magma
 
 ## TL;DR 🔎
 
-I built [**find-evil**](https://github.com/vinayvobbili/find-evil) for the SANS **FIND EVIL!** hackathon. [Protocol SIFT](https://github.com/teamdfir/protocol-sift) is a sharp idea — put a Claude Code agent in front of the SANS SIFT Workstation's 200+ forensic tools so a responder can investigate at machine speed. It works. But the brief says the quiet part out loud: *"it also hallucinates more than we'd like."* find-evil bolts an IOC lifecycle onto it as a **custom MCP server plus one skill**, so the agent stops eyeballing huge dumps and instead **reconciles its own findings against a deterministic, false-positive-defended extractor** — catching its hallucinations before they reach the report.
+I built **find-evil** for the SANS **FIND EVIL!** hackathon. [Protocol SIFT](https://github.com/teamdfir/protocol-sift) is a sharp idea — put a Claude Code agent in front of the SANS SIFT Workstation's 200+ forensic tools so a responder can investigate at machine speed. It works. But the brief says the quiet part out loud: *"it also hallucinates more than we'd like."* find-evil bolts an IOC lifecycle onto it as a **custom MCP server plus one skill**, so the agent stops eyeballing huge dumps and instead **reconciles its own findings against a deterministic, false-positive-defended extractor** — catching its hallucinations before they reach the report.
 
 <div class="tldr-cards">
 <div class="tldr-card"><span class="tldr-num">1 skill</span><span class="tldr-sub">extract → reconcile / self-correct → hunt, instead of asserting by eye</span></div>
@@ -83,9 +83,9 @@ That's the property I care about most: it **found evil where it existed and refu
 
 The strongest guardrail isn't a better prompt — it's an **architecture where the dangerous action doesn't exist as a tool**, and the strongest anti-hallucination move is the same shape: don't ask the LLM to read more carefully, **hand the reading to a deterministic parser and make the LLM reconcile.** The agent's job becomes judgment over provenance, not transcription of a 50,000-line dump.
 
-The find-evil repo is MIT-licensed:
+find-evil grew into witness, which is MIT-licensed:
 
-- **Repo:** [github.com/vinayvobbili/find-evil](https://github.com/vinayvobbili/find-evil)
+- **Repo:** [github.com/vinayvobbili/witness](https://github.com/vinayvobbili/witness) (find-evil's successor)
 - **Built with:** its own in-repo MCP tools (the submitted version used a private toolkit for them; that state is tagged `hackathon-submission`)
 - **Demo:** [the live investigation above](https://youtu.be/8ufHSoOfc5Q)
 
