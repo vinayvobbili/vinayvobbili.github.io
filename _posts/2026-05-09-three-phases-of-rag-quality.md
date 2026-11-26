@@ -43,7 +43,7 @@ _Where the training pairs came from, and what they bought: close-notes in, +41% 
 _Prefer to watch? The three-minute version:_
 
 {% include youtube-facade.html
-   id="R2MhJ9K28jo"
+   id="srVvL7nGrnI"
    title="Free labels, +41% MRR@10: fine-tuning a reranker for security RAG"
    thumb="/assets/img/posts/reranker-finetune-video-thumb.webp"
    length="3:08"
